@@ -101,10 +101,13 @@ function Invoke-Doctor {
   foreach ($c in @(
       @{ L = 'Apache 8.3 tools'; P = '%USERPROFILE%\tools\apache-83' },
       @{ L = 'Apache 8.5 tools'; P = '%USERPROFILE%\tools\apache-85' },
-      @{ L = 'Toolkit EPF default'; P = 'C:\1C\soft\MCP_Toolkit.epf' }
+      @{ L = 'Toolkit EPF (recommended)'; P = '%USERPROFILE%\tools\1c-mcp-toolkit\MCP_Toolkit.epf' },
+      @{ L = 'Toolkit EPF (legacy)'; P = 'C:\1C\soft\MCP_Toolkit.epf' }
     )) {
     if (-not (Test-SoftPath $c.L $c.P $false)) { $warn++ }
   }
+  Write-Status 'INFO' 'If toolkit missing: https://github.com/ROCTUP/1c-mcp-toolkit/releases'
+  Write-Status 'INFO' 'If bsl-analyzer missing: https://github.com/itrous/bsl-analyzer/releases (bsl-analyzer-windows-amd64.exe)'
 
   $ninjaMain = Join-Path $KitRoot 'components\1c-ninja-mcp\main.os'
   if (Test-Path -LiteralPath $ninjaMain) { Write-Status 'OK' "1c-ninja-mcp -> $ninjaMain" }

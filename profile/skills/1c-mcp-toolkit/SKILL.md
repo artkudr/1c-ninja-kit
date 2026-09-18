@@ -21,17 +21,19 @@ MCP-сервер **1c-mcp-toolkit** — доступ к **работающей**
 
 | Что | Путь |
 |-----|------|
-| Обработка | `C:\1C\soft\MCP_Toolkit.epf` |
-| MCP в Cursor | project `.cursor/mcp.json` → `http://127.0.0.1:6003/mcp` (эталон скилла `1c-env-setup`; не дублировать в user mcp.json) |
-| Namespace MCP | `1c-mcp-toolkit` (имена tools — через `GetDynamicTools`) |
-| Upstream | https://github.com/ROCTUP/1c-mcp-toolkit/releases |
+| Upstream / скачать EPF | https://github.com/ROCTUP/1c-mcp-toolkit/releases → asset **`MCP_Toolkit.epf`** |
+| Рекомендуемый локальный путь | `%USERPROFILE%\tools\1c-mcp-toolkit\MCP_Toolkit.epf` |
+| Legacy (не требовать) | `C:\1C\soft\MCP_Toolkit.epf` — только если уже так заведено на машине |
+| MCP в Cursor | project `.cursor/mcp.json` → `http://127.0.0.1:6003/mcp` (не дублировать в user mcp.json) |
+| Namespace MCP | `1c-mcp-toolkit` |
 
 ## Запуск (встроенный сервер, без Python)
 
-1. Открыть **Предприятие** на ИБ текущего проекта (`autumn-properties.json` → `default`).
-2. Файл → Открыть → `C:\1C\soft\MCP_Toolkit.epf`.
-3. Режим **«Встроенный сервер»** → **«Запустить сервер»** (порт **6003**).
-4. Перезагрузить MCP в Cursor, если сервер только что подняли.
+1. Скачай EPF с GitHub Releases (см. таблицу выше), если файла ещё нет.
+2. Открыть **Предприятие** на ИБ текущего проекта.
+3. Файл → Открыть → путь к `MCP_Toolkit.epf`.
+4. Режим **«Встроенный сервер»** → **«Запустить сервер»** (порт **6003**).
+5. Перезагрузить MCP в агенте, если сервер только что подняли.
 
 > Без запущенной обработки MCP недоступен — это нормально. Для запросов к ИБ предпочитай **1c-ninja-mcp** `live_*`. Для dev без живой базы — **vrunner** и skills `meta-*`.
 
@@ -82,4 +84,4 @@ MCP-сервер **1c-mcp-toolkit** — доступ к **работающей**
 
 ## Обновление
 
-Скачать новый `MCP_Toolkit.epf` из [releases](https://github.com/ROCTUP/1c-mcp-toolkit/releases) в `C:\1C\soft\MCP_Toolkit.epf`.
+Скачать новый `MCP_Toolkit.epf` из [releases](https://github.com/ROCTUP/1c-mcp-toolkit/releases) в `%USERPROFILE%\tools\1c-mcp-toolkit\` (или ваш выбранный постоянный путь).

@@ -33,7 +33,8 @@ Bridge contract: `adapters/BRIDGE-CONTRACT.md`.
 | `components/1c-ninja-mcp/` | MCP server (part of kit) |
 | `project-scaffold/cfe/NinjaLive/` | Live CFE pair |
 | `install/kit.ps1` | doctor / apply / init-project |
-| `docs/MACHINE-BOOTSTRAP.md` | bare PC with only 1C |
+| `docs/MACHINE-BOOTSTRAP.md` | bare PC: откуда скачать OVM, bsl-analyzer, toolkit |
+| `companions/pins.json` | upstream GitHub URLs для companion-бинарников |
 
 ## Hard rules
 

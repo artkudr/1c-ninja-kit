@@ -19,9 +19,9 @@
 |-----------|---------------------|-------|
 | OneScript / OVM | по условиям разработчика OneScript | только path-defaults + doctor |
 | vanessa-runner | по условиям пакета opm | pins / doctor; локальные патчи — `profile/docs-patches/` |
-| bsl-analyzer | по условиям поставщика бинарника | pin path `%LOCALAPPDATA%\bsl-analyzer` |
+| bsl-analyzer | [itrous/bsl-analyzer](https://github.com/itrous/bsl-analyzer) (GPL-3.0) | скачать launcher с Releases; path `%LOCALAPPDATA%\bsl-analyzer` |
 | Apache HTTP Server | Apache License 2.0 | только layout paths `apache-83` / `apache-85` |
-| MCP Toolkit EPF | по условиям поставщика EPF | pin path (часто `C:\1C\soft\MCP_Toolkit.epf`) |
+| MCP Toolkit EPF | [ROCTUP/1c-mcp-toolkit](https://github.com/ROCTUP/1c-mcp-toolkit) | скачать `MCP_Toolkit.epf` с Releases; рекомендуемый path `%USERPROFILE%\tools\1c-mcp-toolkit\` |
 | v8std MCP | `https://ai.v8std.ru/mcp` | optional pack `extras-mcp` |
 | cc-1c-skills lineage | исходный upstream Nikolay-Shirokov / port-cursor | skills в `profile/skills/` (meta/form/…); см. `sync-cc-1c-skills` |
 | OpenSpec (Fission-AI) | MIT (upstream CLI опционален) | шаблоны scaffold; CLI не обязателен |

@@ -8,9 +8,9 @@
 |---|----------|-----|-----|
 | 1.1 | OVM / oscript | `kit.ps1 doctor` | auto |
 | 1.2 | vrunner 3.x | `vrunner --version` | auto |
-| 1.3 | bsl-analyzer.exe | doctor | auto |
+| 1.3 | bsl-analyzer.exe | doctor; install from [itrous/bsl-analyzer releases](https://github.com/itrous/bsl-analyzer/releases) → `bsl-analyzer-windows-amd64.exe` as `%LOCALAPPDATA%\bsl-analyzer\bsl-analyzer.exe` | auto / needs-human |
 | 1.4 | Apache tools 83/85 | `%USERPROFILE%\tools\apache-83` / `apache-85` | auto / needs-human если нет |
-| 1.5 | Toolkit EPF (optional) | `C:\1C\soft\MCP_Toolkit.epf` или другой путь | needs-human |
+| 1.5 | Toolkit EPF (optional) | [ROCTUP/1c-mcp-toolkit releases](https://github.com/ROCTUP/1c-mcp-toolkit/releases) → `%USERPROFILE%\tools\1c-mcp-toolkit\MCP_Toolkit.epf` | needs-human |
 
 v0.1: soft **assumed** — doctor только предупреждает.
 

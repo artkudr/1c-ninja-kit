@@ -1,22 +1,32 @@
 {
   "bslAnalyzer": {
-    "exe": "%LOCALAPPDATA%\\bsl-analyzer\\bsl-analyzer.exe",
-    "note": "Binary not vendored in kit; doctor checks path"
+    "upstream": "https://github.com/itrous/bsl-analyzer",
+    "releases": "https://github.com/itrous/bsl-analyzer/releases",
+    "windowsLauncherAsset": "bsl-analyzer-windows-amd64.exe",
+    "installAs": "%LOCALAPPDATA%\\bsl-analyzer\\bsl-analyzer.exe",
+    "minAppVersion": "0.2.77",
+    "note": "Launcher downloads app into %USERPROFILE%\\.bsl-analyzer\\bin. Prefer launcher asset, not bsl-analyzer-app-*.exe unless you know you need the full binary."
   },
   "mcpToolkit": {
-    "url": "http://127.0.0.1:6003/mcp",
-    "epfDefault": "C:\\1C\\soft\\MCP_Toolkit.epf",
-    "note": "EPF binary not vendored; fallback live if ninja unavailable"
+    "upstream": "https://github.com/ROCTUP/1c-mcp-toolkit",
+    "releases": "https://github.com/ROCTUP/1c-mcp-toolkit/releases",
+    "windowsEpfAsset": "MCP_Toolkit.epf",
+    "recommendedPath": "%USERPROFILE%\\tools\\1c-mcp-toolkit\\MCP_Toolkit.epf",
+    "mcpUrl": "http://127.0.0.1:6003/mcp",
+    "note": "Optional fallback when NinjaLive is unavailable. Download from GitHub releases — do not rely on another machine's C:\\1C\\soft path."
   },
   "1cNinjaMcp": {
     "inKit": true,
     "path": "components/1c-ninja-mcp",
     "entry": "main.os",
-    "pair": "project-scaffold/cfe/NinjaLive",
-    "note": "Part of kit — not an external companion pin"
+    "pair": "project-scaffold/cfe/NinjaLive"
   },
   "apache": {
     "8.3": { "port": 8083, "toolsDir": "%USERPROFILE%\\tools\\apache-83" },
     "8.5": { "port": 8085, "toolsDir": "%USERPROFILE%\\tools\\apache-85" }
+  },
+  "oneScript": {
+    "site": "https://oscript.io/",
+    "ovmCurrent": "%LOCALAPPDATA%\\ovm\\current"
   }
 }

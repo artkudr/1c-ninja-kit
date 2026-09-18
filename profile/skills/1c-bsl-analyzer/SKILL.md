@@ -18,13 +18,18 @@ Rust MCP **workspace** (itrous/bsl-analyzer, **≥0.2.77** / текущий 0.2.
 
 | Что | Путь / имя |
 |-----|------------|
-| Лаунчер | `%LOCALAPPDATA%\bsl-analyzer\bsl-analyzer.exe` (`--launcher-update` / `--launcher-self-update` / `--launcher-version`) |
-| App | `~\.bsl-analyzer\bin\` (лаунчер качает нужную версию) |
-| Project MCP | `<репозиторий>\.cursor\mcp.json` → `bsl-analyzer-workspace` и `bsl-analyzer-reference` (эталон скилла `1c-env-setup`) |
+| Upstream | https://github.com/itrous/bsl-analyzer |
+| Releases (Windows launcher) | https://github.com/itrous/bsl-analyzer/releases → **`bsl-analyzer-windows-amd64.exe`** |
+| Лаунчер (куда положить) | `%LOCALAPPDATA%\bsl-analyzer\bsl-analyzer.exe` (`--launcher-update` / `--launcher-self-update` / `--launcher-version`) |
+| App | `%USERPROFILE%\.bsl-analyzer\bin\` (лаунчер качает нужную версию; не путать с ручной установкой `bsl-analyzer-app-windows-amd64.exe`) |
+| Project MCP | `<репозиторий>\.cursor\mcp.json` → `bsl-analyzer-workspace` и `bsl-analyzer-reference` |
 | User MCP | **без** `bsl-analyzer-*` (иначе дубли с проектом) |
 | Конфиг диагностик | `<репозиторий>\bsl-analyzer.toml` |
-| Кеш | `<репозиторий>\.build` (gitignore; graph/search DB; после сбоев чистить `.building.*`) |
-| Namespace Cursor | `project-*-bsl-analyzer-workspace` — схемы через `GetDynamicTools` |
+| Кеш | `<репозиторий>\.build` (gitignore) |
+
+### Установка на новой машине
+
+См. `docs/MACHINE-BOOTSTRAP.md` §2. Кратко: скачать launcher с GitHub Releases → переименовать/скопировать в `%LOCALAPPDATA%\bsl-analyzer\bsl-analyzer.exe` → при необходимости `--launcher-update`.
 
 Прогрев: `metadata`/`graph` `action=status` → `ready` (на ecoladev graph cold ~5 мин). Пока `loading` — повтори, не трактуй как «пусто».
 

@@ -1,18 +1,23 @@
-# Windows path defaults for 1c-ninja-kit (v0.1)
-# Agent MUST adapt on-site via docs/ADAPTATION.md — these are defaults, not secrets.
+# Windows path defaults for 1c-ninja-kit
+# Agent MUST adapt on-site via docs/ADAPTATION.md and docs/MACHINE-BOOTSTRAP.md.
+# Binaries are NOT vendored — download from upstream GitHub/sites in pins.json.
 
 ovm:
   root: "%LOCALAPPDATA%\\ovm\\current"
   oscript: "%LOCALAPPDATA%\\ovm\\current\\bin\\oscript.exe"
   vrunner: "%LOCALAPPDATA%\\ovm\\current\\bin\\vrunner.bat"
   vrunnerMcp: "%LOCALAPPDATA%\\ovm\\current\\bin\\vrunner-mcp.bat"
+  site: "https://oscript.io/"
 
 bslAnalyzer:
+  upstream: "https://github.com/itrous/bsl-analyzer"
+  releases: "https://github.com/itrous/bsl-analyzer/releases"
+  windowsLauncherAsset: "bsl-analyzer-windows-amd64.exe"
   exe: "%LOCALAPPDATA%\\bsl-analyzer\\bsl-analyzer.exe"
   projectCache: "<project>\\.build"
+  minAppVersion: "0.2.77"
 
 apache:
-  # Выбор по v8version проекта (major.minor)
   "8.3":
     port: 8083
     toolsDir: "%USERPROFILE%\\tools\\apache-83"
@@ -20,15 +25,19 @@ apache:
     port: 8085
     toolsDir: "%USERPROFILE%\\tools\\apache-85"
   notes:
-    - "Не копировать Apache в git проекта — только toolsDir на машине."
-    - "webUrl smoke всегда с суффиксом /ru_RU/."
+    - "Do not commit Apache into git."
+    - "webUrl smoke always with /ru_RU/ suffix."
 
 toolkit:
+  upstream: "https://github.com/ROCTUP/1c-mcp-toolkit"
+  releases: "https://github.com/ROCTUP/1c-mcp-toolkit/releases"
+  windowsEpfAsset: "MCP_Toolkit.epf"
   mcpUrl: "http://127.0.0.1:6003/mcp"
-  epfDefault: "C:\\1C\\soft\\MCP_Toolkit.epf"
+  epfRecommended: "%USERPROFILE%\\tools\\1c-mcp-toolkit\\MCP_Toolkit.epf"
+  # Legacy path on some author machines — NOT required; prefer epfRecommended / GitHub download
+  epfLegacyExample: "C:\\1C\\soft\\MCP_Toolkit.epf"
 
 ninja:
-  # После apply/init: путь к MCP внутри kit (не отдельный sibling)
   mcpMainRelative: "components/1c-ninja-mcp/main.os"
   shcntxHelpDbRelative: "components/1c-ninja-mcp/src/data/shcntx_help.db"
   liveRootUrlSuffix: "/hs/ninja-live"
