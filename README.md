@@ -7,7 +7,7 @@
 ## Quick start
 
 ```powershell
-git clone https://github.com/<ORG>/1c-ninja-kit.git
+git clone https://github.com/artkudr/1c-ninja-kit.git
 cd 1c-ninja-kit
 # If the machine has only the 1C platform installed:
 # read docs/MACHINE-BOOTSTRAP.md first
