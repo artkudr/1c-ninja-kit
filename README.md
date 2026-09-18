@@ -2,7 +2,7 @@
 
 Агентная обвязка разработки 1С: skills, rules, MCP (**1c-ninja-mcp** + CFE **NinjaLive**), vrunner, bsl-analyzer, адаптеры **Cursor / DeepSeek Harness / Hermes**.
 
-**VERSION:** 0.3.0
+**VERSION:** 0.3.1
 
 ## Quick start
 

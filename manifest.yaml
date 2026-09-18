@@ -1,6 +1,6 @@
 # 1c-ninja-kit manifest
 name: 1c-ninja-kit
-version: 0.3.0
+version: 0.3.1
 platform: windows
 primaryAdapter: cursor
 assumesMachineSoft: false

@@ -1,30 +1,20 @@
-# Publish to GitHub (v0.3.0)
+# Publish to GitHub
 
-Local repo is ready at `C:\1C\projects\1c-ninja-kit` (branch `main`, tag suggested `v0.3.0`).
-
-## On a machine with `gh` authenticated
-
-```powershell
-cd C:\1C\projects\1c-ninja-kit
-gh auth login
-gh repo create 1c-ninja-kit --public --source=. --remote=origin --push
-git tag v0.3.0
-git push origin v0.3.0
-```
-
-Or private:
-
-```powershell
-gh repo create 1c-ninja-kit --private --source=. --remote=origin --push
-```
+Repo: https://github.com/artkudr/1c-ninja-kit
 
 ## On laptop (clone + test)
 
 ```powershell
-git clone https://github.com/<USER_OR_ORG>/1c-ninja-kit.git
+git clone https://github.com/artkudr/1c-ninja-kit.git
 cd 1c-ninja-kit
-# then MACHINE-BOOTSTRAP + TEST-GUIDE-deepseek or hermes
+# 1) docs/MACHINE-BOOTSTRAP.md  — OVM, bsl-analyzer, toolkit from GitHub
+# 2) docs/TEST-GUIDE-deepseek.md or docs/TEST-GUIDE-hermes.md
 ```
+
+Companion downloads:
+
+- bsl-analyzer: https://github.com/itrous/bsl-analyzer/releases → `bsl-analyzer-windows-amd64.exe`
+- MCP Toolkit: https://github.com/ROCTUP/1c-mcp-toolkit/releases → `MCP_Toolkit.epf`
 
 ## Testers
 
