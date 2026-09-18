@@ -1,0 +1,14 @@
+﻿{
+    "name":  "fresh",
+    "skills":  [
+                   "1c-fresh-adaptation",
+                   "1c-fresh-cfe-audit",
+                   "1c-fresh-epf-audit"
+               ],
+    "rules":  [
+
+              ],
+    "agents":  [
+
+               ]
+}

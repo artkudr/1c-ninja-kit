@@ -1,0 +1,46 @@
+﻿<?xml version="1.0" encoding="UTF-8"?>
+<ConfigDumpInfo xmlns="http://v8.1c.ru/8.3/xcf/dumpinfo" xmlns:xen="http://v8.1c.ru/8.3/xcf/enums" xmlns:xs="http://www.w3.org/2001/XMLSchema" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" format="Hierarchical" version="2.20">
+	<ConfigVersions>
+		<Metadata name="CommonModule.NinjaLive_JSON" id="9c872be4-7a9b-40d5-b819-0d56cf13048e" configVersion="7487bedc10b86508f4b5e74687b0f68d2b2002c7"/>
+		<Metadata name="CommonModule.NinjaLive_JSON.Module" id="9c872be4-7a9b-40d5-b819-0d56cf13048e.0" configVersion="e22f6957c1bccbd6a93fffb5df037cf97ec51f39"/>
+		<Metadata name="CommonModule.NinjaLive_Выполнение" id="558786f9-94c7-4ac2-949d-9bc5cc7932b3" configVersion="1c25274a70682e9430d9177de02e1657668eb9ba"/>
+		<Metadata name="CommonModule.NinjaLive_Выполнение.Module" id="558786f9-94c7-4ac2-949d-9bc5cc7932b3.0" configVersion="ab0a66777305dfa79529a63e3402ec16db33c324"/>
+		<Metadata name="CommonModule.NinjaLive_Журнал" id="06a4cc45-71cf-4531-8a45-f23f4a2185af" configVersion="c71dda636177c93c8c5e4aaeb6a8ff576b3de36a"/>
+		<Metadata name="CommonModule.NinjaLive_Журнал.Module" id="06a4cc45-71cf-4531-8a45-f23f4a2185af.0" configVersion="b35bb109dac5187ef08ae0d55993b0ec12c76d12"/>
+		<Metadata name="CommonModule.NinjaLive_Запросы" id="84203b26-e07c-4c39-8eb1-3fbbb29b19fc" configVersion="5fce854c55aaac2b1674474d4e052b3e214ffba2"/>
+		<Metadata name="CommonModule.NinjaLive_Запросы.Module" id="84203b26-e07c-4c39-8eb1-3fbbb29b19fc.0" configVersion="d9a79e1f73e17299a6368ac5725af9148be5acdd"/>
+		<Metadata name="CommonModule.NinjaLive_Метаданные" id="f3b01bfd-8a82-437a-bb6c-218ee3b991e6" configVersion="04c623e4e5f298ab05a0133a0a0ffb76f70d9040"/>
+		<Metadata name="CommonModule.NinjaLive_Метаданные.Module" id="f3b01bfd-8a82-437a-bb6c-218ee3b991e6.0" configVersion="30b321f10940570836d2a8eee45684d756904ad4"/>
+		<Metadata name="CommonModule.NinjaLive_Расширения" id="a50c833c-61f7-4db6-a3a1-3ce8810adb6c" configVersion="364b4e9865cfc184d756c0330d8ffdfdcf221fcf"/>
+		<Metadata name="CommonModule.NinjaLive_Расширения.Module" id="a50c833c-61f7-4db6-a3a1-3ce8810adb6c.0" configVersion="157d4920bb1f7942a06caeeb284288a9dd0494e2"/>
+		<Metadata name="Configuration.NinjaLive" id="453bdbf5-2491-45dc-a5fd-fcbb23710c0c" configVersion="29d2555f2a0f2d039d9130215e3abb63613631d1"/>
+		<Metadata name="HTTPService.NinjaLive_Сервис" id="2dd1c31b-3622-4a51-a740-af0f5ee4e3c1" configVersion="af471421f854f746ffcfff939f4ce8b6cc2028c5">
+			<Metadata name="HTTPService.NinjaLive_Сервис.URLTemplate.ПроверкаСинтаксиса.Method.POST" id="31032f1d-3ba8-4dc4-836e-b30e116d46b2"/>
+			<Metadata name="HTTPService.NinjaLive_Сервис.URLTemplate.Запрос" id="42391b6e-37ce-4603-a480-c49691523979"/>
+			<Metadata name="HTTPService.NinjaLive_Сервис.URLTemplate.Вычислить.Method.POST" id="4dc0b39f-dfac-46f6-ae7b-1906edcb9b37"/>
+			<Metadata name="HTTPService.NinjaLive_Сервис.URLTemplate.СписокРасширений.Method.POST" id="4e43ffef-1452-4021-8a51-c183e555501a"/>
+			<Metadata name="HTTPService.NinjaLive_Сервис.URLTemplate.ЖурналРегистрации.Method.POST" id="547834a8-0125-46d2-8482-488b18439822"/>
+			<Metadata name="HTTPService.NinjaLive_Сервис.URLTemplate.СписокМетаданных" id="54e27352-0a59-4783-917c-2f312bf44e3a"/>
+			<Metadata name="HTTPService.NinjaLive_Сервис.URLTemplate.СписокРасширений" id="5dd68ea3-5df4-4edb-8fad-6213e9c0befc"/>
+			<Metadata name="HTTPService.NinjaLive_Сервис.URLTemplate.Выполнить" id="6a747dda-97ba-4547-b885-1f4467e176f3"/>
+			<Metadata name="HTTPService.NinjaLive_Сервис.URLTemplate.СтруктураМетаданных" id="740e9aa7-06ba-4442-9955-a5f1c9a92ae7"/>
+			<Metadata name="HTTPService.NinjaLive_Сервис.URLTemplate.ЖурналРегистрации" id="76f25e69-5e3c-40f5-994e-a4c2be3cdc60"/>
+			<Metadata name="HTTPService.NinjaLive_Сервис.URLTemplate.Версия.Method.GET" id="a26b7527-920f-4fd9-bad9-7cd44782ee16"/>
+			<Metadata name="HTTPService.NinjaLive_Сервис.URLTemplate.Версия" id="a4c3ced4-64df-4bae-a9e0-d748ed42233f"/>
+			<Metadata name="HTTPService.NinjaLive_Сервис.URLTemplate.ПроверкаЗапроса.Method.POST" id="a5828e1f-c443-49f1-a896-222e7ace9df6"/>
+			<Metadata name="HTTPService.NinjaLive_Сервис.URLTemplate.Выполнить.Method.POST" id="ba7c39bf-0b1b-4f7a-b1fd-c2beec14fce7"/>
+			<Metadata name="HTTPService.NinjaLive_Сервис.URLTemplate.СписокМетаданных.Method.POST" id="c20c98f6-6ff9-4cf4-a7df-048066fa876b"/>
+			<Metadata name="HTTPService.NinjaLive_Сервис.URLTemplate.Запрос.Method.POST" id="ccd803f1-78df-4824-9d87-4fd2b9d1f143"/>
+			<Metadata name="HTTPService.NinjaLive_Сервис.URLTemplate.СтруктураМетаданных.Method.POST" id="d0abb725-38da-418e-81f4-dc9314edfcf1"/>
+			<Metadata name="HTTPService.NinjaLive_Сервис.URLTemplate.ПроверкаЗапроса" id="ea18a1a8-99ad-4e57-97af-6b26c6c61b31"/>
+			<Metadata name="HTTPService.NinjaLive_Сервис.URLTemplate.ПроверкаСинтаксиса" id="eb60bf3d-ba7d-4b86-a6bc-54fcc9d5a712"/>
+			<Metadata name="HTTPService.NinjaLive_Сервис.URLTemplate.Вычислить" id="f5827267-947f-41ba-a0f7-1bfa173c222f"/>
+		</Metadata>
+		<Metadata name="HTTPService.NinjaLive_Сервис.Module" id="2dd1c31b-3622-4a51-a740-af0f5ee4e3c1.0" configVersion="f58ce0d3181ec56365d94b5263763eaf6a0e0021"/>
+		<Metadata name="Language.Русский" id="254f8ba0-c588-43f4-9ce2-2e5096c0de51" configVersion="b7b72ebc635ed567b6f35dff5dbf37f3dfc2b1a0"/>
+		<Metadata name="Role.NinjaLive_ВыполнениеКода" id="b929df77-1727-4d83-8edf-1d9d360f0eae" configVersion="a52020b58173e76a15487b14013a603dd43f59c9"/>
+		<Metadata name="Role.NinjaLive_ВыполнениеКода.Rights" id="b929df77-1727-4d83-8edf-1d9d360f0eae.0" configVersion="5acb19aa7cad9d57e52397083cd07fa58259a231"/>
+		<Metadata name="Role.NinjaLive_ОсновнаяРоль" id="3d157b70-88ee-4dba-9493-4b6f674a8d68" configVersion="9e34aaf2a5db7d891fde67bb4632261380e98ed1"/>
+		<Metadata name="Role.NinjaLive_ОсновнаяРоль.Rights" id="3d157b70-88ee-4dba-9493-4b6f674a8d68.0" configVersion="945f2a4b20b496b0fbf005d45ecdb8a62047ce58"/>
+	</ConfigVersions>
+</ConfigDumpInfo>

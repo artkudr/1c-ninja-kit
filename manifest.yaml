@@ -1,0 +1,55 @@
+# 1c-ninja-kit manifest
+name: 1c-ninja-kit
+version: 0.3.0
+platform: windows
+primaryAdapter: cursor
+assumesMachineSoft: false
+license: see NOTICE.md
+
+layers:
+  - machine
+  - profile
+  - project
+  - adapter
+
+profile:
+  default: 1c-ninja-kit
+  targetByAdapter:
+    cursor: "%USERPROFILE%\\.cursor"
+    deepseek: "%USERPROFILE%\\.agents\\skills (+ \\.dsh\\skills)"
+    hermes: "%USERPROFILE%\\.hermes\\skills"
+
+components:
+  1c-ninja-mcp:
+    path: components/1c-ninja-mcp
+    entry: main.os
+    pair: project-scaffold/cfe/NinjaLive
+  NinjaLive:
+    path: project-scaffold/cfe/NinjaLive
+    rootUrl: ninja-live
+
+companions:
+  pins: companions/pins.json
+
+stackDefaults:
+  file: install/path-defaults.windows.yaml
+  apache:
+    "8.3": { port: 8083, toolsDir: "%USERPROFILE%\\tools\\apache-83" }
+    "8.5": { port: 8085, toolsDir: "%USERPROFILE%\\tools\\apache-85" }
+
+cli:
+  entry: install/kit.ps1
+  commands: [doctor, verify, apply, capture, init-project]
+  adapters: [cursor, deepseek, hermes]
+  forbidInitOn: [ecoladev]
+
+adapters:
+  cursor: { status: implemented, path: adapters/cursor }
+  deepseek: { status: implemented, path: adapters/deepseek, bridge: mcp+skills+AGENTS.md }
+  hermes: { status: implemented, path: adapters/hermes, bridge: mcp+skills+.hermes.md }
+
+tests:
+  deepseek: docs/TEST-GUIDE-deepseek.md
+  hermes: docs/TEST-GUIDE-hermes.md
+  machineBootstrap: docs/MACHINE-BOOTSTRAP.md
+  bridge: adapters/BRIDGE-CONTRACT.md

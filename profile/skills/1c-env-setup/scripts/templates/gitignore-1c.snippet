@@ -1,0 +1,22 @@
+# Vanessa / OPM (локальные зависимости не используем — vrunner 3 глобально)
+/oscript_modules/
+/packagedef
+/build/
+.build/
+env.local.json
+env.json.v26.bak
+lastUploadedCommit.txt
+
+# Бинарники 1С
+*.cf
+*.cfe
+*.epf
+*.erf
+*.dt
+
+# Cursor (канон rules в профиле; в проекте .cursor/rules — hardlink /H файлов из канона, gitignore; MCP live — project)
+.cursor/skills/
+.cursor/rules/
+.cursor/mcp.json
+# пример без секретов — в git; рабочие секреты только в mcp.json (выше)
+!.cursor/mcp.json.example

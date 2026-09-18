@@ -1,0 +1,310 @@
+﻿<?xml version="1.0" encoding="UTF-8"?>
+<MetaDataObject xmlns="http://v8.1c.ru/8.3/MDClasses" xmlns:app="http://v8.1c.ru/8.2/managed-application/core" xmlns:cfg="http://v8.1c.ru/8.1/data/enterprise/current-config" xmlns:cmi="http://v8.1c.ru/8.2/managed-application/cmi" xmlns:ent="http://v8.1c.ru/8.1/data/enterprise" xmlns:lf="http://v8.1c.ru/8.2/managed-application/logform" xmlns:style="http://v8.1c.ru/8.1/data/ui/style" xmlns:sys="http://v8.1c.ru/8.1/data/ui/fonts/system" xmlns:v8="http://v8.1c.ru/8.1/data/core" xmlns:v8ui="http://v8.1c.ru/8.1/data/ui" xmlns:web="http://v8.1c.ru/8.1/data/ui/colors/web" xmlns:win="http://v8.1c.ru/8.1/data/ui/colors/windows" xmlns:xen="http://v8.1c.ru/8.3/xcf/enums" xmlns:xpr="http://v8.1c.ru/8.3/xcf/predef" xmlns:xr="http://v8.1c.ru/8.3/xcf/readable" xmlns:xs="http://www.w3.org/2001/XMLSchema" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" version="2.20">
+	<HTTPService uuid="2dd1c31b-3622-4a51-a740-af0f5ee4e3c1">
+		<Properties>
+			<Name>NinjaLive_Сервис</Name>
+			<Synonym>
+				<v8:item>
+					<v8:lang>ru</v8:lang>
+					<v8:content>1CNinjaLive</v8:content>
+				</v8:item>
+			</Synonym>
+			<Comment/>
+			<RootURL>ninja-live</RootURL>
+			<ReuseSessions>DontUse</ReuseSessions>
+			<SessionMaxAge>20</SessionMaxAge>
+		</Properties>
+		<ChildObjects>
+			<URLTemplate uuid="a4c3ced4-64df-4bae-a9e0-d748ed42233f">
+				<Properties>
+					<Name>Версия</Name>
+					<Synonym>
+						<v8:item>
+							<v8:lang>ru</v8:lang>
+							<v8:content>Версия</v8:content>
+						</v8:item>
+					</Synonym>
+					<Comment/>
+					<Template>/version</Template>
+				</Properties>
+				<ChildObjects>
+					<Method uuid="a26b7527-920f-4fd9-bad9-7cd44782ee16">
+						<Properties>
+							<Name>GET</Name>
+							<Synonym>
+								<v8:item>
+									<v8:lang>ru</v8:lang>
+									<v8:content>GET</v8:content>
+								</v8:item>
+							</Synonym>
+							<Comment/>
+							<HTTPMethod>GET</HTTPMethod>
+							<Handler>ВерсияGET</Handler>
+						</Properties>
+					</Method>
+				</ChildObjects>
+			</URLTemplate>
+			<URLTemplate uuid="42391b6e-37ce-4603-a480-c49691523979">
+				<Properties>
+					<Name>Запрос</Name>
+					<Synonym>
+						<v8:item>
+							<v8:lang>ru</v8:lang>
+							<v8:content>Запрос</v8:content>
+						</v8:item>
+					</Synonym>
+					<Comment/>
+					<Template>/query</Template>
+				</Properties>
+				<ChildObjects>
+					<Method uuid="ccd803f1-78df-4824-9d87-4fd2b9d1f143">
+						<Properties>
+							<Name>POST</Name>
+							<Synonym>
+								<v8:item>
+									<v8:lang>ru</v8:lang>
+									<v8:content>POST</v8:content>
+								</v8:item>
+							</Synonym>
+							<Comment/>
+							<HTTPMethod>POST</HTTPMethod>
+							<Handler>ЗапросPOST</Handler>
+						</Properties>
+					</Method>
+				</ChildObjects>
+			</URLTemplate>
+			<URLTemplate uuid="ea18a1a8-99ad-4e57-97af-6b26c6c61b31">
+				<Properties>
+					<Name>ПроверкаЗапроса</Name>
+					<Synonym>
+						<v8:item>
+							<v8:lang>ru</v8:lang>
+							<v8:content>Проверка запроса</v8:content>
+						</v8:item>
+					</Synonym>
+					<Comment/>
+					<Template>/validate-query</Template>
+				</Properties>
+				<ChildObjects>
+					<Method uuid="a5828e1f-c443-49f1-a896-222e7ace9df6">
+						<Properties>
+							<Name>POST</Name>
+							<Synonym>
+								<v8:item>
+									<v8:lang>ru</v8:lang>
+									<v8:content>POST</v8:content>
+								</v8:item>
+							</Synonym>
+							<Comment/>
+							<HTTPMethod>POST</HTTPMethod>
+							<Handler>ПроверкаЗапросаPOST</Handler>
+						</Properties>
+					</Method>
+				</ChildObjects>
+			</URLTemplate>
+			<URLTemplate uuid="eb60bf3d-ba7d-4b86-a6bc-54fcc9d5a712">
+				<Properties>
+					<Name>ПроверкаСинтаксиса</Name>
+					<Synonym>
+						<v8:item>
+							<v8:lang>ru</v8:lang>
+							<v8:content>Проверка синтаксиса</v8:content>
+						</v8:item>
+					</Synonym>
+					<Comment/>
+					<Template>/check-syntax</Template>
+				</Properties>
+				<ChildObjects>
+					<Method uuid="31032f1d-3ba8-4dc4-836e-b30e116d46b2">
+						<Properties>
+							<Name>POST</Name>
+							<Synonym>
+								<v8:item>
+									<v8:lang>ru</v8:lang>
+									<v8:content>POST</v8:content>
+								</v8:item>
+							</Synonym>
+							<Comment/>
+							<HTTPMethod>POST</HTTPMethod>
+							<Handler>ПроверкаСинтаксисаPOST</Handler>
+						</Properties>
+					</Method>
+				</ChildObjects>
+			</URLTemplate>
+			<URLTemplate uuid="6a747dda-97ba-4547-b885-1f4467e176f3">
+				<Properties>
+					<Name>Выполнить</Name>
+					<Synonym>
+						<v8:item>
+							<v8:lang>ru</v8:lang>
+							<v8:content>Выполнить код</v8:content>
+						</v8:item>
+					</Synonym>
+					<Comment/>
+					<Template>/execute</Template>
+				</Properties>
+				<ChildObjects>
+					<Method uuid="ba7c39bf-0b1b-4f7a-b1fd-c2beec14fce7">
+						<Properties>
+							<Name>POST</Name>
+							<Synonym>
+								<v8:item>
+									<v8:lang>ru</v8:lang>
+									<v8:content>POST</v8:content>
+								</v8:item>
+							</Synonym>
+							<Comment/>
+							<HTTPMethod>POST</HTTPMethod>
+							<Handler>ВыполнитьPOST</Handler>
+						</Properties>
+					</Method>
+				</ChildObjects>
+			</URLTemplate>
+			<URLTemplate uuid="f5827267-947f-41ba-a0f7-1bfa173c222f">
+				<Properties>
+					<Name>Вычислить</Name>
+					<Synonym>
+						<v8:item>
+							<v8:lang>ru</v8:lang>
+							<v8:content>Вычислить выражение</v8:content>
+						</v8:item>
+					</Synonym>
+					<Comment/>
+					<Template>/eval</Template>
+				</Properties>
+				<ChildObjects>
+					<Method uuid="4dc0b39f-dfac-46f6-ae7b-1906edcb9b37">
+						<Properties>
+							<Name>POST</Name>
+							<Synonym>
+								<v8:item>
+									<v8:lang>ru</v8:lang>
+									<v8:content>POST</v8:content>
+								</v8:item>
+							</Synonym>
+							<Comment/>
+							<HTTPMethod>POST</HTTPMethod>
+							<Handler>ВычислитьPOST</Handler>
+						</Properties>
+					</Method>
+				</ChildObjects>
+			</URLTemplate>
+			<URLTemplate uuid="76f25e69-5e3c-40f5-994e-a4c2be3cdc60">
+				<Properties>
+					<Name>ЖурналРегистрации</Name>
+					<Synonym>
+						<v8:item>
+							<v8:lang>ru</v8:lang>
+							<v8:content>Журнал регистрации</v8:content>
+						</v8:item>
+					</Synonym>
+					<Comment/>
+					<Template>/event-log</Template>
+				</Properties>
+				<ChildObjects>
+					<Method uuid="547834a8-0125-46d2-8482-488b18439822">
+						<Properties>
+							<Name>POST</Name>
+							<Synonym>
+								<v8:item>
+									<v8:lang>ru</v8:lang>
+									<v8:content>POST</v8:content>
+								</v8:item>
+							</Synonym>
+							<Comment/>
+							<HTTPMethod>POST</HTTPMethod>
+							<Handler>ЖурналРегистрацииPOST</Handler>
+						</Properties>
+					</Method>
+				</ChildObjects>
+			</URLTemplate>
+			<URLTemplate uuid="54e27352-0a59-4783-917c-2f312bf44e3a">
+				<Properties>
+					<Name>СписокМетаданных</Name>
+					<Synonym>
+						<v8:item>
+							<v8:lang>ru</v8:lang>
+							<v8:content>Список метаданных</v8:content>
+						</v8:item>
+					</Synonym>
+					<Comment/>
+					<Template>/metadata-list</Template>
+				</Properties>
+				<ChildObjects>
+					<Method uuid="c20c98f6-6ff9-4cf4-a7df-048066fa876b">
+						<Properties>
+							<Name>POST</Name>
+							<Synonym>
+								<v8:item>
+									<v8:lang>ru</v8:lang>
+									<v8:content>POST</v8:content>
+								</v8:item>
+							</Synonym>
+							<Comment/>
+							<HTTPMethod>POST</HTTPMethod>
+							<Handler>СписокМетаданныхPOST</Handler>
+						</Properties>
+					</Method>
+				</ChildObjects>
+			</URLTemplate>
+			<URLTemplate uuid="740e9aa7-06ba-4442-9955-a5f1c9a92ae7">
+				<Properties>
+					<Name>СтруктураМетаданных</Name>
+					<Synonym>
+						<v8:item>
+							<v8:lang>ru</v8:lang>
+							<v8:content>Структура метаданных</v8:content>
+						</v8:item>
+					</Synonym>
+					<Comment/>
+					<Template>/metadata-structure</Template>
+				</Properties>
+				<ChildObjects>
+					<Method uuid="d0abb725-38da-418e-81f4-dc9314edfcf1">
+						<Properties>
+							<Name>POST</Name>
+							<Synonym>
+								<v8:item>
+									<v8:lang>ru</v8:lang>
+									<v8:content>POST</v8:content>
+								</v8:item>
+							</Synonym>
+							<Comment/>
+							<HTTPMethod>POST</HTTPMethod>
+							<Handler>СтруктураМетаданныхPOST</Handler>
+						</Properties>
+					</Method>
+				</ChildObjects>
+			</URLTemplate>
+			<URLTemplate uuid="5dd68ea3-5df4-4edb-8fad-6213e9c0befc">
+				<Properties>
+					<Name>СписокРасширений</Name>
+					<Synonym>
+						<v8:item>
+							<v8:lang>ru</v8:lang>
+							<v8:content>Список расширений</v8:content>
+						</v8:item>
+					</Synonym>
+					<Comment/>
+					<Template>/extensions-list</Template>
+				</Properties>
+				<ChildObjects>
+					<Method uuid="4e43ffef-1452-4021-8a51-c183e555501a">
+						<Properties>
+							<Name>POST</Name>
+							<Synonym>
+								<v8:item>
+									<v8:lang>ru</v8:lang>
+									<v8:content>POST</v8:content>
+								</v8:item>
+							</Synonym>
+							<Comment/>
+							<HTTPMethod>POST</HTTPMethod>
+							<Handler>СписокРасширенийPOST</Handler>
+						</Properties>
+					</Method>
+				</ChildObjects>
+			</URLTemplate>
+		</ChildObjects>
+	</HTTPService>
+</MetaDataObject>

@@ -1,0 +1,21 @@
+{
+  "version": 1,
+  "description": "Чёрный список: жёсткий .v8-project / замена vrunner-autumn. Purge из quarantine, в live из апстрима не копировать.",
+  "skills": [
+    "db-list",
+    "db-create",
+    "db-cfe-admin",
+    "db-run",
+    "db-update",
+    "db-dump-cf",
+    "db-dump-dt",
+    "db-load-cf",
+    "db-load-dt",
+    "db-load-xml",
+    "web-publish",
+    "epf-build",
+    "erf-build",
+    "epf-dump",
+    "erf-dump"
+  ]
+}

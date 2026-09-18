@@ -1,0 +1,30 @@
+{
+  "_comment": "Example MCP servers for DeepSeek Harness. Copy into your DSH MCP config; replace placeholders. Do not commit secrets.",
+  "mcpServers": {
+    "vrunner": {
+      "command": "%LOCALAPPDATA%\\ovm\\current\\bin\\vrunner-mcp.bat"
+    },
+    "1c-mcp-toolkit": {
+      "url": "http://127.0.0.1:6003/mcp",
+      "type": "streamable-http"
+    },
+    "1c-ninja-mcp": {
+      "command": "oscript",
+      "args": ["<KIT_ROOT>\\components\\1c-ninja-mcp\\main.os"],
+      "env": {
+        "SHCNTX_HELP_DB": "<KIT_ROOT>\\components\\1c-ninja-mcp\\src\\data\\shcntx_help.db",
+        "NINJA_URL": "http://localhost:8083/<APP_NAME>/hs/ninja-live",
+        "NINJA_USER": "<IB_USER>",
+        "NINJA_PASSWORD": "<IB_PASSWORD>"
+      }
+    },
+    "bsl-analyzer-reference": {
+      "command": "%LOCALAPPDATA%\\bsl-analyzer\\bsl-analyzer.exe",
+      "args": ["mcp", "serve", "--profile", "reference"]
+    },
+    "bsl-analyzer-workspace": {
+      "command": "%LOCALAPPDATA%\\bsl-analyzer\\bsl-analyzer.exe",
+      "args": ["mcp", "serve", "--profile", "workspace", "--source-dir", "<PROJECT_ROOT>"]
+    }
+  }
+}

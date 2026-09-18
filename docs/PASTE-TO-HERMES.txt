@@ -1,0 +1,7 @@
+PASTE TO HERMES TESTER (ANALYST)
+
+1) Clone 1c-ninja-kit from GitHub (URL from owner).
+2) If machine soft missing: docs/MACHINE-BOOTSTRAP.md
+3) Follow docs/TEST-GUIDE-hermes.md exactly
+4) Write log to logs/test-hermes-<timestamp>.md (mask passwords)
+5) Send log path + verdict (pass|partial|fail) back to owner

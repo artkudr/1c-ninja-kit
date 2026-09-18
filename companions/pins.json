@@ -1,0 +1,22 @@
+{
+  "bslAnalyzer": {
+    "exe": "%LOCALAPPDATA%\\bsl-analyzer\\bsl-analyzer.exe",
+    "note": "Binary not vendored in kit; doctor checks path"
+  },
+  "mcpToolkit": {
+    "url": "http://127.0.0.1:6003/mcp",
+    "epfDefault": "C:\\1C\\soft\\MCP_Toolkit.epf",
+    "note": "EPF binary not vendored; fallback live if ninja unavailable"
+  },
+  "1cNinjaMcp": {
+    "inKit": true,
+    "path": "components/1c-ninja-mcp",
+    "entry": "main.os",
+    "pair": "project-scaffold/cfe/NinjaLive",
+    "note": "Part of kit — not an external companion pin"
+  },
+  "apache": {
+    "8.3": { "port": 8083, "toolsDir": "%USERPROFILE%\\tools\\apache-83" },
+    "8.5": { "port": 8085, "toolsDir": "%USERPROFILE%\\tools\\apache-85" }
+  }
+}

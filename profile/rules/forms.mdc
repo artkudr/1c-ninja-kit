@@ -1,0 +1,24 @@
+---
+description: Router for managed-form work in ecoladev — skills first, companion methodology rules on demand
+alwaysApply: false
+---
+
+<!-- ecoladev-adapted cherry-pick of forms.md; no forms-add / metadata-manage -->
+
+# Managed forms — entry (ecoladev)
+
+Сначала этот роутер, затем только нужные companions. Структуру формы **не** правь руками — скиллы `form-info` / `form-edit` / `form-compile` / `form-validate` / `form-add`.
+
+## Routing
+
+| Задача | Действие |
+|--------|----------|
+| Создать / структурно менять форму | `form-add` / `form-edit` / `form-compile` → `form-validate` |
+| Обработчики событий | `forms-events-add` + логика в модуле |
+| BSL модуля формы | `form-module` patterns в `1c-code-agent`; reserved names → `form-reserved-names` |
+| Регионы нового модуля | `module-structure` |
+| Client/server / round-trips | `1c-architect`, `anti-patterns` |
+| `Асинх` / `Ждать` | `async-methods` |
+| Adopted форма CFE | `extension-patterns`, `cfe-patch-method` |
+
+Не подгружай весь набор forms-* «на всякий случай». Не используй upstream `forms-add` / `1c-metadata-manage` — канон ecoladev skills.

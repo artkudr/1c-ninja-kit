@@ -1,0 +1,38 @@
+---
+description: Обязательный процесс правки конфигурации/расширения в XML-выгрузке: через скиллы правки, затем валидация и загрузка изменений в ИБ.
+alwaysApply: true
+---
+
+# Процесс разработки 1С в XML-выгрузке
+
+Применяется всегда при работе с исходниками конфигурации (`src/cf`), расширений (`src/cfe`), внешних обработок/отчётов (`src/epf`, `src/erf`).
+
+## Жёсткие правила
+
+- **Не редактируй XML-файлы 1С напрямую руками.** Все изменения структуры конфигурации, расширения, форм, макетов, СКД, ролей, подсистем, командного интерфейса выполняй через профильные скиллы: `meta-*`, `form-*`, `skd-*`, `mxl-*`, `role-*`, `subsystem-*`, `interface-*`, `cfe-*`, `epf-*`, `erf-*`, `xdto-*`. Для расширений из `repository.json` операции хранилища — скилл `repo-workflow` (`repo.ps1`).
+- Не создавай вручную каталоги и файлы `Forms`, `Commands`, `Templates`, `Ext/Template.*`, `Ext/Form.xml`, `Ext/Rights.xml`, `CommandInterface.xml` и записи `ChildObjects`, если для операции есть скилл.
+- **Каждую правку структуры сопровождай валидацией** тем же профильным скиллом `*-validate` (metadata, form, skd, mxl, subsystem, role, external object, configuration).
+- **Версионирование обязательно:** при каждой смене состава функционала расширения (CFE) или внешней обработки/отчёта (EPF/ERF) повышай версию по скиллу `1c-versioning` (схема `X.Y.Z.W`: релиз / новый самостоятельный функционал, которого в объекте не было / развитие уже существующего сценария / мелкая доработка). Начальная версия пустого объекта — `0.1.0.0`. Не путай новый сценарий в «большом» расширении с небольшим блоком: если возможности ещё не было — это второе число (Y), не третье (Z).
+- После правок BSL в конфигурации (`src/cf`) или в расширениях **без** хранилища — синтаксический контроль: MCP **vrunner** `validate_syntax_check` (CLI: `vrunner validate syntax-check`). Для EPF/ERF — профильная валидация и сборка, без полного синтакс-контроля конфигурации.
+- Для CFE из `repository.json` — полный цикл **`repo-workflow`**: после правки BSL — `diagnostics file` + `cfe-validate`; load `-SkipWebTest` через `repo.ps1`; затем MCP `validate_syntax_check` (+ `AllExtensions`), autumn live при доступности, короткий релевантный web; только потом commit. Пользователь не обязан каждый раз отдельно просить эти гейты.
+- Перед загрузкой в ИБ покажи пользователю, что менялось (summary изменений) и что будет загружено.
+- Загрузку в ИБ выполняй через MCP **vrunner** (vanessa-runner 3) или скилл `repo-workflow` — не запускай `1cv8`/Конфигуратор вручную, не используй Platform Tools MCP / реестр PT. Платформа только через autumn/vrunner. Платформенный фаллбек на другой скилл/CLI запрещён: vrunner недоступен → стоп.
+  - основная конфигурация (`src/cf`): MCP `cf_load` с increment (полная загрузка — без increment);
+  - расширение из `repository.json`: цикл `repo-workflow` (lock → правка → гейты → load `-SkipWebTest` → гейты → commit). Не `cfe_load` и не `compileext`; канон — `repo.ps1`, не MCP `repo_*`;
+  - расширение без хранилища: MCP `cfe_load`;
+  - внешние обработки/отчёты: MCP `epf_compile` → **`out=./build/out/epf`** или **`out=./build/out/erf`** (не в корень `build/`).
+- Изменения в конфигурацию/расширение вноси в ИБ только после успешной валидации и гейтов цикла (для `src/cf` / CFE без хранилища — syntax-check; для CFE из `repository.json` — гейты `repo-workflow`).
+
+## Порядок для типовой задачи
+
+1. Найди объект: `meta-info` / `form-info` / `skd-info` (или `v8vscedit_*`, если активен контур v8vscedit).
+2. Если это расширение из `repository.json` — сначала захват по `repo-workflow` (новая метаданка: всё расширение).
+3. Измени через профильный `*-edit` / `*-compile` / `cfe-borrow` / `cfe-patch-method` / `epf-bsp-*`. Для CFE подними версию (`1c-versioning`). Собственный объект расширения — с префиксом и `ObjectBelonging>Native`.
+4. Прогони `*-validate` того же типа; устрани ошибки.
+5. Если менялся BSL в `src/cf` или в CFE **без** хранилища — запусти MCP `validate_syntax_check` (CLI: `vrunner validate syntax-check`). Для CFE из `repository.json` — гейты из `repo-workflow` (не пропускать). Для EPF/ERF вместо полного синтакс-контроля конфигурации — профильная валидация и сборка.
+6. Загрузи в ИБ: `src/cf` → `cf_load` (increment); CFE из `repository.json` → `repo-workflow` load `-SkipWebTest`, гейты после load, затем commit; прочее CFE → `cfe_load`; EPF → `epf_compile` out=`build/out/epf`; ERF → `epf_compile` out=`build/out/erf`.
+7. При необходимости дополнительные тесты: CLI `vrunner test xunit` / `vrunner test vanessa` (или соответствующие MCP tools).
+
+## Если MCP/инструменты недоступны
+
+Остановись и сообщи, что недоступно. Не обходи это прямой правкой XML.

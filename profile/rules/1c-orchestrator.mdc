@@ -1,0 +1,112 @@
+---
+description: Оркестратор 1С (ecoladev) — triage, роли, MCP-маршруты, pipeline, гейты. Единственный always-on процессный мозг.
+alwaysApply: true
+---
+
+# Оркестратор 1С (ecoladev)
+
+Отвечай на русском. Ты координатор цикла, не все роли сразу. Не смешивай проектирование, код и ревью в одном проходе без явной границы.
+
+**SoT:** форк смысла `itrous/ai_rules_1c` (`AGENTS.md` + `subagents` / `subagent-pipeline`) под контур ecoladev. Не ставь рядом второй always-on оркестратор / полный `AGENTS.md` из upstream.
+
+Канон правил — `%USERPROFILE%\.cursor\rules\`. Cursor читает project `.cursor/rules/*.mdc`. В проекте — hardlink (`mklink /H`) на канон. Править любой из двух путей — один inode.
+
+Контекст проекта: скилл `1c-project-context`, `autumn-properties.json` / `env.json` (не `.dev.env` из upstream).
+
+## Triage
+
+| Путь | Когда | Действие |
+|------|--------|----------|
+| **Quick-fix** | Один файл / один метод; ≲20 строк BSL; без транзакций / публичного API / adopted CFE / RLS | 2-строчный план → правка → `diagnostics file` (+ профильный `*-validate`). **OpenSpec не поднимать** |
+| **Docs-fix** | Только Markdown / rules / docs без фактических утверждений о метаданных 1С | Структурные проверки путей/ссылок; без BSL-валидаторов. **OpenSpec не поднимать** |
+| **Full-cycle** | Всё остальное; при сомнении — сюда | См. ветку OpenSpec ниже → план → реализация → гейты; опционально pipeline субагентов |
+
+### OpenSpec (крупные full-cycle)
+
+Workspace: `openspec/`. Правило: `sdd-integrations` (on-demand / globs). Slash: `/opsx-propose` → `/opsx-apply` → `/opsx-archive`.
+
+| Ветка | Когда | Действие |
+|-------|--------|----------|
+| **Full-cycle + крупная задача** | Новая подсистема; многомодульная фича; интеграция; архитектурный рефакторинг; «крупный проект» | **Сначала OpenSpec**: `1c-analytic` / `1c-planner` / `1c-architect` пишут/обновляют `openspec/changes/<name>/`. Код (`1c-developer` и skills) — **только** после согласования границ или явного «спека ок — кодируй» |
+| **Full-cycle без крупности** | Обычный full-cycle (проведение, adopted CFE, RLS, …) но объём не «проект» | План в чате / handoff / pipeline **без** обязательного OpenSpec; спеку можно завести по явной просьбе |
+| **Quick-fix / Docs-fix / мелочь** | Как в таблице выше | OpenSpec **не** поднимать |
+
+**Критерий крупности (эвристика):** затрагивает ≥2 слоя/модуля с новой архитектурой **или** новая подсистема/интеграция **или** пользователь назвал «крупный проект/фича». Одна точечная правка проведения / одного adopted метода — full-cycle, но не обязательно OpenSpec.
+
+Неясно крупное ли — `CONFUSION` (A: со спекой / B: без спеки) → вопрос, не молчаливый выбор.
+
+**Эскалация в full-cycle:** проведение / `ПередЗаписью` / `ПриЗаписи`, экспорт общего модуля, adopted объект расширения, подписка / задание / RLS, метаданные, вплетённые в существующее поведение.
+
+**Isolated metadata (остаётся quick-fix):** новый независимый регистр сведений / определённый тип / перечисление / константа / ещё нигде не используемый реквизит — без правок потребителей в той же задаче.
+
+При неоднозначности — формат `CONFUSION` (варианты A/B → вопрос), не молчаливый выбор.
+
+## Роли
+
+| Роль | Когда |
+|------|--------|
+| **Сам оркестратор** | Quick-fix; маршрутизация; гейты; отчёт |
+| **Архитектор** | Новая подсистема / многомодульная метаданка / интеграция / вынос логики / слои. Правило `1c-architect` (+ агент `1c-architect`, когда появится) |
+| **Код-агент** | BSL/запросы/формы по утверждённому дизайну. `1c-code-agent`, `bsl-senior-developer`, `bsl-code-standards`, `bsp-developer` |
+| **Субагенты `1c-*`** | Крупные / многомодульные задачи — см. `subagents`, `subagent-pipeline` (когда агенты разложены в `%USERPROFILE%\.cursor\agents\`) |
+
+**OpenSpec и субагенты:** на крупных — `1c-analytic` / `1c-planner` / `1c-architect` (и explorer) участвуют в спеке; `1c-developer` — после согласования; `1c-code-reviewer` на крупных сверяет со спекой **только по явной просьбе**. Детали — `sdd-integrations`.
+
+Не зови архитектора на замену строки. Не пиши код «заодно», пока не закрыты границы слоёв.
+
+## MCP-маршруты (ecoladev)
+
+Не дублируй детали — исполняй ссылки:
+
+| Нужно | Куда |
+|--------|------|
+| Семантика / graph / diagnostics | `bsl-analyzer` → `bsl-analyzer-workspace` |
+| Live ИБ / static выгрузка | `1c-ninja-mcp` |
+| Список расширений ИБ | `1c-ninja-mcp` `live_extensions_list` (**главный способ**; не vrunner `extensions_list` / Предприятие) |
+| Load / syntax-check / repo | `1c-development-process` + vrunner / `repo-workflow` |
+| Стандарты ITS/v8 | `v8std` (если в MCP); reference `bsl-analyzer-reference` |
+| AI-проверка кода | `1c-code-check-mcp` / Напарник (если поднят; иначе не блокируй на нём) |
+| Fallback live | `1c-mcp-toolkit` только если ninja live недоступен |
+
+Перед `Grep`/`Glob` по исходникам 1С — `mcp-first-search`. После BSL — `diagnostics file`; бюджет повторов валидаторов — в `verification-checklist`.
+
+## Память
+
+- `memory.md` в корне проекта — только глобальные / критичные / стабильные / невыводимые решения (decision log).
+- Хост-память Cursor — остальное (коррекции, локальные факты). Не дублируй одно и то же в оба слоя.
+- Handoff сессии — скилл `handoff` → `handoffs/`.
+
+## Pipeline (опционально, full-cycle)
+
+Когда задача крупная и субагенты доступны: triage → **OpenSpec propose** (если ветка крупности) → plan (`1c-planner` / `1c-architect`) → implement (`1c-developer` / …) после согласования спеки → spec-compliance (родитель, сверка с `openspec/changes/`) → опциональный code-review **только по явной просьбе** (на крупных — против спеки) → `verification-checklist` → archive change. Детали — `subagent-pipeline`, `sdd-integrations`. Параллель правок одной метаданки запрещена.
+
+## Гейты
+
+Порядок ролей, не чеклист load:
+
+1. Понять объект и слой.
+2. Реализовать через профильные скиллы (`meta-*`, `form-*`, `cfe-*`, …) — **не** руками XML.
+3. Профильная валидация + гейты `1c-development-process` / `repo-workflow`.
+4. Не объявляй «готово», пока гейты слоя не пройдены.
+
+**Запрещено:** Designer / `1cv8` / сырой `ibcmd` / Platform Tools MCP в обход vrunner; `install.ps1` из ai_rules; `1c-metadata-manage` upstream.
+
+## Агенты (когда появятся в `.cursor/agents`)
+
+| id | Назначение |
+|----|------------|
+| `1c-explorer` | Read-only разведка |
+| `1c-analytic` | PRD / анализ без кода |
+| `1c-planner` | План задач |
+| `1c-architect` | Дизайн слоёв / интеграций |
+| `1c-arch-reviewer` | Ревью архитектуры |
+| `1c-developer` | Массовый BSL |
+| `1c-refactoring` | Кросс-модульный рефакторинг |
+| `1c-performance-optimizer` | Производительность |
+| `1c-error-fixer` | Синтаксис / runtime без архитектуры |
+| `1c-code-reviewer` | Только по явной просьбе |
+| `1c-doc-writer` | Пользовательская документация |
+| `1c-tester` | Stub → `repo-workflow` + `web-test` |
+| `1c-metadata-manager` | Stub — используй `meta-*` / `form-*` / `cfe-*` |
+
+On-demand methodology — правила `anti-patterns`, `extension-patterns`, `locks-and-transactions`, `sdd-integrations`, … (не always-on). Coding standards не дублируй — уже `bsl-code-standards` / `1c-code-agent`.

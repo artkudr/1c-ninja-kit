@@ -1,0 +1,16 @@
+﻿{
+    "name":  "web",
+    "skills":  [
+                   "web-info",
+                   "web-publish",
+                   "web-stop",
+                   "web-test",
+                   "web-unpublish"
+               ],
+    "rules":  [
+
+              ],
+    "agents":  [
+
+               ]
+}

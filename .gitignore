@@ -1,0 +1,31 @@
+# 1c-ninja-kit gitignore
+
+# secrets / local IB
+autumn-properties.json
+env.json
+.env
+.dev.env
+**/.cursor/mcp.json
+**/*password*
+**/*.local.json
+
+# e2e agent logs may contain paths — keep locally
+logs/*
+!logs/README.md
+!logs/.gitkeep
+
+# caches / junk
+.build/
+**/__pycache__/
+**/.browser-session.json
+**/*.log
+node_modules/
+.DS_Store
+Thumbs.db
+
+# IDE
+.vscode/
+.idea/
+
+# OS
+desktop.ini

@@ -1,0 +1,17 @@
+---
+description: Thin architecture pointers (ecoladev) — delegates to 1c-architect; no coding-standards duplicate
+alwaysApply: false
+---
+
+<!-- ecoladev cherry-pick: not full upstream dev-standards-*; coding standards already in bsl-code-standards / 1c-code-agent -->
+
+# Dev-standards architecture (thin)
+
+1. **Слои / onion** — always load `1c-architect` for design boundaries.
+2. **Extensions** — `extension-patterns` + `cfe-*` skills; `&Перед`/`&После` важнее тяжёлого `&ИзменениеИКонтроль` без нужды.
+3. **Forms placement** — UI thin; business in domain modules (`1c-architect`).
+4. **Registers / DCS / locks / logging** — on-demand: `registers-design`, `dcs-design`, `locks-and-transactions`, `logging-strategy`.
+5. **Module regions** — `module-structure`.
+6. **Style / naming / BSP** — `bsl-code-standards`, `1c-code-agent`, `bsp-developer` (не тяни upstream `coding-standards.md`).
+
+XML структуры — только через `1c-development-process` skills. Load — только vrunner / `repo-workflow`.

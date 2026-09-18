@@ -1,0 +1,39 @@
+---
+description: MCP-first search — bsl-analyzer / ninja before Grep; mandatory justification before fallback
+alwaysApply: false
+---
+
+<!-- ecoladev-adapted from itrous/ai_rules_1c mcp-first-search -->
+
+# MCP-first search (ecoladev)
+
+Для любого поиска по **исходникам 1С** (код, метаданные, usages, граф, формы) сначала индекс/MCP проекта. `Grep` / `Glob` — **последний** шаг с явной причиной.
+
+## Цепочка
+
+1. **`bsl-analyzer-workspace`**
+   - `search` → `search_code` (семантика; если embeddings нет — сразу `find_code`)
+   - `search` → `find_code` (лексика / FTS)
+   - `graph` → `resolve` → `callers` / `callees` / `neighbors` / `node`
+   - `metadata` → `object` / `tree` / `form`
+2. **`1c-ninja-mcp`** (если нужен static по выгрузке / live) — `bsl_search`, `xml_search`, `read_module`, `live_*`
+3. **Скиллы** `meta-info` / `form-info` / `skd-info` — структура XML-объекта
+4. **Только затем** `Grep` / `Glob` — и только с 1–2 предложениями: что уже пробовали и почему не хватило
+
+Внешние: `bsl-analyzer-reference`, `v8std`, Напарник — по необходимости знаний, не как fallback поиска по проекту.
+
+## Быстрая таблица
+
+| Нужно | Сначала |
+|--------|---------|
+| Код по смыслу | `search_code` → `find_code` |
+| Точный идентификатор | `find_code` → затем Grep |
+| Процедура по имени | `graph resolve` → `node` |
+| Объект метаданных | `metadata object` / `meta-info` |
+| Usages / impact | `graph neighbors` / `callers` |
+| Форма | `metadata form` / `form-info` |
+| BSL в EPF/ERF (если в индексе) | `diagnostics file` / `search` / `graph` (см. `bsl-analyzer`, ключ `externals`) |
+| Стандарт | `v8std_search` + примеры в проекте |
+| API платформы | `syntax_help` / reference `search` |
+
+`Grep` без MCP-попытки допустим для неиндексируемого: `.md`, rules, `handoffs/`, логи, JSON конфигов.

@@ -1,0 +1,19 @@
+# Aggregate profile — default apply target
+name: 1c-ninja-kit
+version: 0.1.0
+description: Full Cursor profile pack (skills + rules + agents) for 1C agent toolchain
+packs:
+  - core
+  - xml-edit
+  - web
+  - fresh
+  - openspec
+  - extras-mcp
+includes:
+  skills: profile/skills
+  rules: profile/rules
+  agents: profile/agents
+  docsPatches: profile/docs-patches
+components:
+  - components/1c-ninja-mcp
+  - project-scaffold/cfe/NinjaLive

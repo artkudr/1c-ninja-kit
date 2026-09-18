@@ -1,0 +1,66 @@
+# mcp_servers fragment for Hermes (~/.hermes/config.yaml)
+
+# Paste under top-level key mcp_servers: (merge with existing).
+# Replace KIT_ROOT, APP_NAME, credentials. Do not commit secrets.
+
+# vrunner:
+#   command: "C:\\Users\\<you>\\AppData\\Local\\ovm\\current\\bin\\vrunner-mcp.bat"
+#   enabled: true
+#   timeout: 300
+
+# 1c-mcp-toolkit:
+#   url: "http://127.0.0.1:6003/mcp"
+#   enabled: true
+
+# 1c-ninja-mcp:
+#   command: "oscript"
+#   args:
+#     - "C:\\path\\to\\1c-ninja-kit\\components\\1c-ninja-mcp\\main.os"
+#   env:
+#     SHCNTX_HELP_DB: "C:\\path\\to\\1c-ninja-kit\\components\\1c-ninja-mcp\\src\\data\\shcntx_help.db"
+#     NINJA_URL: "http://localhost:8083/<APP_NAME>/hs/ninja-live"
+#     NINJA_USER: "<IB_USER>"
+#     NINJA_PASSWORD: "<IB_PASSWORD>"
+#   enabled: true
+#   timeout: 120
+
+# bsl-analyzer-reference:
+#   command: "C:\\Users\\<you>\\AppData\\Local\\bsl-analyzer\\bsl-analyzer.exe"
+#   args: ["mcp", "serve", "--profile", "reference"]
+#   enabled: true
+
+# bsl-analyzer-workspace:
+#   command: "C:\\Users\\<you>\\AppData\\Local\\bsl-analyzer\\bsl-analyzer.exe"
+#   args: ["mcp", "serve", "--profile", "workspace", "--source-dir", "C:\\path\\to\\project"]
+#   enabled: true
+
+vrunner:
+  command: "%LOCALAPPDATA%\\ovm\\current\\bin\\vrunner-mcp.bat"
+  enabled: true
+  timeout: 300
+
+1c-mcp-toolkit:
+  url: "http://127.0.0.1:6003/mcp"
+  enabled: true
+
+1c-ninja-mcp:
+  command: "oscript"
+  args:
+    - "<KIT_ROOT>\\components\\1c-ninja-mcp\\main.os"
+  env:
+    SHCNTX_HELP_DB: "<KIT_ROOT>\\components\\1c-ninja-mcp\\src\\data\\shcntx_help.db"
+    NINJA_URL: "http://localhost:8083/<APP_NAME>/hs/ninja-live"
+    NINJA_USER: "<IB_USER>"
+    NINJA_PASSWORD: "<IB_PASSWORD>"
+  enabled: true
+  timeout: 120
+
+bsl-analyzer-reference:
+  command: "%LOCALAPPDATA%\\bsl-analyzer\\bsl-analyzer.exe"
+  args: ["mcp", "serve", "--profile", "reference"]
+  enabled: true
+
+bsl-analyzer-workspace:
+  command: "%LOCALAPPDATA%\\bsl-analyzer\\bsl-analyzer.exe"
+  args: ["mcp", "serve", "--profile", "workspace", "--source-dir", "<PROJECT_ROOT>"]
+  enabled: true

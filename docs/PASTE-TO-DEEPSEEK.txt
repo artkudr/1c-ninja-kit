@@ -1,0 +1,7 @@
+PASTE TO DEEPSEEK HARNESS AGENT / YOURSELF ON LAPTOP
+
+1) Clone 1c-ninja-kit from GitHub (URL from owner).
+2) If only 1C platform is installed: follow docs/MACHINE-BOOTSTRAP.md
+3) Follow docs/TEST-GUIDE-deepseek.md exactly
+4) Write log to logs/test-deepseek-<timestamp>.md (mask passwords)
+5) Send log path + verdict (pass|partial|fail) back to owner

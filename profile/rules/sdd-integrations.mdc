@@ -1,0 +1,154 @@
+---
+description: OpenSpec / SDD (ecoladev). Load when working under openspec/ or when orchestrator routes a large full-cycle feature through specs.
+alwaysApply: false
+globs: openspec/**
+---
+
+<!-- ecoladev-adapted from itrous/ai_rules_1c content/rules/sdd-integrations.md -->
+
+# SDD Integration — OpenSpec (ecoladev)
+
+[OpenSpec](https://github.com/Fission-AI/OpenSpec) — единственный SDD-контур в ecoladev. Memory Bank / Spec Kit / TaskMaster **не** поддерживаются.
+
+Layout и форматы — в workspace, не дублировать здесь:
+
+| Topic | File |
+|-------|------|
+| Layout, workflow, optional CLI | `openspec/README.md` |
+| Current specs | `openspec/specs/README.md` |
+| Changes / deltas | `openspec/changes/README.md` |
+| Templates | `openspec/templates/` |
+
+Перед записью артефактов — прочитать эти файлы.
+
+## Когда обязателен OpenSpec
+
+Включает **оркестратор** (`1c-orchestrator`), не это правило в одиночку.
+
+| Обязателен | Не поднимать |
+|------------|--------------|
+| Full-cycle **и** крупная задача: новая подсистема, многомодульная фича, интеграция, архитектурный рефакторинг, «крупный проект» | Quick-fix, Docs-fix, мелкая правка |
+| Пользователь явно сказал «через OpenSpec / спеку» | Isolated metadata без потребителей в той же задаче |
+
+При сомнении крупности — `CONFUSION` (A: со спекой / B: без), не молчать.
+
+Код (apply) — только после согласования границ proposal/design **или** явного «спека ок — кодируй».
+
+## Workflow
+
+```
+propose → согласование → apply → verify → archive
+```
+
+Slash (проект `.cursor/commands/`): `/opsx-propose` → `/opsx-apply` → `/opsx-archive`. Explore: `/opsx-explore`.
+
+1. **propose** — `openspec/changes/<kebab>/` из `templates/`; analytic/planner/architect пишут артефакты; факты через MCP.
+2. **apply** — developer (+ skills meta/form/cfe); решения из артефактов locked; гейты process.
+3. **verify** — `verification-checklist` + `1c-development-process` / `repo-workflow`.
+4. **archive** — слить delta в `openspec/specs/`, перенести change в `changes/archive/YYYY-MM-DD-<name>/`.
+
+CLI OpenSpec **не обязателен**. Если установлен — можно `openspec new change` / `status`; иначе ручной scaffold из templates.
+
+## Spec size triage (внутри OpenSpec)
+
+- **quick-spec** — один существующий объект метаданных ± 1–3 изолированных добавления (константа / РС без модуля / обработка-настройка). Без новых документов, оборотных/бухгалтерских регистров, ролей, подписок, заданий; без правок проведения / RLS / публичных сигнатур. *Evidence minimum:* точечный `metadata`/`graph resolve` + при опоре на БСП — `search` по модулям БСП в `src/cf`.
+- **full-spec** — всё остальное из крупного change. Полные pre-author checks ниже.
+
+Сомнение → начинай как quick-spec; при второй архитектурной новизне — promote to full-spec.
+
+## MCP discipline (факты только из MCP)
+
+Артефакты Markdown, но утверждения о 1С (имена, реквизиты, API, БСП, CompatibilityMode) — **только** после evidence. Путь spec-authoring из оркестратора.
+
+### Pre-author checks (full-spec; для quick-spec — minimum выше)
+
+Включай check только если закрывает конкретный `### Requirement:`. Презумпция — skip лишнего.
+
+1. **Память проекта** — `memory.md` + host memory, если тема пересекается с прошлым.
+2. **Метаданные** — `bsl-analyzer-workspace`: `graph resolve` / `metadata object|tree`; fallback `search` → ninja static → Grep (см. `mcp-first-search`). Не выдумывать имена.
+3. **Платформа** — `bsl-analyzer-reference` / `v8std` / Напарник при нормативных API; сверять с `CompatibilityMode` из `openspec/project.md`.
+4. **БСП** — `search` по `src/cf`; секреты → `БезопасноеХранилище`; ПДн → `ЗащитаПерсональныхДанных`.
+5. **Паттерны проекта** — есть ли аналог модуля/подхода перед новым.
+
+Stop: каждый Requirement можно записать конкретными именами без TBD по фактам MCP.
+
+### Forbidden in artifacts
+
+- TODO / «уточнить» по факту, который закрывает один MCP-вызов
+- Выдуманные метаданные / сигнатуры API из памяти при нормативных формулировках
+- Кросс-версионные допущения без CompatibilityMode
+- Defensive MCP «на всякий случай»
+
+### Context sources
+
+В конце каждого нетривиального артефакта:
+
+```markdown
+## Context sources
+Verified via MCP: `Документ.…`; БСП `…`; CompatibilityMode=…
+```
+
+Отсутствие блока на нетривиальной спеке — дефект (как пропуск `diagnostics file` на BSL).
+
+## Propose — спрашивать агрессивно
+
+Архитектурная неоднозначность (placement cf/cfe, границы транзакций, БСП, роли, публичные API) — **сейчас**, не на apply. Факты MCP — не спрашивать у пользователя. Мелочи без NFR — pin в design с rationale.
+
+Перед «Ready for implementation»:
+
+1. Re-read Requirements / design / tasks — implementer может кодировать без follow-up?
+2. Constraints / Out of scope — острые края?
+3. `## Open Questions` — только то, что реально зависит от будущих фактов; иначе закрыть сейчас
+4. Один batched раунд вопросов; повторить gate
+
+Forbidden: «уточнить при реализации», vague «при необходимости», два равных варианта без выбранного default.
+
+## Apply — один preflight, потом тишина
+
+Решения proposal/design/delta/tasks — **locked**. Не переспрашивать placement / storage / БСП / границы.
+
+Opening:
+
+```text
+Using change: <name>.
+
+## Locked from artifacts
+- …
+
+## Plan for this session
+- …
+
+## Genuine blockers
+- только Open Questions из design, чьи tasks в этой сессии
+- или реальный blocker окружения для ближайшего шага
+```
+
+Если blockers пусто — сразу код. Mid-loop вопросы — только live-state конфликт с артефактом или явный re-open пользователя. Иначе — дефект propose.
+
+Операционка: `autumn-properties.json` / `env.json` (не `.dev.env`). Не спрашивать advisory-пустышки «придумай PREFIX» без нужды артефакта.
+
+Реализация: skills `meta-*` / `form-*` / `cfe-*` / … — **не** руками XML; **не** Designer. Stub `1c-metadata-manager` не звать.
+
+После BSL: `diagnostics file`. Структура: `*-validate`. CFE из `repository.json`: `repo-workflow`. Иначе process (`cf_load` / `cfe_load` / syntax-check). Закрытие: `verification-checklist`.
+
+## Subagent mapping
+
+| Subagent | Writes / role |
+|----------|----------------|
+| `1c-explorer` | read-only findings |
+| `1c-analytic` | `proposal.md`, delta specs |
+| `1c-architect` | `design.md` |
+| `1c-planner` | `tasks.md` |
+| `1c-arch-reviewer` | review notes |
+| `1c-developer` / refactoring / perf / error-fixer | code; tick `tasks.md`; delta при смене поведения |
+| `1c-code-reviewer` | сверка со спекой (только по явной просьбе) |
+| `1c-tester` | сценарии из specs → web-test / repo gates |
+| `1c-doc-writer` | user docs из specs |
+
+Метаданные на apply — через skills, не metadata-manager.
+
+## Archive
+
+1. Проверить tasks / deltas
+2. Слить ADDED/MODIFIED/REMOVED в `openspec/specs/<domain>/spec.md`
+3. `moves` → `openspec/changes/archive/YYYY-MM-DD-<name>/`

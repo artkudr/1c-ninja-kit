@@ -1,0 +1,18 @@
+{
+  "version": 1,
+  "description": "Локальный overlay: при Promote никогда не затирать. Паттерны: точное имя или префикс с *.",
+  "skills": [
+    "1c-*",
+    "vrunner-mcp",
+    "repo-workflow",
+    "cursor-local-patches",
+    "composing-1c-queries",
+    "cfe-list",
+    "sync-cc-1c-skills",
+    "web-info",
+    "web-publish",
+    "web-stop",
+    "web-test",
+    "web-unpublish"
+  ]
+}

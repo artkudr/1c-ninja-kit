@@ -1,0 +1,45 @@
+{
+  "version": 1,
+  "description": "Мягкая зависимость от .v8-project: strip hooks (всегда deny / newObjectPosition=end) + path rewrite в SKILL/scripts. Применяет scripts/rewrite.ps1 к quarantine.",
+  "pathRewrite": {
+    "fromPatterns": [
+      "${CLAUDE_SKILL_DIR}/",
+      ".cursor/skills/<any-name>/",
+      ".claude/skills/<any-name>/"
+    ],
+    "toPattern": "%USERPROFILE%\\.cursor\\skills\\<any-name>\\",
+    "note": "Cross-skill refs rewritten too (e.g. erf-validate → epf-validate). __pycache__ removed at rewrite; promote uses robocopy /XD __pycache__."
+  },
+  "stripV8Hooks": [
+    "cf-edit",
+    "cfe-borrow",
+    "form-add",
+    "form-compile",
+    "form-edit",
+    "help-add",
+    "interface-edit",
+    "meta-compile",
+    "meta-edit",
+    "meta-remove",
+    "mxl-compile",
+    "role-compile",
+    "role-edit",
+    "skd-compile",
+    "skd-edit",
+    "subsystem-compile",
+    "subsystem-edit",
+    "template-add",
+    "xdto-compile",
+    "xdto-edit"
+  ],
+  "rewriteSkillOnly": [
+    "cfe-init",
+    "cfe-patch-method",
+    "cfe-validate",
+    "web-info",
+    "web-stop",
+    "web-unpublish",
+    "web-test"
+  ],
+  "transformsDeferred": false
+}

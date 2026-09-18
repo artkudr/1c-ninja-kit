@@ -1,0 +1,17 @@
+# PASTE THIS TO THE NEW-PROFILE AGENT
+
+Read and follow **exactly**:
+
+`C:\1C\projects\1c-ninja-kit\docs\AGENT-BRIEF-v0.2.md`
+
+Summary (details only in that file):
+
+1. Do **not** touch `C:\1C\projects\ecoladev` and do **not** run init there.
+2. Work from kit `C:\1C\projects\1c-ninja-kit` (VERSION 0.2.0).
+3. Create log: `C:\1C\projects\1c-ninja-kit\logs\e2e-v0.2-<YYYYMMDD-HHmm>.md` (mask passwords).
+4. Run: `kit.ps1 doctor` → `verify` → `apply -DryRun` → `apply`.
+5. Create fresh project `C:\1C\projects\ninja-kit-e2e` and `kit.ps1 init-project -ProjectPath ...` (not ecoladev).
+6. Live/NinjaLoad only if IB credentials are provided; otherwise verdict=`partial`.
+7. Reply to human with log path + verdict only.
+
+When done, human will paste your log back into another chat.

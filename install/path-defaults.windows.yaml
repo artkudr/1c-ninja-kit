@@ -1,0 +1,56 @@
+# Windows path defaults for 1c-ninja-kit (v0.1)
+# Agent MUST adapt on-site via docs/ADAPTATION.md — these are defaults, not secrets.
+
+ovm:
+  root: "%LOCALAPPDATA%\\ovm\\current"
+  oscript: "%LOCALAPPDATA%\\ovm\\current\\bin\\oscript.exe"
+  vrunner: "%LOCALAPPDATA%\\ovm\\current\\bin\\vrunner.bat"
+  vrunnerMcp: "%LOCALAPPDATA%\\ovm\\current\\bin\\vrunner-mcp.bat"
+
+bslAnalyzer:
+  exe: "%LOCALAPPDATA%\\bsl-analyzer\\bsl-analyzer.exe"
+  projectCache: "<project>\\.build"
+
+apache:
+  # Выбор по v8version проекта (major.minor)
+  "8.3":
+    port: 8083
+    toolsDir: "%USERPROFILE%\\tools\\apache-83"
+  "8.5":
+    port: 8085
+    toolsDir: "%USERPROFILE%\\tools\\apache-85"
+  notes:
+    - "Не копировать Apache в git проекта — только toolsDir на машине."
+    - "webUrl smoke всегда с суффиксом /ru_RU/."
+
+toolkit:
+  mcpUrl: "http://127.0.0.1:6003/mcp"
+  epfDefault: "C:\\1C\\soft\\MCP_Toolkit.epf"
+
+ninja:
+  # После apply/init: путь к MCP внутри kit (не отдельный sibling)
+  mcpMainRelative: "components/1c-ninja-mcp/main.os"
+  shcntxHelpDbRelative: "components/1c-ninja-mcp/src/data/shcntx_help.db"
+  liveRootUrlSuffix: "/hs/ninja-live"
+  env:
+    - NINJA_URL
+    - NINJA_USER
+    - NINJA_PASSWORD
+
+ibases:
+  v8i: "%APPDATA%\\1C\\1CEStart\\ibases.v8i"
+
+projectsLayout:
+  suggestedRoot: "C:\\1C\\projects"
+  kitRoot: "C:\\1C\\projects\\1c-ninja-kit"
+
+mcpPolicy:
+  userMcp: "%USERPROFILE%\\.cursor\\mcp.json"
+  userMustNotContain:
+    - vrunner
+    - 1c-ninja-mcp
+    - 1c-mcp-toolkit
+    - bsl-analyzer-reference
+    - bsl-analyzer-workspace
+  projectMcp: "<project>\\.cursor\\mcp.json"
+  projectMcpExample: "<project>\\.cursor\\mcp.json.example"

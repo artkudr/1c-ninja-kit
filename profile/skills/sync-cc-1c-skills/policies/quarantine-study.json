@@ -1,0 +1,9 @@
+{
+  "version": 1,
+  "description": "Не auto-promote. Держать в devccskills для ручного разбора (есть ценность vs vrunner).",
+  "skills": [
+    "db-dump-xml",
+    "db-load-git",
+    "db-repo"
+  ]
+}
