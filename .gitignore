@@ -6,6 +6,7 @@ env.json
 .env
 .dev.env
 **/.cursor/mcp.json
+**/components/1c-ninja-mcp/mcp.json
 **/*password*
 **/*.local.json
 
@@ -29,3 +30,9 @@ Thumbs.db
 
 # OS
 desktop.ini
+
+# build artifacts
+/build/
+kit-init-report.json
+repository.json
+
