@@ -3,10 +3,10 @@
 | Компонент | Где | Версия / заметка |
 |-----------|-----|------------------|
 | OneScript | OVM `%LOCALAPPDATA%\ovm\current` | ≥ 2.0.0 |
-| vanessa-runner | глобально `opm install vanessa-runner@SNAPSHOT` | 3.x |
+| vanessa-runner | глобально `opm install vanessa-runner@3.0.2` | 3.0.2 |
 | Skills / rules | `%USERPROFILE%\.cursor\skills\`, `%USERPROFILE%\.cursor\rules\` | канон в профиле; в проекте обычная папка `.cursor/rules` + hardlink (`mklink /H`) каждого `.mdc` (не folder junction, gitignore) |
 | MCP (user) | `%USERPROFILE%\.cursor\mcp.json` | **без** 1С-серверов (`mcpServers: {}`); иначе дубли с проектом |
-| MCP (project) | `.cursor/mcp.json` (gitignore; пример `mcp.json.example`) | полный эталон скилла: vrunner, toolkit, autumn live **этой** ИБ, bsl-analyzer reference+workspace |
+| MCP (project) | `.cursor/mcp.json` (gitignore; пример `mcp.json.example`) | полный эталон скилла: vrunner, toolkit, autumn live **этой** ИБ, bsl-analyzer reference+workspace, v8std |
 | Настройки ИБ | `autumn-properties.json` в корне проекта | vrunner 3 |
 | Хранилища CFE | `repository.json` в корне проекта | карта расширений → `repo-workflow` |
 | 1c-ninja-mcp live | project env `NINJA_URL` / `NINJA_USER` / `NINJA_PASSWORD` | приоритет для запросов/метаданных ИБ; CFE `NinjaLive` + Apache `/hs/ninja-live`. Список CFE в ИБ: `live_extensions_list` (не Предприятие) |

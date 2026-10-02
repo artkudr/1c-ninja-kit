@@ -7,5 +7,5 @@
    - `{{SHCNTX_HELP_DB}}` → `...\components\1c-ninja-mcp\src\data\shcntx_help.db`
    - `{{WEB_PORT}}` → 8083 (платформа 8.3) или 8085 (8.5)
    - `{{APP_NAME}}`, `{{BSL_USER}}`, `{{BSL_PASSWORD}}`, `{{PROJECT_ROOT}}`, пути vrunner/bsl-analyzer
-3. Optional pack `extras-mcp`: добавить `v8std`, `1c-code-check-mcp` как в ecoladev example.
+3. `v8std` уже в шаблоне (`https://ai.v8std.ru/mcp`). Optional pack `extras-mcp`: `1c-code-check-mcp`, если нужен Напарник.
 4. User `%USERPROFILE%\.cursor\mcp.json` — без этих серверов.

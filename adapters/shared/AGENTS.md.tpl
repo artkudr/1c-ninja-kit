@@ -28,6 +28,7 @@ This project uses **1c-ninja-kit** for agentic 1C development.
 | BSL semantics / graph / diagnostics | bsl-analyzer-workspace |
 | Live IB query/metadata/CFE list | 1c-ninja-mcp `live_*` |
 | Load / syntax-check / repo | vrunner |
+| ITS/v8 standards | v8std (`https://ai.v8std.ru/mcp`) |
 | Live fallback | 1c-mcp-toolkit |
 
 ## Skills

@@ -25,6 +25,10 @@
     "bsl-analyzer-workspace": {
       "command": "%LOCALAPPDATA%\\bsl-analyzer\\bsl-analyzer.exe",
       "args": ["mcp", "serve", "--profile", "workspace", "--source-dir", "<PROJECT_ROOT>"]
+    },
+    "v8std": {
+      "url": "https://ai.v8std.ru/mcp",
+      "type": "streamable-http"
     }
   }
 }

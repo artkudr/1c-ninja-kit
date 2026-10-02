@@ -4,7 +4,7 @@
     "releases": "https://github.com/itrous/bsl-analyzer/releases",
     "windowsLauncherAsset": "bsl-analyzer-windows-amd64.exe",
     "installAs": "%LOCALAPPDATA%\\bsl-analyzer\\bsl-analyzer.exe",
-    "minAppVersion": "0.2.77",
+    "minAppVersion": "0.2.81",
     "note": "Launcher downloads app into %USERPROFILE%\\.bsl-analyzer\\bin. Prefer launcher asset, not bsl-analyzer-app-*.exe unless you know you need the full binary."
   },
   "mcpToolkit": {

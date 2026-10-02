@@ -12,8 +12,8 @@ Get-ChildItem "C:\Program Files\1cv8\*" -ErrorAction SilentlyContinue | Select-O
 ## 1. OneScript / OVM + vanessa-runner
 
 1. [OneScript / OVM](https://oscript.io/) → `%LOCALAPPDATA%\ovm\current`
-2. `opm install vanessa-runner@SNAPSHOT` (или зафиксированная **3.x**)
-3. `vrunner --version` → ветка **3.x**
+2. `opm install vanessa-runner@3.0.2`
+3. `vrunner --version` → **3.0.2**
 4. Рядом должен быть `vrunner-mcp.bat`
 
 ## 2. bsl-analyzer (обязателен для семантики MCP)
@@ -38,7 +38,7 @@ Copy-Item "$env:USERPROFILE\Downloads\bsl-analyzer-windows-amd64.exe" `
 ```
 
 3. В project MCP: `bsl-analyzer-workspace` / `bsl-analyzer-reference` (см. шаблоны kit).  
-4. Рекомендуемая версия app: **≥ 0.2.77** (лучше текущий release, напр. 0.2.79+).
+4. Версия app: **≥ 0.2.81** (релиз v0.2.81).
 
 Документация MCP: репозиторий itrous/bsl-analyzer → docs/mcp.  
 Скилл в kit: `profile/skills/1c-bsl-analyzer`.

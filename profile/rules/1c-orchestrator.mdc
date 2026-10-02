@@ -64,7 +64,7 @@ Workspace: `openspec/`. Правило: `sdd-integrations` (on-demand / globs). 
 | Live ИБ / static выгрузка | `1c-ninja-mcp` |
 | Список расширений ИБ | `1c-ninja-mcp` `live_extensions_list` (**главный способ**; не vrunner `extensions_list` / Предприятие) |
 | Load / syntax-check / repo | `1c-development-process` + vrunner / `repo-workflow` |
-| Стандарты ITS/v8 | `v8std` (если в MCP); reference `bsl-analyzer-reference` |
+| Стандарты ITS/v8 | `v8std`; reference `bsl-analyzer-reference` |
 | AI-проверка кода | `1c-code-check-mcp` / Напарник (если поднят; иначе не блокируй на нём) |
 | Fallback live | `1c-mcp-toolkit` только если ninja live недоступен |
 

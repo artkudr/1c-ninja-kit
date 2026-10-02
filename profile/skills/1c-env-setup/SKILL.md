@@ -56,7 +56,7 @@ Folder junction (`mklink /J` / `/D` на `.cursor/rules`) **не использ�
 - **Не** используй реестр PT — проект autumn-only (autumn / vrunner).
 - **Не** правь XML метаданных. В рамках setup в ИБ грузится **только** bootstrap CFE `NinjaLive` (MCP `cfe_load`) — чтобы список расширений шёл по HTTP, без запуска Предприятия.
 - **Не** копируй и **не** мержи `%USERPROFILE%\.cursor\mcp.json` в проект. Эталон JSON — шаблон скилла (`scripts/templates/mcp.json.example.tpl`) → `.cursor/mcp.json`.
-- **Не** клади 1С-серверы (`vrunner`, `1c-ninja-mcp`, `1c-mcp-toolkit`, `bsl-analyzer-*`) в user `mcp.json`: Cursor читает оба файла, одинаковые имена дают дубли. User mcp — пустой `mcpServers` (или без этих имён). Live-URL только в project mcp **этой** ИБ.
+- **Не** клади 1С-серверы (`vrunner`, `1c-ninja-mcp`, `1c-mcp-toolkit`, `bsl-analyzer-*`, `v8std`) в user `mcp.json`: Cursor читает оба файла, одинаковые имена дают дубли. User mcp — пустой `mcpServers` (или без этих имён). Live-URL только в project mcp **этой** ИБ.
 - Список расширений ИБ — **главный способ**: MCP `1c-ninja-mcp` `live_extensions_list` (HTTP `/hs/ninja-live`). Порядок: `src/cfe/NinjaLive` → `cfe_load` → публикация → `live_extensions_list`. **Не** `vrunner infobase extensions list` / MCP `extensions_list` (это запуск Предприятия). **Не** `extensions_dump_list` для обзора состава. **Не** удалённый `cfe-list`.
 - Список пользователей ИБ **не** запрашиваем.
 - **Никогда** directory junction на `.cursor/rules` (`mklink /J` / `/D`). Init/Refresh: если папка — junction, снять `cmd /c rmdir` (без `/S`), создать обычную папку, для каждого `.mdc` — file symlink, иначе `mklink /H`, копия только другой диск. `Remove-Item -Recurse` по junction **запрещён**. Канон в `%USERPROFILE%\.cursor\rules` не удалять.
@@ -65,6 +65,7 @@ Folder junction (`mklink /J` / `/D` на `.cursor/rules`) **не использ�
 
 - 2026-09-17: Junction `/J` ≠ file symlink: `/J` не требует Developer Mode, но на папку `.cursor/rules` его не ставим (Cursor). File symlink пробуем первым; канон на этой машине — **hardlink** `mklink /H` файлов; копия только другой диск. Старый `/J` снимать через `cmd /c rmdir`.
 - 2026-09-17: Folder junction на `.cursor/rules` **запрещён** (Cursor/индексатор не видит правила).
+- 2026-09-22: В эталон MCP добавлен `v8std` (`https://ai.v8std.ru/mcp`, streamable-http; стандарты ITS/v8). Не класть в user `mcp.json`.
 - 2026-09-17: MCP-эталон в шаблоне скилла (полный JSON: vrunner, toolkit, ninja live, bsl-analyzer reference+workspace). Setup **не** копирует user `mcp.json`. User `mcp.json` без 1С-серверов — иначе дубли.
 - 2026-09-18: Live ninja — CFE `NinjaLive` (`/hs/ninja-live`), env `NINJA_URL` / `NINJA_USER` / `NINJA_PASSWORD` (не `BSL_Analyzer` / `BSL_ANALYZER_*`).
 - 2026-09-18: Список расширений ИБ — **главный способ** `live_extensions_list`. Setup копирует `src/cfe/NinjaLive`, агент грузит `cfe_load`, затем HTTP-список. `vrunner infobase extensions list` / MCP `extensions_list` — не канон (запуск Предприятия).

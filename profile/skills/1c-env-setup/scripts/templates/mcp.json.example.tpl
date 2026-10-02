@@ -36,6 +36,10 @@
 				"--source-dir",
 				"{{PROJECT_ROOT}}"
 			]
+		},
+		"v8std": {
+			"url": "https://ai.v8std.ru/mcp",
+			"type": "streamable-http"
 		}
 	}
 }

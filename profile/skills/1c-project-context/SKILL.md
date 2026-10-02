@@ -39,7 +39,7 @@ description: >-
 - ИБ и исходники — **только** корень открытого проекта.
 - Skills: `%USERPROFILE%\.cursor\skills\`.
 - Rules: канон `%USERPROFILE%\.cursor\rules\`; Cursor читает только `.cursor/rules/*.mdc` **проекта** (file symlink или копия из канона; folder junction нельзя).
-- MCP: все 1С-серверы **только** в `<репозиторий>\.cursor\mcp.json` (эталон — скилл `1c-env-setup`). User `%USERPROFILE%\.cursor\mcp.json` — без `vrunner` / `1c-ninja-mcp` / `1c-mcp-toolkit` / `bsl-analyzer-*` (иначе дубли).
+- MCP: все 1С-серверы **только** в `<репозиторий>\.cursor\mcp.json` (эталон — скилл `1c-env-setup`). User `%USERPROFILE%\.cursor\mcp.json` — без `vrunner` / `1c-ninja-mcp` / `1c-mcp-toolkit` / `bsl-analyzer-*` / `v8std` (иначе дубли).
 - Платформенные операции **без фаллбека на другой скилл/CLI**: vrunner недоступен → стоп, сообщить.
 - Локальные патчи ovm: скилл `cursor-local-patches` → `%USERPROFILE%\.cursor\docs\`.
 
@@ -63,3 +63,4 @@ description: >-
 | Запросы / метаданные / журнал / список CFE живой ИБ | ninja `live_*` (project); список — `live_extensions_list` |
 | Fallback live | toolkit |
 | Загрузка / хранилище / syntax-check | **только** vrunner |
+| Стандарты ITS/v8 | `v8std` (`https://ai.v8std.ru/mcp`) |

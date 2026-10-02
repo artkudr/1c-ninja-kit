@@ -1,4 +1,4 @@
-﻿# meta-edit v1.52 — Edit existing 1C metadata object XML
+﻿# meta-edit v1.61 — Edit existing 1C metadata object XML
 # Source: https://github.com/Nikolay-Shirokov/cc-1c-skills
 [CmdletBinding(PositionalBinding=$false)]
 param(
@@ -129,7 +129,7 @@ $script:enumValueAliases = @{
 	"Разрешить" = "Allow"; "Запретить" = "Deny"
 	"ВДиалоге" = "InDialog"; "ВСписке" = "InList"; "ОбаСпособа" = "BothWays"
 	"ВВидеНаименования" = "AsDescription"; "ВВидеКода" = "AsCode"
-	"НеПроверять" = "DontCheck"; "Ошибка" = "ShowError"; "Предупреждение" = "ShowWarning"
+	"НеПроверять" = "DontCheck"; "Ошибка" = "ShowError"
 	"НеИндексировать" = "DontIndex"; "Индексировать" = "Index"
 	"ИндексироватьСДопУпорядочиванием" = "IndexWithAdditionalOrder"
 }
@@ -138,12 +138,16 @@ $script:validEnumValues = @{
 	"RegisterType"                   = @("Balance","Turnovers")
 	"WriteMode"                      = @("Independent","RecorderSubordinate")
 	"InformationRegisterPeriodicity" = @("Nonperiodical","Second","Day","Month","Quarter","Year","RecorderPosition")
-	"DependenceOnCalculationTypes"   = @("DontUse","OnActionPeriod")
+	"DependenceOnCalculationTypes"   = @("DontUse","OnActionPeriod","OnRegistrationPeriod")
 	# AutomaticAndManaged — только у внешнего источника данных и его таблиц.
 	"DataLockControlMode"            = @("Automatic","Managed","AutomaticAndManaged")
 	"FullTextSearch"                 = @("Use","DontUse")
 	"DataHistory"                    = @("Use","DontUse")
 	"DefaultPresentation"            = @("AsDescription","AsCode")
+	# Уточнение по виду объекта («Вид.Свойство») — проверяется раньше общего списка. AsNumber
+	# («в виде номера») есть только у задачи: у справочника и прочих платформа его отвергает
+	# («Неверное значение перечисления», 8.3.24 и 8.5.1).
+	"Task.DefaultPresentation"       = @("AsDescription","AsNumber")
 	"Posting"                        = @("Allow","Deny")
 	"RealTimePosting"                = @("Allow","Deny")
 	"EditType"                       = @("InDialog","InList","BothWays")
@@ -153,10 +157,10 @@ $script:validEnumValues = @{
 	"NumberType"                     = @("String","Number")
 	"NumberAllowedLength"            = @("Variable","Fixed")
 	"RegisterRecordsDeletion"        = @("AutoDelete","AutoDeleteOnUnpost","AutoDeleteOff")
-	"RegisterRecordsWritingOnPost"   = @("WriteModified","WriteSelected","WriteAll")
+	"RegisterRecordsWritingOnPost"   = @("WriteModified","WriteSelected")
 	"ReturnValuesReuse"              = @("DontUse","DuringRequest","DuringSession")
 	"ReuseSessions"                  = @("DontUse","Use","AutoUse")
-	"FillChecking"                   = @("DontCheck","ShowError","ShowWarning")
+	"FillChecking"                   = @("DontCheck","ShowError")
 	"Indexing"                       = @("DontIndex","Index","IndexWithAdditionalOrder")
 }
 
@@ -166,8 +170,9 @@ function Normalize-EnumValue {
 	if ($script:enumValueAliases.ContainsKey($value)) {
 		return $script:enumValueAliases[$value]
 	}
-	# 2. Case-insensitive match against valid values — silent
-	$valid = $script:validEnumValues[$propName]
+	# 2. Case-insensitive match against valid values — silent. Список вида объекта — раньше общего.
+	$valid = $script:validEnumValues["$script:objType.$propName"]
+	if (-not $valid) { $valid = $script:validEnumValues[$propName] }
 	if ($valid) {
 		foreach ($v in $valid) {
 			if ($v -ieq $value) { return $v }
@@ -345,6 +350,21 @@ function Info($msg) {
 	Write-Host "[INFO] $msg" -ForegroundColor Cyan
 }
 
+# Операцию выполнить нельзя: в stderr и exit 1 до сохранения — файл не меняется.
+# Console.Error, а не Write-Error: под ErrorActionPreference=Stop тот бросает исключение.
+function Die($msg) {
+	[Console]::Error.WriteLine($msg)
+	exit 1
+}
+
+# Побочные файлы (таблица внешнего источника, модуль команды, предопределённые) пишутся после
+# основного XML: отказ посреди определения не оставляет на диске ни одного изменения.
+$script:pendingWrites = [ordered]@{}
+
+function Test-PendingOrFile([string]$path) {
+	return ($script:pendingWrites.Contains($path) -or (Test-Path $path))
+}
+
 # ============================================================
 # Section 2: Detect object type
 # ============================================================
@@ -469,6 +489,48 @@ $script:typeSynonyms["бизнеспроцессссылка"]            = "Bus
 $script:typeSynonyms["задачассылка"]                   = "TaskRef"
 $script:typeSynonyms["определяемыйтип"]              = "DefinedType"
 $script:typeSynonyms["definedtype"]                   = "DefinedType"
+# Русские имена объектных типов, менеджеров и наборов записей — те самые метки, которые печатает
+# meta-info. Без них раундтрип «прочитал вывод → подал на вход» рвался: `ДокументОбъект.Заказ` из
+# источников подписки компилятор отвергал с «Неизвестный тип», хотя сам же печатал эту форму
+# через meta-info. Аббревиатуры (ПВХ/ПВР, РС/РН/РБ/РР) приняты наравне с полными именами: вывод
+# навыка сокращает долгие виды, чтобы в списке на сорок реквизитов не терялось имя объекта.
+# Состав держит гард tests/skills/check-typeset-coverage.mjs.
+$script:typeSynonyms["бизнеспроцессменеджер"]           = "BusinessProcessManager"
+$script:typeSynonyms["бизнеспроцессобъект"]             = "BusinessProcessObject"
+$script:typeSynonyms["документменеджер"]                = "DocumentManager"
+$script:typeSynonyms["документобъект"]                  = "DocumentObject"
+$script:typeSynonyms["журналдокументовменеджер"]        = "DocumentJournalManager"
+$script:typeSynonyms["задачаменеджер"]                  = "TaskManager"
+$script:typeSynonyms["задачаобъект"]                    = "TaskObject"
+$script:typeSynonyms["константаменеджерзначения"]       = "ConstantValueManager"
+$script:typeSynonyms["любаяссылка"]                     = "AnyRef"
+$script:typeSynonyms["любаяссылкаиб"]                   = "AnyIBRef"
+$script:typeSynonyms["наборзаписейперерасчета"]         = "RecalculationRecordSet"
+$script:typeSynonyms["наборзаписейпоследовательности"]  = "SequenceRecordSet"
+$script:typeSynonyms["наборзаписейрб"]                  = "AccountingRegisterRecordSet"
+$script:typeSynonyms["наборзаписейрн"]                  = "AccumulationRegisterRecordSet"
+$script:typeSynonyms["наборзаписейрр"]                  = "CalculationRegisterRecordSet"
+$script:typeSynonyms["наборзаписейрс"]                  = "InformationRegisterRecordSet"
+$script:typeSynonyms["обработкаменеджер"]               = "DataProcessorManager"
+$script:typeSynonyms["отчетменеджер"]                   = "ReportManager"
+$script:typeSynonyms["пврменеджер"]                     = "ChartOfCalculationTypesManager"
+$script:typeSynonyms["пвробъект"]                       = "ChartOfCalculationTypesObject"
+$script:typeSynonyms["пврссылка"]                       = "ChartOfCalculationTypesRef"
+$script:typeSynonyms["пвхменеджер"]                     = "ChartOfCharacteristicTypesManager"
+$script:typeSynonyms["пвхобъект"]                       = "ChartOfCharacteristicTypesObject"
+$script:typeSynonyms["пвхссылка"]                       = "ChartOfCharacteristicTypesRef"
+$script:typeSynonyms["перечислениеменеджер"]            = "EnumManager"
+$script:typeSynonyms["планобменаменеджер"]              = "ExchangePlanManager"
+$script:typeSynonyms["планобменаобъект"]                = "ExchangePlanObject"
+$script:typeSynonyms["плансчетовменеджер"]              = "ChartOfAccountsManager"
+$script:typeSynonyms["плансчетовобъект"]                = "ChartOfAccountsObject"
+$script:typeSynonyms["регистрбухгалтериименеджер"]      = "AccountingRegisterManager"
+$script:typeSynonyms["регистрнакопленияменеджер"]       = "AccumulationRegisterManager"
+$script:typeSynonyms["регистррасчетаменеджер"]          = "CalculationRegisterManager"
+$script:typeSynonyms["регистрсведенийменеджер"]         = "InformationRegisterManager"
+$script:typeSynonyms["справочникменеджер"]              = "CatalogManager"
+$script:typeSynonyms["справочникобъект"]                = "CatalogObject"
+$script:typeSynonyms["характеристика"]                  = "Characteristic"
 $script:typeSynonyms["catalogref"]                    = "CatalogRef"
 $script:typeSynonyms["documentref"]                   = "DocumentRef"
 $script:typeSynonyms["enumref"]                       = "EnumRef"
@@ -546,6 +608,14 @@ function Resolve-TypeStr {
 	} elseif ($typeStr.Contains('.') -and $typeStr -match '^d\d+p\d+:') {
 		$typeStr = $typeStr.Substring($typeStr.IndexOf(':') + 1)
 	}
+
+	# Хвосты, которые дописывает вывод meta-info к множествам типов: суффикс обобщённого метатипа
+	# и счётчик состава. Копипаста строки оттуда — обычный путь, поэтому хвост снимаем молча.
+	# Срезаем ТОЛЬКО эти известные формы: круглые скобки заняты параметризованными типами
+	# (Число(15,2)), слепой срез скобок сломал бы их.
+	$typeStr = ($typeStr -replace '\s*\((?:все|all)\)\s*$', '').Trim()
+	$typeStr = ($typeStr -replace '\s*[—-]\s*(?:типов|types):\s*\d+\s*$', '').Trim()
+	$typeStr = ($typeStr -replace '\s*\((?:типов|types):\s*\d+\)\s*$', '').Trim()
 
 	# Параметризованные типы: Number(15,2), Строка(100)
 	if ($typeStr -match '^([^(]+)\((.+)\)$') {
@@ -1626,6 +1696,9 @@ $script:validChildTypes = @{
 	"Task"                       = @("attributes","tabularSections","forms","templates","commands")
 	"Report"                     = @("attributes","tabularSections","forms","templates","commands")
 	"DataProcessor"              = @("attributes","tabularSections","forms","templates","commands")
+	# Внешняя обработка/отчёт: команд объекта нет — платформа выбрасывает их при сборке.
+	"ExternalDataProcessor"      = @("attributes","tabularSections","forms","templates")
+	"ExternalReport"             = @("attributes","tabularSections","forms","templates")
 	"Enum"                       = @("enumValues","forms","templates","commands")
 	"InformationRegister"        = @("dimensions","resources","attributes","forms","templates","commands")
 	"AccumulationRegister"       = @("dimensions","resources","attributes","forms","templates","commands")
@@ -2010,8 +2083,7 @@ function Convert-InlineToDefinition([string]$operation, [string]$value) {
 		foreach ($item in $items) {
 			$dotIdx = $item.IndexOf('.')
 			if ($dotIdx -le 0) {
-				Warn "Invalid ts-attribute format (expected TSName.AttrDef): $item"
-				continue
+				Die "Invalid ts-attribute format (expected TSName.AttrDef): $item"
 			}
 			$tsName = $item.Substring(0, $dotIdx).Trim()
 			$rest = $item.Substring($dotIdx + 1).Trim()
@@ -2037,8 +2109,7 @@ function Convert-InlineToDefinition([string]$operation, [string]$value) {
 					foreach ($elemDef in $tsGroups[$tsName]) {
 						$colonIdx = $elemDef.IndexOf(':')
 						if ($colonIdx -le 0) {
-							Warn "Invalid modify format (expected Name: key=val): $elemDef"
-							continue
+							Die "Invalid modify format (expected Name: key=val): $elemDef"
 						}
 						$elemName = $elemDef.Substring(0, $colonIdx).Trim()
 						$changesPart = $elemDef.Substring($colonIdx + 1).Trim()
@@ -2148,7 +2219,7 @@ function Convert-InlineToDefinition([string]$operation, [string]$value) {
 						$v = $kv.Substring($eqIdx + 1).Trim()
 						$propsObj | Add-Member -NotePropertyName $k -NotePropertyValue $v
 					} else {
-						Warn "Invalid property format (expected Key=Value): $kv"
+						Die "Invalid property format (expected Key=Value): $kv"
 					}
 				}
 				$modifyObj = New-Object PSCustomObject
@@ -2161,8 +2232,7 @@ function Convert-InlineToDefinition([string]$operation, [string]$value) {
 				foreach ($elemDef in $elemDefs) {
 					$colonIdx = $elemDef.IndexOf(':')
 					if ($colonIdx -le 0) {
-						Warn "Invalid modify format (expected Name: key=val): $elemDef"
-						continue
+						Die "Invalid modify format (expected Name: key=val): $elemDef"
 					}
 					$elemName = $elemDef.Substring(0, $colonIdx).Trim()
 					$changesPart = $elemDef.Substring($colonIdx + 1).Trim()
@@ -2251,8 +2321,7 @@ function Process-Add($addDef) {
 		$childType = Resolve-ChildTypeKey $rawKey
 
 		if (-not $childType) {
-			Warn "Unknown add child type: $rawKey"
-			return
+			Die "Unknown add child type: $rawKey"
 		}
 
 		# Validate allowed. Проверяем НАЛИЧИЕ ключа, а не истинность списка: пустой список
@@ -2261,15 +2330,13 @@ function Process-Add($addDef) {
 		if ($script:validChildTypes.ContainsKey($script:objType)) {
 			$allowed = $script:validChildTypes[$script:objType]
 			if ($childType -notin $allowed) {
-				Warn "$childType not allowed for $($script:objType), skipping"
-				return
+				Die "$childType not allowed for $($script:objType)"
 			}
 		}
 
 		$xmlTag = $script:childTypeToXmlTag[$childType]
 		if (-not $xmlTag) {
-			Warn "No XML tag mapping for $childType"
-			return
+			Die "No XML tag mapping for $childType"
 		}
 
 		Ensure-ChildObjectsOpen
@@ -2312,8 +2379,7 @@ function Process-Add($addDef) {
 					if ($tv) {
 						foreach ($k in @("characteristics","defaultObjectForm","defaultRecordForm","defaultListForm","defaultChoiceForm")) {
 							if ($tv.$k) {
-								Warn "Ключ '$k' не поддержан при добавлении таблицы: форму назначает навык form-add, характеристики — навык meta-compile. Таблица '$tblName' пропущена."
-								$tblName = $null; break
+								Die "Ключ '$k' не поддержан при добавлении таблицы: форму назначает навык form-add, характеристики — навык meta-compile."
 							}
 						}
 					}
@@ -2323,7 +2389,7 @@ function Process-Add($addDef) {
 						continue
 					}
 					$tablePath = Join-Path $tablesDir "$tblName.xml"
-					if (Test-Path $tablePath) {
+					if (Test-PendingOrFile $tablePath) {
 						Warn "Файл таблицы уже существует: $tablePath — пропускаю"
 						continue
 					}
@@ -2333,8 +2399,7 @@ function Process-Add($addDef) {
 					}
 					$fieldsXml = $fieldParts -join "`r`n"
 					$tableXml = Build-EdsTableXml $script:objName $tblName $entry.Value $fieldsXml "" ""
-					if (-not (Test-Path $tablesDir)) { New-Item -ItemType Directory -Path $tablesDir -Force | Out-Null }
-					[System.IO.File]::WriteAllText($tablePath, $tableXml.TrimEnd("`r", "`n"), (New-Object System.Text.UTF8Encoding($true)))
+					$script:pendingWrites[$tablePath] = $tableXml.TrimEnd("`r", "`n")
 					$fragmentXml = "$indent<Table>$(Esc-XmlText $tblName)</Table>"
 					$nodes = Import-Fragment $fragmentXml
 					$refNode = Find-InsertionPoint "Table" @{ name = $tblName }
@@ -2490,7 +2555,7 @@ function Process-Add($addDef) {
 				# эту ответственность здесь нельзя: получится висячая регистрация без файла.
 				$skillName = if ($childType -eq "forms") { "form-add" } else { "template-add" }
 				$whatName  = if ($childType -eq "forms") { "Форму" } else { "Макет" }
-				Warn "$whatName добавляет навык $skillName (он создаёт и файл, и запись в ChildObjects). meta-edit этого не делает — операция пропущена."
+				Die "$whatName добавляет навык $skillName (он создаёт и файл, и запись в ChildObjects). meta-edit этого не делает."
 			}
 			"commands" {
 				foreach ($item in $items) {
@@ -2503,8 +2568,7 @@ function Process-Add($addDef) {
 					# он есть у всех команд без исключения. Пишем ту же заготовку, что и meta-compile.
 					$cmdExtDir = Join-Path (Join-Path (Join-Path (Join-Path (Split-Path -Parent $resolvedPath) $script:objName) "Commands") $itemName) "Ext"
 					$cmdModPath = Join-Path $cmdExtDir "CommandModule.bsl"
-					if (-not (Test-Path $cmdExtDir)) { New-Item -ItemType Directory -Path $cmdExtDir -Force | Out-Null }
-					[System.IO.File]::WriteAllText($cmdModPath, "&НаКлиенте`r`nПроцедура ОбработкаКоманды(ПараметрКоманды, ПараметрыВыполненияКоманды)`r`n`r`n`t// Вставьте обработчик команды.`r`n`r`nКонецПроцедуры`r`n", (New-Object System.Text.UTF8Encoding($true)))
+					$script:pendingWrites[$cmdModPath] = "&НаКлиенте`r`nПроцедура ОбработкаКоманды(ПараметрКоманды, ПараметрыВыполненияКоманды)`r`n`r`n`t// Вставьте обработчик команды.`r`n`r`nКонецПроцедуры`r`n"
 					$fragmentXml = Build-CommandFragment $itemName $indent
 					$nodes = Import-Fragment $fragmentXml
 					$refNode = Find-InsertionPoint "Command" @{ after = ""; before = "" }
@@ -2531,19 +2595,16 @@ function Process-Remove($removeDef) {
 		$childType = Resolve-ChildTypeKey $rawKey
 
 		if (-not $childType) {
-			Warn "Unknown remove child type: $rawKey"
-			return
+			Die "Unknown remove child type: $rawKey"
 		}
 		if ($childType -eq "properties") {
-			Warn "Cannot remove properties — use modify instead"
-			return
+			Die "Cannot remove properties — use modify instead"
 		}
 		if ($childType -in @("forms","templates")) {
 			# Снять регистрацию мало — надо удалить и файлы; это делают form-remove / template-remove.
 			$skillName = if ($childType -eq "forms") { "form-remove" } else { "template-remove" }
 			$whatName  = if ($childType -eq "forms") { "Форму" } else { "Макет" }
-			Warn "$whatName удаляет навык $skillName (он убирает и файлы, и запись в ChildObjects). meta-edit этого не делает — операция пропущена."
-			return
+			Die "$whatName удаляет навык $skillName (он убирает и файлы, и запись в ChildObjects). meta-edit этого не делает."
 		}
 
 		$xmlTag = $script:childTypeToXmlTag[$childType]
@@ -2575,8 +2636,20 @@ function Process-Remove($removeDef) {
 
 function Modify-Properties($propsDef) {
 	$propsDef.PSObject.Properties | ForEach-Object {
-		$propName = $_.Name
+		$propName = Get-CanonicalName $_.Name ($script:knownObjectProps + @($script:complexPropertyMap.Keys))
 		$propValue = $_.Value
+
+		# Свойство-список: наличие элемента решает Get-ListPropertyElement (тип объекта, заимствование)
+		if ($script:complexPropertyMap.ContainsKey($propName)) {
+			$valuesList = @()
+			if ($propValue -is [array]) {
+				$valuesList = @($propValue | ForEach-Object { "$_" })
+			} else {
+				$valuesList = @("$propValue" -split ';;' | ForEach-Object { $_.Trim() } | Where-Object { $_ })
+			}
+			Set-ComplexProperty $propName $valuesList
+			return
+		}
 
 		# Find the property element in Properties
 		$propEl = $null
@@ -2598,21 +2671,8 @@ function Modify-Properties($propsDef) {
 				Insert-PropertyInOrder $script:propertiesEl $newNodes[0] $null $propName
 				$propEl = $newNodes[0]
 			} else {
-				Warn "Property '$propName': could not create element"
-				return
+				Die "Property '$propName': could not create element"
 			}
-		}
-
-		# Complex property: Owners, RegisterRecords, BasedOn, InputByString
-		if ($script:complexPropertyMap.ContainsKey($propName)) {
-			$valuesList = @()
-			if ($propValue -is [array]) {
-				$valuesList = @($propValue | ForEach-Object { "$_" })
-			} else {
-				$valuesList = @("$propValue" -split ';;' | ForEach-Object { $_.Trim() } | Where-Object { $_ })
-			}
-			Set-ComplexProperty $propName $valuesList
-			return
 		}
 
 		# Handle boolean values
@@ -2655,14 +2715,31 @@ function Modify-Properties($propsDef) {
 		$propEl.InnerText = $valueStr
 		Info "Modified property: $propName = $valueStr"
 		$script:modifyCount++
+
+		# Код/номер нулевой длины не может стоять во вводе по строке: платформа отвергает загрузку —
+		# «Указано неверное поле для ввода по строке: Код/Номер». Убираем поле вслед за длиной.
+		if (($propName -ceq 'CodeLength' -or $propName -ceq 'NumberLength') -and $valueStr.Trim() -eq '0') {
+			$stdAttr = if ($propName -ceq 'CodeLength') { 'Code' } else { 'Number' }
+			$ibEl = $null
+			foreach ($child in $script:propertiesEl.ChildNodes) {
+				if ($child.NodeType -eq 'Element' -and $child.LocalName -eq 'InputByString') { $ibEl = $child; break }
+			}
+			if ($ibEl) {
+				$cur = @($ibEl.ChildNodes | Where-Object { $_.NodeType -eq 'Element' } | ForEach-Object { $_.InnerText.Trim() })
+				$keep = @($cur | Where-Object { $_ -cnotmatch "\.StandardAttribute\.$stdAttr$" })
+				if ($keep.Count -lt $cur.Count) {
+					Set-ComplexProperty "InputByString" $keep
+					Info "InputByString: removed StandardAttribute.$stdAttr ($propName=0 — a zero-length field cannot be an input-by-string field)"
+				}
+			}
+		}
 	}
 }
 
 function Modify-ChildElements($modifyDef, [string]$childType) {
 	$xmlTag = $script:childTypeToXmlTag[$childType]
 	if (-not $xmlTag -or -not $script:childObjectsEl) {
-		Warn "No ChildObjects or unknown tag for $childType"
-		return
+		Die "No ChildObjects or unknown tag for $childType"
 	}
 
 	$modifyDef.PSObject.Properties | ForEach-Object {
@@ -2671,8 +2748,7 @@ function Modify-ChildElements($modifyDef, [string]$childType) {
 
 		$el = Find-ElementByName $script:childObjectsEl $xmlTag $elemName
 		if (-not $el) {
-			Warn "$xmlTag '$elemName' not found for modify"
-			return
+			Die "$xmlTag '$elemName' not found for modify"
 		}
 
 		# Find Properties inside the element
@@ -2683,12 +2759,11 @@ function Modify-ChildElements($modifyDef, [string]$childType) {
 			}
 		}
 		if (-not $propsEl) {
-			Warn "$xmlTag '$elemName': no Properties element found"
-			return
+			Die "$xmlTag '$elemName': no Properties element found"
 		}
 
 		$changes.PSObject.Properties | ForEach-Object {
-			$changeProp = $_.Name
+			$changeProp = Get-CanonicalName $_.Name ($script:childModifyKeys + $script:knownChildProps)
 			$changeValue = $_.Value
 
 			# TS child attribute operations (add/remove/modify attrs inside a TabularSection)
@@ -2704,8 +2779,7 @@ function Modify-ChildElements($modifyDef, [string]$childType) {
 				switch ($changeProp) {
 					"add" {
 						if (-not $tsChildObjEl) {
-							Warn "TS '$elemName' has no ChildObjects element, cannot add attributes"
-							return
+							Die "TS '$elemName' has no ChildObjects element, cannot add attributes"
 						}
 						# Ensure ChildObjects is open (not self-closing empty)
 						$hasTsChildElements = $false
@@ -2757,8 +2831,7 @@ function Modify-ChildElements($modifyDef, [string]$childType) {
 					}
 					"modify" {
 						if (-not $tsChildObjEl) {
-							Warn "TS '$elemName' has no ChildObjects, cannot modify attributes"
-							return
+							Die "TS '$elemName' has no ChildObjects, cannot modify attributes"
 						}
 						# Temporarily swap childObjectsEl and recurse
 						$savedChildObjEl = $script:childObjectsEl
@@ -2804,7 +2877,8 @@ function Modify-ChildElements($modifyDef, [string]$childType) {
 									}
 								}
 							}
-							if ($currentSyn -eq $oldSynonym -or -not $currentSyn) {
+							# Без учёта регистра: авто-синоним «ИНН» против разбивки «Инн»
+							if ($currentSyn -ieq $oldSynonym -or -not $currentSyn) {
 								$newSynonym = Split-CamelCase $newName
 								$synXml = Build-MLTextXml (Get-ChildIndent $propsEl) "Synonym" $newSynonym
 								$newSynNodes = Import-Fragment $synXml
@@ -2985,8 +3059,7 @@ function Process-Modify($modifyDef) {
 		$childType = Resolve-ChildTypeKey $rawKey
 
 		if (-not $childType) {
-			Warn "Unknown modify child type: $rawKey"
-			return
+			Die "Unknown modify child type: $rawKey"
 		}
 
 		if ($childType -eq "properties") {
@@ -3044,13 +3117,18 @@ function Normalize-MDObjectRef {
 
 # mdref — значения списка суть MDObjectRef-пути → прогоняем через Normalize-MDObjectRef.
 # root — корень для голого имени без точки.
+# types — у каких объектов свойство есть (Properties выгрузок ERP, БП, УТ, УНФ).
+# adopted — у каких заимствованных объектов расширение может менять свойство (8.3.27): прочие
+# списки платформа либо контролирует на равенство основной конфигурации (Owners, RegisteredDocuments —
+# расширение не применяется), либо молча выбрасывает при загрузке.
+$script:refObjectTypes = @('Catalog','Document','ChartOfAccounts','ChartOfCalculationTypes','ChartOfCharacteristicTypes','ExchangePlan','BusinessProcess','Task')
 $script:complexPropertyMap = @{
-	"Owners"          = @{ tag = "xr:Item"; attr = 'xsi:type="xr:MDObjectRef"'; mdref = $true; root = 'Catalog' }
-	"RegisterRecords" = @{ tag = "xr:Item"; attr = 'xsi:type="xr:MDObjectRef"'; mdref = $true }
-	"BasedOn"         = @{ tag = "xr:Item"; attr = 'xsi:type="xr:MDObjectRef"'; mdref = $true }
-	"InputByString"   = @{ tag = "xr:Field"; attr = $null }
-	"DataLockFields"      = @{ tag = "xr:Field"; attr = $null; expand = $true }
-	"RegisteredDocuments" = @{ tag = "xr:Item"; attr = 'xsi:type="xr:MDObjectRef"'; mdref = $true }
+	"Owners"          = @{ tag = "xr:Item"; attr = 'xsi:type="xr:MDObjectRef"'; mdref = $true; root = 'Catalog'; types = @('Catalog') }
+	"RegisterRecords" = @{ tag = "xr:Item"; attr = 'xsi:type="xr:MDObjectRef"'; mdref = $true; types = @('Document','Sequence'); adopted = @('Document') }
+	"BasedOn"         = @{ tag = "xr:Item"; attr = 'xsi:type="xr:MDObjectRef"'; mdref = $true; types = $script:refObjectTypes }
+	"InputByString"   = @{ tag = "xr:Field"; attr = $null; types = $script:refObjectTypes }
+	"DataLockFields"      = @{ tag = "xr:Field"; attr = $null; expand = $true; types = $script:refObjectTypes }
+	"RegisteredDocuments" = @{ tag = "xr:Item"; attr = 'xsi:type="xr:MDObjectRef"'; mdref = $true; types = @('DocumentJournal') }
 }
 
 # Известные свойства объекта (union по корпусу acc+erp 8.3.24) — allowlist для modify-property.
@@ -3092,6 +3170,13 @@ $script:knownChildProps = @(
 	'FillValue','Format','FullTextSearch','Indexing','LinkByType','MainFilter','MarkNegatives','Mask','Master',
 	'MaxValue','MinValue','MultiLine','Name','PasswordMode','QuickChoice','RegisterRecordsMap','ScheduleLink',
 	'Synonym','ToolTip','Type','Use','UseInTotals'
+)
+
+# Ключи веток modify дочернего элемента в их написании. Стоят перед knownChildProps: при канонизации
+# первый выигрывает, и Name уходит в ветку переименования name, а не в скалярную.
+$script:childModifyKeys = @(
+	'add','remove','modify','name','type','synonym','Format','EditFormat','ToolTip','ChoiceForm','MinValue','MaxValue',
+	'LinkByType','ChoiceParameterLinks','ChoiceParameters','FillValue'
 )
 
 # Канонический порядок свойств реквизита (последовательность Build-AttributeFragment) — для вставки в позицию.
@@ -3482,6 +3567,14 @@ function Build-FillValueExplicitXml([string]$typeStr, $spec) {
 	return "<FillValue xsi:type=`"$($r.XsiType)`">$(Esc-XmlText $r.Text)</FillValue>"
 }
 
+# Прощающий ввод: ключ свойства в любом регистре сводим к каноническому имени из списка (первое
+# совпадение без учёта регистра). Дальше работаем только с ним — в XML уходит имя тега, а не
+# написание из входа. Неизвестное возвращается как есть — его отвергнет allowlist.
+function Get-CanonicalName([string]$name, [string[]]$canon) {
+	foreach ($c in $canon) { if ($c -eq $name) { return $c } }
+	return $name
+}
+
 function Find-PropertyElement([string]$propName) {
 	foreach ($child in $script:propertiesEl.ChildNodes) {
 		if ($child.NodeType -eq 'Element' -and $child.LocalName -eq $propName) {
@@ -3489,6 +3582,31 @@ function Find-PropertyElement([string]$propName) {
 		}
 	}
 	return $null
+}
+
+# Элемент свойства-списка. Свойство, которого у типа объекта нет, — ошибка (раньше на справочнике
+# add-registerRecord тихо не делал ничего). У заимствованного объекта расширения в Properties только
+# изменённые свойства, поэтому отсутствующий элемент при $create создаём (в конец, как Modify-Properties);
+# у обычного объекта выгрузка содержит все свойства, и отсутствие элемента — ошибка.
+function Get-ListPropertyElement([string]$propName, [bool]$create) {
+	$mapEntry = $script:complexPropertyMap[$propName]
+	if ($mapEntry -and $mapEntry.types -cnotcontains $script:objType) {
+		Die "Свойство '$propName' не применимо к $($script:objType)"
+	}
+	$belonging = Find-PropertyElement 'ObjectBelonging'
+	$isAdopted = $belonging -and $belonging.InnerText -ceq 'Adopted'
+	if ($isAdopted -and $mapEntry.adopted -cnotcontains $script:objType) {
+		Die "Свойство '$propName' заимствованного объекта $($script:objType).$($script:objName) расширение не меняет — значение берётся из основной конфигурации"
+	}
+	$propEl = Find-PropertyElement $propName
+	if ($propEl) { return $propEl }
+	if (-not $isAdopted) {
+		Die "В Properties объекта $($script:objType).$($script:objName) нет элемента '$propName' — файл не из выгрузки платформы?"
+	}
+	if (-not $create) { return $null }
+	$newNodes = Import-Fragment "<$propName/>"
+	Insert-PropertyInOrder $script:propertiesEl $newNodes[0] $null $propName
+	return $newNodes[0]
 }
 
 function Get-ComplexPropertyValues([System.Xml.XmlElement]$propEl) {
@@ -3503,15 +3621,11 @@ function Get-ComplexPropertyValues([System.Xml.XmlElement]$propEl) {
 
 function Add-ComplexPropertyItem([string]$propertyName, [string[]]$values) {
 	$mapEntry = $script:complexPropertyMap[$propertyName]
-	if (-not $mapEntry) { Warn "Unknown complex property: $propertyName"; return }
+	if (-not $mapEntry) { Die "Unknown complex property: $propertyName" }
 	if ($mapEntry.expand) { $values = @($values | ForEach-Object { Expand-DataPath "$_" }) }
 	if ($mapEntry.mdref) { $values = @($values | ForEach-Object { Normalize-MDObjectRef "$_" $mapEntry.root }) }
 
-	$propEl = Find-PropertyElement $propertyName
-	if (-not $propEl) {
-		Warn "Property element '$propertyName' not found in Properties"
-		return
-	}
+	$propEl = Get-ListPropertyElement $propertyName $true
 
 	# Get existing values to check duplicates
 	$existing = Get-ComplexPropertyValues $propEl
@@ -3556,7 +3670,7 @@ function Remove-ComplexPropertyItem([string]$propertyName, [string[]]$values) {
 	$mapEntry = $script:complexPropertyMap[$propertyName]
 	if ($mapEntry -and $mapEntry.expand) { $values = @($values | ForEach-Object { Expand-DataPath "$_" }) }
 	if ($mapEntry -and $mapEntry.mdref) { $values = @($values | ForEach-Object { Normalize-MDObjectRef "$_" $mapEntry.root }) }
-	$propEl = Find-PropertyElement $propertyName
+	$propEl = Get-ListPropertyElement $propertyName $false
 	if (-not $propEl) {
 		Warn "Property element '$propertyName' not found in Properties"
 		return
@@ -3592,15 +3706,13 @@ function Remove-ComplexPropertyItem([string]$propertyName, [string[]]$values) {
 
 function Set-ComplexProperty([string]$propertyName, [string[]]$values) {
 	$mapEntry = $script:complexPropertyMap[$propertyName]
-	if (-not $mapEntry) { Warn "Unknown complex property: $propertyName"; return }
+	if (-not $mapEntry) { Die "Unknown complex property: $propertyName" }
 	if ($mapEntry.expand) { $values = @($values | ForEach-Object { Expand-DataPath "$_" }) }
 	if ($mapEntry.mdref) { $values = @($values | ForEach-Object { Normalize-MDObjectRef "$_" $mapEntry.root }) }
 
-	$propEl = Find-PropertyElement $propertyName
-	if (-not $propEl) {
-		Warn "Property element '$propertyName' not found in Properties"
-		return
-	}
+	# Пустой список на отсутствующем элементе: очищать нечего, пустой элемент не создаём
+	$propEl = Get-ListPropertyElement $propertyName ($values.Count -gt 0)
+	if (-not $propEl) { return }
 
 	$indent = Get-ChildIndent $script:propertiesEl
 	$childIndent = "$indent`t"
@@ -3611,7 +3723,9 @@ function Set-ComplexProperty([string]$propertyName, [string[]]$values) {
 	}
 
 	if ($values.Count -eq 0) {
-		# Leave self-closing
+		# Самозакрывающийся, как пишет платформа (и py-порт): после удаления детей XmlElement
+		# остаётся в форме <X></X>, пока не выставить IsEmpty
+		$propEl.IsEmpty = $true
 		Info "Cleared $propertyName"
 		$script:modifyCount++
 		return
@@ -3718,17 +3832,15 @@ function Add-PredefinedItems($items) {
 	$itemsXml = ""
 	foreach ($it in @($items)) { $itemsXml += (Build-PredefItemXml "`t" $it $codeType) }
 	$utf8Bom = New-Object System.Text.UTF8Encoding($true)
-	if (Test-Path $path) {
-		$text = [System.IO.File]::ReadAllText($path, $utf8Bom)
+	if (Test-PendingOrFile $path) {
+		$text = if ($script:pendingWrites.Contains($path)) { $script:pendingWrites[$path] } else { [System.IO.File]::ReadAllText($path, $utf8Bom) }
 		$text = $text.Replace("</PredefinedData>", "$itemsXml</PredefinedData>")
 	} else {
-		$extDir = Split-Path $path
-		if (-not (Test-Path $extDir)) { New-Item -ItemType Directory -Path $extDir -Force | Out-Null }
 		$hdr = "<?xml version=`"1.0`" encoding=`"UTF-8`"?>`r`n<PredefinedData xmlns=`"http://v8.1c.ru/8.3/xcf/predef`" xmlns:v8=`"http://v8.1c.ru/8.1/data/core`" xmlns:xr=`"http://v8.1c.ru/8.3/xcf/readable`" xmlns:xs=`"http://www.w3.org/2001/XMLSchema`" xmlns:xsi=`"http://www.w3.org/2001/XMLSchema-instance`" xsi:type=`"$xsiType`" version=`"$version`">`r`n"
 		$text = "$hdr$itemsXml</PredefinedData>`r`n"
 	}
 	# Создаваемый файл — по канону: без перевода строки в конце.
-	[System.IO.File]::WriteAllText($path, $text.TrimEnd("`r", "`n"), $utf8Bom)
+	$script:pendingWrites[$path] = $text.TrimEnd("`r", "`n")
 	$n = @($items).Count
 	Info "Added $n predefined item(s) → $path"
 	$script:addCount += $n
@@ -3760,8 +3872,7 @@ $def.PSObject.Properties | ForEach-Object {
 	if ($prop.Name -eq "_complex") { return }
 	$opKey = Resolve-OperationKey $prop.Name
 	if (-not $opKey) {
-		Warn "Unknown operation: $($prop.Name)"
-		return
+		Die "Unknown operation: $($prop.Name)"
 	}
 
 	switch ($opKey) {
@@ -3813,20 +3924,28 @@ $text = ($text -replace "`r`n", "`n") -replace "`n", $targetEol
 
 Info "Saved: $resolvedPath"
 
+foreach ($pw in $script:pendingWrites.GetEnumerator()) {
+	$pwDir = Split-Path $pw.Key
+	if (-not (Test-Path $pwDir)) { New-Item -ItemType Directory -Path $pwDir -Force | Out-Null }
+	[System.IO.File]::WriteAllText($pw.Key, $pw.Value, $utf8Bom)
+}
+
 # ============================================================
 # Section 15: Auto-validate
 # ============================================================
 
 if (-not $NoValidate) {
-	$validateScript = Join-Path (Join-Path $PSScriptRoot "..\..\meta-validate") "scripts\meta-validate.ps1"
+	# Внешняя обработка/отчёт — автономный объект, meta-validate его не знает (#108).
+	$validateSkill = if (@('ExternalDataProcessor','ExternalReport') -contains $script:objType) { "epf-validate" } else { "meta-validate" }
+	$validateScript = Join-Path (Join-Path $PSScriptRoot "..\..\$validateSkill") "scripts\$validateSkill.ps1"
 	$validateScript = [System.IO.Path]::GetFullPath($validateScript)
 	if (Test-Path $validateScript) {
 		Write-Host ""
-		Write-Host "--- Running meta-validate ---" -ForegroundColor DarkGray
+		Write-Host "--- Running $validateSkill ---" -ForegroundColor DarkGray
 		& powershell.exe -NoProfile -File $validateScript -ObjectPath $resolvedPath
 	} else {
 		Write-Host ""
-		Write-Host "[SKIP] meta-validate not found at: $validateScript" -ForegroundColor DarkGray
+		Write-Host "[SKIP] $validateSkill not found at: $validateScript" -ForegroundColor DarkGray
 	}
 }
 

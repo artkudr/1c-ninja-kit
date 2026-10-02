@@ -764,7 +764,8 @@ function Test-UserMcpOverlap {
         "1c-mcp-toolkit",
         "1c-ninja-mcp",
         "bsl-analyzer-reference",
-        "bsl-analyzer-workspace"
+        "bsl-analyzer-workspace",
+        "v8std"
     )
     if (-not (Test-Path -LiteralPath $userMcp)) {
         Add-Report "user mcp.json" "ok" "absent (1C MCP lives in project)"

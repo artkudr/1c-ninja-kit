@@ -64,3 +64,7 @@ bsl-analyzer-workspace:
   command: "%LOCALAPPDATA%\\bsl-analyzer\\bsl-analyzer.exe"
   args: ["mcp", "serve", "--profile", "workspace", "--source-dir", "<PROJECT_ROOT>"]
   enabled: true
+
+v8std:
+  url: "https://ai.v8std.ru/mcp"
+  enabled: true

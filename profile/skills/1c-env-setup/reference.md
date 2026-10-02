@@ -61,6 +61,7 @@
 3. `1c-ninja-mcp` — `NINJA_URL` / `NINJA_USER` / `NINJA_PASSWORD` **этой** ИБ (`…/hs/ninja-live`, CFE `NinjaLive`)
 4. `bsl-analyzer-reference` — справка платформы (без `--source-dir`)
 5. `bsl-analyzer-workspace` — `--source-dir` = абсолютный путь **этой** папки
+6. `v8std` — `https://ai.v8std.ru/mcp` (стандарты ITS/v8, streamable-http)
 
 User MCP (`%USERPROFILE%\.cursor\mcp.json`) — **без** этих имён (`mcpServers: {}`). Cursor читает user **и** project: одинаковое имя сервера = дубль в агенте. Live-URL в user класть нельзя (чужая ИБ в другом чате).
 

@@ -3,7 +3,7 @@ name: 1c-bsl-analyzer
 description: >-
   Семантика BSL через MCP bsl-analyzer workspace: graph (callers/callees),
   symbol_info, diagnostics file, metadata, search; модель cf+cfe+epf/erf
-  (externals, ≥0.2.77). Перед правкой метода/CFE/внешних — влияние вызовов и
+  (externals, ≥0.2.81). Перед правкой метода/CFE/внешних — влияние вызовов и
   точечные диагностики; не путать с ninja live_* и vrunner syntax-check.
   Используй при анализе влияния, переименовании, ревью BSL, «кто вызывает»,
   недостижимый код / типы.
@@ -11,7 +11,7 @@ description: >-
 
 # bsl-analyzer (семантика кода по выгрузке)
 
-Rust MCP **workspace** (itrous/bsl-analyzer, **≥0.2.77** / текущий 0.2.79+): модель исходников `src/cf` + `src/cfe` + внешние EPF/ERF (`src/epf`, `src/erf`), граф вызовов, диагностики.  
+Rust MCP **workspace** (itrous/bsl-analyzer, **≥0.2.81**): модель исходников `src/cf` + `src/cfe` + внешние EPF/ERF (`src/epf`, `src/erf`), граф вызовов, диагностики.  
 Не путать с ninja `live_*` (живая ИБ) и с CLI `bsl-analyzer analyze` (тяжёлый полный прогон).
 
 ## Где лежит

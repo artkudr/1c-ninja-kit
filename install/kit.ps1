@@ -338,6 +338,10 @@ function Invoke-InitProject {
         command = $bslExe
         args = @('mcp', 'serve', '--profile', 'workspace', '--source-dir', $proj)
       }
+      'v8std' = @{
+        url = 'https://ai.v8std.ru/mcp'
+        type = 'streamable-http'
+      }
     }
   }
   $mcpJson = $mcpObj | ConvertTo-Json -Depth 8

@@ -1,4 +1,4 @@
-﻿# meta-validate v1.28 — Validate 1C metadata object structure
+﻿# meta-validate v1.34 — Validate 1C metadata object structure
 # Source: https://github.com/Nikolay-Shirokov/cc-1c-skills
 [CmdletBinding(PositionalBinding=$false)]
 param(
@@ -167,6 +167,50 @@ function Get-FormatRank([string]$ver) {
 	return 0
 }
 
+# Штамп версии формата — атрибут version КОРНЕВОГО элемента файла. Именно корневого: в Form.xml
+# расширения ниже стоит <BaseForm version=…>. Читается только заголовок, без разбора файла.
+function Get-RootVersion([string]$xmlPath) {
+	if (-not (Test-Path -LiteralPath $xmlPath -PathType Leaf)) { return $null }
+	$buf = New-Object byte[] 4096
+	$fs = [System.IO.File]::OpenRead($xmlPath)
+	try { $len = $fs.Read($buf, 0, $buf.Length) } finally { $fs.Dispose() }
+	$head = [System.Text.Encoding]::UTF8.GetString($buf, 0, $len)
+	$m = [regex]::Match($head, '<[A-Za-z_][\w.:-]*(\s[^>]*)?/?>')
+	if (-not $m.Success) { return $null }
+	$v = [regex]::Match($m.Groups[1].Value, '(?:^|\s)version="([^"]*)"')
+	if ($v.Success) { return $v.Groups[1].Value }
+	return $null
+}
+
+# Корень автономной внешней обработки/отчёта. Копия общего эталона (семья is_external_root,
+# авторитет — cf-edit).
+function Test-ExternalObjectRoot([string]$xmlPath) {
+	if (-not (Test-Path $xmlPath)) { return $false }
+	try {
+		[xml]$mx = Get-Content -Path $xmlPath -Encoding UTF8
+		$el = $mx.DocumentElement.FirstChild
+		while ($el -and $el.NodeType -ne 'Element') { $el = $el.NextSibling }
+		if ($el) { return @('ExternalDataProcessor','ExternalReport') -contains $el.LocalName }
+	} catch {}
+	return $false
+}
+
+# Якорь выгрузки, в чьём дереве лежит файл: корень автономной EPF/ERF либо Configuration.xml,
+# ближайший вверх. Корень обработки проверяется первым — иначе обработка, лежащая в дереве
+# конфигурации, сверялась бы с конфигурацией. Нет якоря — сверять не с чем.
+function Find-DumpAnchor([string]$startDir) {
+	$d = $startDir
+	for ($i = 0; $i -lt 15 -and $d; $i++) {
+		if (Test-ExternalObjectRoot "$d.xml") { return "$d.xml" }
+		$cfg = Join-Path $d "Configuration.xml"
+		if (Test-Path $cfg) { return $cfg }
+		$parent = [System.IO.Path]::GetDirectoryName($d)
+		if (-not $parent -or $parent -eq $d) { break }
+		$d = $parent
+	}
+	return $null
+}
+
 # --- Reference tables ---
 
 $guidPattern = '^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$'
@@ -193,6 +237,20 @@ $structuralOnlyTypes = @(
 	"FunctionalOption","FunctionalOptionsParameter","Language","Style","StyleItem",
 	"WSReference","XDTOPackage","DocumentNumerator","Sequence"
 )
+
+# Вложенные дескрипторы объекта: Forms/<Имя>.xml и Templates/<Имя>.xml. Корень тот же MetaDataObject,
+# но в ChildObjects конфигурации они не регистрируются и первым сегментом MDObjectRef не бывают —
+# в knownRoots проверки 17 их не добавлять. Принимаются, чтобы пакетный прогон по списку изменённых
+# файлов не падал на них «Unrecognized».
+$nestedDescriptorTypes = @("Form","Template")
+# Вид формы/макета — по нему платформа выбирает читателя тела. Значения — docs/1c-configuration-spec.md,
+# свойства FormType и TemplateType. Список отдельный от validPropertyValues: у авторитета meta-compile
+# этих ключей нет (формы и макеты создают form-add и template-add).
+$descriptorKindValues = @{
+	"FormType"     = @("Managed","Ordinary")
+	"TemplateType" = @("SpreadsheetDocument","BinaryData","HTMLDocument","TextDocument","ActiveDocument",
+	                   "DataCompositionSchema","DataCompositionAppearanceTemplate","GraphicalSchema","GeographicalSchema","AddIn")
+}
 
 # GeneratedType categories by type
 $generatedTypeCategories = @{
@@ -303,11 +361,14 @@ $validPropertyValues = @{
 	"Posting"                        = @("Allow","Deny")
 	"RealTimePosting"                = @("Allow","Deny")
 	"RegisterRecordsDeletion"        = @("AutoDelete","AutoDeleteOnUnpost","AutoDeleteOff")
-	"RegisterRecordsWritingOnPost"   = @("WriteModified","WriteSelected","WriteAll")
+	"RegisterRecordsWritingOnPost"   = @("WriteModified","WriteSelected")
 	# AutomaticAndManaged — только у внешнего источника данных и его таблиц.
 	"DataLockControlMode"            = @("Automatic","Managed","AutomaticAndManaged")
 	"FullTextSearch"                 = @("Use","DontUse")
 	"DefaultPresentation"            = @("AsDescription","AsCode")
+	# Уточнение по виду объекта («Вид.Свойство») — раньше общего списка. AsNumber («в виде номера»)
+	# есть только у задачи: у справочника и прочих платформа его отвергает (8.3.24 и 8.5.1).
+	"Task.DefaultPresentation"       = @("AsDescription","AsNumber")
 	"HierarchyType"                  = @("HierarchyFoldersAndItems","HierarchyOfItems")
 	"EditType"                       = @("InDialog","InList","BothWays")
 	"WriteMode"                      = @("Independent","RecorderSubordinate")
@@ -315,10 +376,10 @@ $validPropertyValues = @{
 	"RegisterType"                   = @("Balance","Turnovers")
 	"ReturnValuesReuse"              = @("DontUse","DuringRequest","DuringSession")
 	"ReuseSessions"                  = @("DontUse","Use","AutoUse")
-	"FillChecking"                   = @("DontCheck","ShowError","ShowWarning")
+	"FillChecking"                   = @("DontCheck","ShowError")
 	"Indexing"                       = @("DontIndex","Index","IndexWithAdditionalOrder")
 	"DataHistory"                    = @("Use","DontUse")
-	"DependenceOnCalculationTypes"   = @("DontUse","OnActionPeriod")
+	"DependenceOnCalculationTypes"   = @("DontUse","OnActionPeriod","OnRegistrationPeriod")
 }
 
 # Properties forbidden per type (would cause LoadConfigFromFiles error)
@@ -410,7 +471,7 @@ if ($childElements.Count -eq 0) {
 $typeNode = $childElements[0]
 $mdType = $typeNode.LocalName
 
-if (($validTypes -notcontains $mdType) -and ($structuralOnlyTypes -notcontains $mdType)) {
+if (($validTypes -notcontains $mdType) -and ($structuralOnlyTypes -notcontains $mdType) -and ($nestedDescriptorTypes -notcontains $mdType)) {
 	Report-Error "1. Unrecognized metadata type: $mdType"
 	& $finalize
 	exit 1
@@ -438,6 +499,75 @@ if ($check1Ok) {
 	Report-OK "1. Root structure: MetaDataObject/$mdType, version $version"
 }
 
+# --- Check 24: версия формата согласована внутри объекта; сверка с выгрузкой ---
+# Части объекта — дескриптор X.xml и штампованные тела X/Ext/*.xml — платформа загружает только в одной
+# версии: «Версия формата загружаемого файла … отличается от версии формата ранее загруженных файлов».
+# Формы и макеты объекта (Forms/F.xml + F/Ext/Form.xml, Templates/T.xml + T/Ext/Template.xml) — такие же
+# пары, проверяются вместе с объектом. Объекты разных версий между собой платформа грузит, это лишь неоднородность выгрузки (типично после
+# мержа веток, выгруженных разными платформами) — поэтому сверка с выгрузкой только предупреждает.
+# Стоит до ранних выходов: нужна каждому корню, включая structural-only и вложенные дескрипторы.
+$objBaseDir = Split-Path $resolvedPath
+$objDir = Join-Path $objBaseDir ([System.IO.Path]::GetFileNameWithoutExtension($resolvedPath))
+$verDescriptors = @($resolvedPath)
+foreach ($sub in @("Forms","Templates")) {
+	$subDir = Join-Path $objDir $sub
+	if (-not (Test-Path $subDir -PathType Container)) { continue }
+	$names = @(Get-ChildItem $subDir -Filter "*.xml" -File | ForEach-Object { $_.Name })
+	[Array]::Sort($names, [StringComparer]::Ordinal)
+	foreach ($n in $names) { $verDescriptors += (Join-Path $subDir $n) }
+}
+$verRel = { param($p) $p.Substring($objBaseDir.Length).TrimStart('\', '/') -replace '\\', '/' }
+$verErrors = 0
+$verBodies = 0
+foreach ($desc in $verDescriptors) {
+	if ($script:stopped) { break }
+	$descVer = if ($desc -eq $resolvedPath) { $version } else { Get-RootVersion $desc }
+	if (-not $descVer) { continue }
+	$extDir = Join-Path (Join-Path (Split-Path $desc) ([System.IO.Path]::GetFileNameWithoutExtension($desc))) "Ext"
+	if (-not (Test-Path $extDir -PathType Container)) { continue }
+	$bodyNames = @(Get-ChildItem $extDir -Filter "*.xml" -File | ForEach-Object { $_.Name })
+	[Array]::Sort($bodyNames, [StringComparer]::Ordinal)
+	foreach ($bn in $bodyNames) {
+		$body = Join-Path $extDir $bn
+		$bodyVer = Get-RootVersion $body
+		if (-not $bodyVer) { continue }
+		# У заимствованной формы расширения второй штамп — <BaseForm version=…>; платформа сверяет с
+		# дескриптором и его.
+		if ($bn -ceq "Form.xml") {
+			$bodyText = [System.IO.File]::ReadAllText($body, [System.Text.Encoding]::UTF8)
+			$bfm = [regex]::Match($bodyText, '<BaseForm\s[^>]*?version="([^"]*)"')
+			if ($bfm.Success -and $bfm.Groups[1].Value -ne $descVer) {
+				$verErrors++
+				Report-Error "24. $(& $verRel $body) <BaseForm> is stamped $($bfm.Groups[1].Value), its descriptor $(& $verRel $desc) $descVer — the platform refuses to load parts of one object in different formats"
+				if ($script:stopped) { break }
+			}
+		}
+		if ($bodyVer -eq $descVer) { $verBodies++; continue }
+		$verErrors++
+		Report-Error "24. $(& $verRel $body) is stamped $bodyVer, its descriptor $(& $verRel $desc) $descVer — the platform refuses to load parts of one object in different formats"
+		if ($script:stopped) { break }
+	}
+}
+if ($verErrors -eq 0 -and $verBodies -gt 0) {
+	Report-OK "24. Format version: $verBodies stamped part(s) agree with their descriptors"
+}
+$dumpAnchor = Find-DumpAnchor $objBaseDir
+$dumpVer = if ($dumpAnchor) { Get-RootVersion $dumpAnchor } else { $null }
+if ($dumpVer) {
+	$verOff = @()
+	foreach ($desc in $verDescriptors) {
+		$dv = if ($desc -eq $resolvedPath) { $version } else { Get-RootVersion $desc }
+		if ($dv -and $dv -ne $dumpVer) { $verOff += "$(& $verRel $desc) $dv" }
+	}
+	if ($verOff.Count -gt 0) {
+		$shown = ($verOff | Select-Object -First 5) -join ", "
+		if ($verOff.Count -gt 5) { $shown += ", … (+$($verOff.Count - 5))" }
+		Report-Warn "24. Format version differs from the dump ($dumpVer): $shown — the platform loads it, but the dump is no longer uniform (typical after merging branches dumped by different platforms)"
+	} else {
+		Report-OK "24. Format version: matches the dump ($dumpVer)"
+	}
+}
+
 # --- Structural-only types: базовая проверка (Name), без type-specific правил ---
 if ($structuralOnlyTypes -contains $mdType) {
 	if ($objName -eq "(unknown)") {
@@ -446,6 +576,32 @@ if ($structuralOnlyTypes -contains $mdType) {
 		Report-Error "3. Properties: Name '$objName' is not a valid 1C identifier"
 	} else {
 		Report-OK "3. Properties: Name=`"$objName`" (базовая структурная проверка для $mdType)"
+	}
+	& $finalize
+	if ($script:errors -gt 0) { exit 1 }
+	exit 0
+}
+
+# --- Вложенные дескрипторы Form/Template: Name и вид формы/макета ---
+if ($nestedDescriptorTypes -contains $mdType) {
+	if ($objName -eq "(unknown)") {
+		Report-Error "3. Properties: missing or empty Name"
+	} elseif ($objName -notmatch $identPattern) {
+		Report-Error "3. Properties: Name '$objName' is not a valid 1C identifier"
+	} else {
+		Report-OK "3. Properties: Name=`"$objName`" (базовая структурная проверка для $mdType)"
+	}
+	$kindProp = if ($mdType -eq "Form") { "FormType" } else { "TemplateType" }
+	$kindNode = if ($propsNode) { $propsNode.SelectSingleNode("md:$kindProp", $ns) } else { $null }
+	$kindValue = if ($kindNode) { $kindNode.InnerText } else { "" }
+	$allowed = $descriptorKindValues[$kindProp]
+	# Регистрозависимо, как у платформы и в py-порте (-contains сравнивает без учёта регистра).
+	if (-not $kindValue) {
+		Report-Error "3. Property '$kindProp' is missing on <$mdType>"
+	} elseif ($allowed -cnotcontains $kindValue) {
+		Report-Error "3. Property '$kindProp' has invalid value '$kindValue' (allowed: $($allowed -join ', '))"
+	} else {
+		Report-OK "3. Property '$kindProp' = $kindValue"
 	}
 	& $finalize
 	if ($script:errors -gt 0) { exit 1 }
@@ -586,11 +742,14 @@ if ($propsNode) {
 	$check4Ok = $true
 
 	foreach ($propName in $validPropertyValues.Keys) {
+		if ($propName.Contains('.')) { continue }   # «Вид.Свойство» — уточнение, не отдельное свойство
 		$propNode = $propsNode.SelectSingleNode("md:$propName", $ns)
 		if ($propNode -and $propNode.InnerText) {
 			$val = $propNode.InnerText
-			$allowed = $validPropertyValues[$propName]
-			if ($allowed -notcontains $val) {
+			$allowed = $validPropertyValues["$mdType.$propName"]
+			if (-not $allowed) { $allowed = $validPropertyValues[$propName] }
+			# Регистр значим: платформа читает перечисление по точному имени (-notcontains его не различал)
+			if ($allowed -cnotcontains $val) {
 				Report-Error "4. Property '$propName' has invalid value '$val' (allowed: $($allowed -join ', '))"
 				$check4Ok = $false
 			}
@@ -1028,6 +1187,21 @@ if ($propsNode) {
 		$hierarchyType.InnerText -and $hierarchyType.InnerText -ne "HierarchyFoldersAndItems") {
 		Report-Warn "10. HierarchyType='$($hierarchyType.InnerText)' but Hierarchical=false"
 		$check10Issues++
+	}
+
+	# Код/номер нулевой длины во вводе по строке: платформа отвергает загрузку — «Указано неверное
+	# поле для ввода по строке: Код/Номер» (8.3.24, 8.5.1). Бывает после правки длины в 0 без чистки
+	# InputByString (meta-edit так больше не делает, но ручную правку это не страхует).
+	$ibsFields = @($propsNode.SelectNodes("md:InputByString/xr:Field", $ns) | ForEach-Object { $_.InnerText.Trim() })
+	foreach ($pair in @(@("CodeLength", "Code"), @("NumberLength", "Number"))) {
+		$lenNode = $propsNode.SelectSingleNode("md:$($pair[0])", $ns)
+		if (-not $lenNode -or $lenNode.InnerText.Trim() -ne "0") { continue }
+		$hit = $ibsFields | Where-Object { $_ -cmatch "\.StandardAttribute\.$($pair[1])$" } | Select-Object -First 1
+		if ($hit) {
+			Report-Error "10. InputByString contains '$hit' but $($pair[0])=0 — the platform rejects it (invalid input-by-string field)"
+			$check10Ok = $false
+			$check10Issues++
+		}
 	}
 
 	# CommonModule: no context enabled
@@ -1724,6 +1898,45 @@ if ($unknownVocab.Count -gt 0) {
 if ($badGrammar.Count -eq 0 -and $notStorable.Count -eq 0 -and $unknownVocab.Count -eq 0 -and $typesSeen -gt 0) {
 	Report-OK "22. Type names: $typesSeen checked"
 }
+
+# --- Check 23: тип-множество там, где его не принимают ---
+# Три уровня строгости, все замерены загрузкой в базу на 8.3.24.1691:
+#  ERROR — множество в составе определяемого типа: платформа отвергает файл целиком
+#          («ОпределяемыйТип.<Имя> - Недопустимый тип»), проверено на ОпределяемыйТип,
+#          Характеристика, ЛюбаяСсылка и голых ссылках;
+#  WARN  — голый метатип в типе значения ПВХ: загрузка проходит, но Конфигуратор такой тип не
+#          предлагает (в дереве выбора это папка без флажка), а ЛюбаяСсылка на выгрузке
+#          возвращается как ЛюбаяСсылкаИБ;
+#  WARN  — определяемый тип или характеристика одним из составного: Конфигуратор даёт
+#          выбрать их только единственными (характеристику — даже с другой характеристикой). В корпусе erp+acc 6500 единственных против 1 составного — и этот один
+#          лежит в типовой ERP (Документ.НачислениеИСписаниеБонусныхБаллов.Баллы), поэтому не ошибка.
+$typeBlocks23 = @($xmlDoc.SelectNodes("//md:Type | //md:ValueType", $ns))
+$dtSetsSeen = 0
+$dtSetsBad = $false
+foreach ($tb in $typeBlocks23) {
+	$sets = @($tb.SelectNodes("v8:TypeSet", $ns))
+	if ($sets.Count -eq 0) { continue }
+	$dtSetsSeen++
+	$members = $tb.SelectNodes("v8:Type", $ns).Count + $sets.Count
+	$ownerKind = $tb.ParentNode.ParentNode.get_LocalName()   # <Type> → <Properties> → <DefinedType>/…
+	foreach ($st in $sets) {
+		$raw = $st.InnerText.Trim() -replace '^(?:cfg|d\d+p\d+):', ''
+		if ($ownerKind -eq "DefinedType") {
+			$dtSetsBad = $true
+			Report-Error "23. Определяемый тип '$objName': в составе тип-множество '$raw' — платформа не загрузит такой файл («Недопустимый тип»). Состав определяемого типа — только конкретные типы"
+			continue
+		}
+		if ($ownerKind -eq "ChartOfCharacteristicTypes" -and $raw -notmatch '^DefinedType\.') {
+			$dtSetsBad = $true
+			Report-Warn "23. План видов характеристик '$objName': тип значения '$raw' Конфигуратор не предлагает (в дереве выбора это папка без флажка); ЛюбаяСсылка на выгрузке вернётся как ЛюбаяСсылкаИБ"
+		}
+		if ($members -gt 1 -and $raw -match '^(DefinedType|Characteristic)\.') {
+			$dtSetsBad = $true
+			Report-Warn "23. Составной тип содержит '$raw' — Конфигуратор даёт выбрать определяемый тип и характеристику только единственным; платформа загрузит"
+		}
+	}
+}
+if ($dtSetsSeen -gt 0 -and -not $dtSetsBad) { Report-OK "23. Type sets: $dtSetsSeen block(s) checked" }
 
 # --- Check 18: свойства, появившиеся в новых версиях формата ---
 # Реестр «тег → минимальная версия формата». Служит двум целям: (1) поймать свойство в файле со
