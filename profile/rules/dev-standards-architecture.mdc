@@ -1,9 +1,9 @@
 ---
-description: Thin architecture pointers (ecoladev) — delegates to 1c-architect; no coding-standards duplicate
+description: Thin architecture pointers — delegates to 1c-architect; no coding-standards duplicate
 alwaysApply: false
 ---
 
-<!-- ecoladev cherry-pick: not full upstream dev-standards-*; coding standards already in bsl-code-standards / 1c-code-agent -->
+<!-- kit cherry-pick: not full upstream dev-standards-*; coding standards already in bsl-code-standards / 1c-code-agent -->
 
 # Dev-standards architecture (thin)
 

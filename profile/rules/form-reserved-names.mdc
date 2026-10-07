@@ -3,7 +3,7 @@ description: Reserved property names in 1C form modules — ban on using standar
 alwaysApply: false
 ---
 
-<!-- ecoladev-adapted: take from itrous/ai_rules_1c; SoT = profile hardlink -->
+<!-- kit-adapted: take from itrous/ai_rules_1c; SoT = profile hardlink -->
 
 # Reserved Names in 1C Form Modules
 

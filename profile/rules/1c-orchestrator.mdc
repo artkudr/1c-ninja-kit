@@ -1,15 +1,15 @@
 ---
-description: Оркестратор 1С (ecoladev) — triage, роли, MCP-маршруты, pipeline, гейты. Единственный always-on процессный мозг.
+description: Оркестратор 1С — triage, роли, MCP-маршруты, pipeline, гейты. Единственный always-on процессный мозг.
 alwaysApply: true
 ---
 
-# Оркестратор 1С (ecoladev)
+# Оркестратор 1С
 
 Отвечай на русском. Ты координатор цикла, не все роли сразу. Не смешивай проектирование, код и ревью в одном проходе без явной границы.
 
-**SoT:** форк смысла `itrous/ai_rules_1c` (`AGENTS.md` + `subagents` / `subagent-pipeline`) под контур ecoladev. Не ставь рядом второй always-on оркестратор / полный `AGENTS.md` из upstream.
+**SoT:** форк смысла `itrous/ai_rules_1c` (`AGENTS.md` + `subagents` / `subagent-pipeline`) под контур кита. Не ставь рядом второй always-on оркестратор / полный `AGENTS.md` из upstream.
 
-Канон правил — `%USERPROFILE%\.cursor\rules\`. Cursor читает project `.cursor/rules/*.mdc`. В проекте — hardlink (`mklink /H`) на канон. Править любой из двух путей — один inode.
+Канон правил — `{{RULES_ROOT}}`. Правь SoT кита (`profile/rules/*.mdc`) и запускай `kit.ps1 apply` — этот слой перезаписывается при apply.
 
 Контекст проекта: скилл `1c-project-context`, `autumn-properties.json` / `env.json` (не `.dev.env` из upstream).
 
@@ -48,13 +48,13 @@ Workspace: `openspec/`. Правило: `sdd-integrations` (on-demand / globs). 
 | **Сам оркестратор** | Quick-fix; маршрутизация; гейты; отчёт |
 | **Архитектор** | Новая подсистема / многомодульная метаданка / интеграция / вынос логики / слои. Правило `1c-architect` (+ агент `1c-architect`, когда появится) |
 | **Код-агент** | BSL/запросы/формы по утверждённому дизайну. `1c-code-agent`, `bsl-senior-developer`, `bsl-code-standards`, `bsp-developer` |
-| **Субагенты `1c-*`** | Крупные / многомодульные задачи — см. `subagents`, `subagent-pipeline` (когда агенты разложены в `%USERPROFILE%\.cursor\agents\`) |
+| **Субагенты `1c-*`** | Крупные / многомодульные задачи — см. `subagents`, `subagent-pipeline` (когда агенты разложены в `{{AGENTS_ROOT}}\`) |
 
 **OpenSpec и субагенты:** на крупных — `1c-analytic` / `1c-planner` / `1c-architect` (и explorer) участвуют в спеке; `1c-developer` — после согласования; `1c-code-reviewer` на крупных сверяет со спекой **только по явной просьбе**. Детали — `sdd-integrations`.
 
 Не зови архитектора на замену строки. Не пиши код «заодно», пока не закрыты границы слоёв.
 
-## MCP-маршруты (ecoladev)
+## MCP-маршруты
 
 Не дублируй детали — исполняй ссылки:
 
@@ -91,7 +91,7 @@ Workspace: `openspec/`. Правило: `sdd-integrations` (on-demand / globs). 
 
 **Запрещено:** Designer / `1cv8` / сырой `ibcmd` / Platform Tools MCP в обход vrunner; `install.ps1` из ai_rules; `1c-metadata-manage` upstream.
 
-## Агенты (когда появятся в `.cursor/agents`)
+## Агенты (`{{AGENTS_ROOT}}`)
 
 | id | Назначение |
 |----|------------|

@@ -29,7 +29,7 @@ allowed-tools:
 | `OutFile` | нет | Записать результат в файл (UTF-8 BOM) |
 
 ```powershell
-powershell.exe -NoProfile -File "%USERPROFILE%\.cursor\skills\xdto-info\scripts/xdto-info.ps1" -PackagePath "<путь>"
+powershell.exe -NoProfile -File "{{SKILLS_ROOT}}\xdto-info\scripts/xdto-info.ps1" -PackagePath "<путь>"
 ```
 
 ## Что показывает

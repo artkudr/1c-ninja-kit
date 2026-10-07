@@ -28,8 +28,8 @@ allowed-tools:
 ## Команда
 
 ```powershell
-powershell.exe -NoProfile -File "%USERPROFILE%\.cursor\skills\epf-validate\scripts/epf-validate.ps1" -ObjectPath "src/erf/МойОтчёт"
-powershell.exe -NoProfile -File "%USERPROFILE%\.cursor\skills\epf-validate\scripts/epf-validate.ps1" -ObjectPath "src/erf/МойОтчёт/МойОтчёт.xml"
+powershell.exe -NoProfile -File "{{SKILLS_ROOT}}\epf-validate\scripts/epf-validate.ps1" -ObjectPath "src/erf/МойОтчёт"
+powershell.exe -NoProfile -File "{{SKILLS_ROOT}}\epf-validate\scripts/epf-validate.ps1" -ObjectPath "src/erf/МойОтчёт/МойОтчёт.xml"
 ```
 
 Канон раскладки — nested: `src/erf/<Имя>/<Имя>.xml` + `src/erf/<Имя>/<Имя>/`.

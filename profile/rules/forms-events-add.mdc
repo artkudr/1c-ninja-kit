@@ -3,7 +3,7 @@ description: Wiring up form event handlers (`ПриОткрытии`, `ПриИ�
 alwaysApply: false
 ---
 
-<!-- ecoladev-adapted: take from itrous/ai_rules_1c; SoT = profile hardlink -->
+<!-- kit-adapted: take from itrous/ai_rules_1c; SoT = profile hardlink -->
 
 # Adding Form Event Handlers
 

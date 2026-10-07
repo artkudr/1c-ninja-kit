@@ -34,7 +34,7 @@
 
 ```json
 {
-  "root": "Z:\\Экола\\Хранилища",
+  "root": "Z:\\Хранилища",
   "user": "ИмяВХранилище",
   "adminUser": "Администратор",
   "cfe": {
@@ -43,7 +43,7 @@
 }
 ```
 
-`sync-cfe.ps1` добавляет отсутствующие ключи как 1:1 (`Имя` → `Имя`). Исключения вроде `Экола_API_REST` → `API_REST` правит человек. Без `-Prune` лишние ключи не удаляются. `NinjaLive` в `cfe` **не** добавлять (не хранилище; bootstrap live).
+`sync-cfe.ps1` добавляет отсутствующие ключи как 1:1 (`Имя` → `Имя`). Исключения вроде `Компания_API_REST` → `API_REST` правит человек. Без `-Prune` лишние ключи не удаляются. `NinjaLive` в `cfe` **не** добавлять (не хранилище; bootstrap live).
 
 ## Project MCP
 
@@ -52,7 +52,7 @@
 | Файл | Git |
 |------|-----|
 | `.cursor/mcp.json.example` | да (плейсхолдеры; тот же состав, что рабочий файл) |
-| `.cursor/mcp.json` | нет (секреты + `--source-dir` этой папки) |
+| `{{PROJECT_MCP}}` | нет (секреты + `--source-dir` этой папки) |
 
 Полный состав project MCP (все 1С-серверы здесь, не в user):
 
@@ -87,7 +87,7 @@ openspec/{README.md,config.yaml,project.md,templates/,specs/,changes/archive/}
 
 ### OpenSpec scaffold
 
-Setup разворачивает из шаблонов скилла (`scripts/templates/openspec/`, `scripts/templates/cursor-commands/`):
+Setup разворачивает из шаблонов скилла (`scripts/templates/openspec/`, `scripts/templates/commands/`):
 
 | Путь | Источник | Refresh без `-Force` |
 |------|----------|----------------------|
@@ -108,7 +108,7 @@ Setup разворачивает из шаблонов скилла (`scripts/te
 
 Порядок:
 
-1. Init копирует `src/cfe/NinjaLive` с эталона: SourceProject `src/cfe/NinjaLive`, иначе `C:\1C\projects\ecoladev\src\cfe\NinjaLive`.
+1. Init копирует `src/cfe/NinjaLive` с эталона: SourceProject `src/cfe/NinjaLive`, иначе `C:\1C\projects\my-project\src\cfe\NinjaLive`.
 2. Проверка входа = загрузка bootstrap: MCP vrunner `cfe_load` `SRC=./src/cfe/NinjaLive` `extension-name=NinjaLive` `active=true` `safe-mode=false`. Auth-ошибка → не оставлять битый пароль в `autumn-properties.json`.
 3. `web-publish` с `publishExtensionsByDefault`. Project mcp: `NINJA_URL=…/hs/ninja-live`.
 4. Smoke: `live_version`. **Список ИБ:** `live_extensions_list`.
@@ -116,9 +116,9 @@ Setup разворачивает из шаблонов скилла (`scripts/te
 
 `NinjaLive` не класть в `repository.json` → `cfe`.
 
-## Check на эталоне (ecoladev)
+## Check на эталоне 
 
-Проверено 2026-08-29 (`-Mode Check -ProjectRoot C:\1C\projects\ecoladev`):
+Проверено 2026-08-29 (`-Mode Check -ProjectRoot C:\1C\projects\my-project`):
 
 - `vrunner` ok (`3.0.0_beta`)
 - `bsl-analyzer.exe` ok
@@ -129,6 +129,6 @@ Setup разворачивает из шаблонов скилла (`scripts/te
 - `sync-cfe.ps1 -SkipIb -DryRun` — fallback repository + src/cfe работает (без Предприятия)
 - `src/cfe/NinjaLive` — эталон на месте; Init в чужую папку копирует отсюда
 
-`tools/syntax-check-excludes.txt` на ecoladev может отсутствовать — Check покажет `would-create`.
+`tools/syntax-check-excludes.txt` может отсутствовать — Check покажет `would-create`.
 
 OpenSpec: Check/Refresh добавляют `.cursor/commands/opsx-*.md` и недостающие шаблоны `openspec/`; живые `openspec/changes/*` и `config.yaml`/`project.md` без `-Force` не затираются.

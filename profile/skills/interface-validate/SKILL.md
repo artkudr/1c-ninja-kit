@@ -24,6 +24,6 @@ allowed-tools:
 ## Команда
 
 ```powershell
-powershell.exe -NoProfile -File "%USERPROFILE%\.cursor\skills\interface-validate\scripts/interface-validate.ps1" -CIPath "Subsystems/Продажи"
-powershell.exe -NoProfile -File "%USERPROFILE%\.cursor\skills\interface-validate\scripts/interface-validate.ps1" -CIPath "Subsystems/Продажи/Ext/CommandInterface.xml"
+powershell.exe -NoProfile -File "{{SKILLS_ROOT}}\interface-validate\scripts/interface-validate.ps1" -CIPath "Subsystems/Продажи"
+powershell.exe -NoProfile -File "{{SKILLS_ROOT}}\interface-validate\scripts/interface-validate.ps1" -CIPath "Subsystems/Продажи/Ext/CommandInterface.xml"
 ```

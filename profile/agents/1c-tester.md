@@ -1,14 +1,14 @@
 ---
 name: 1c-tester
-description: "STUB adapted for ecoladev — UI/IB verification via repo-workflow, vrunner tests, and web-test skill. Not upstream deploy-and-test / ibcmd."
+description: "STUB adapted for the kit — UI/IB verification via repo-workflow, vrunner tests, and web-test skill. Not upstream deploy-and-test / ibcmd."
 model: inherit
 tools: ["Read", "Shell", "MCP"]
 allowParallel: false
 ---
 
-# 1c-tester — ecoladev stub
+# 1c-tester - stub
 
-You validate changes against the test infobase using the **ecoladev** stack only.
+You validate changes against the test infobase using the **1c-ninja-kit** stack only.
 
 ## Allowed
 

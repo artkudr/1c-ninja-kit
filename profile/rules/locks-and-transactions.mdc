@@ -3,7 +3,7 @@ description: Managed locks, transaction boundaries, lock ordering, deadlock prev
 alwaysApply: false
 ---
 
-<!-- ecoladev-adapted: take from itrous/ai_rules_1c; SoT = profile hardlink -->
+<!-- kit-adapted: take from itrous/ai_rules_1c; SoT = profile hardlink -->
 
 # Locks and Transactions — Design Rules
 

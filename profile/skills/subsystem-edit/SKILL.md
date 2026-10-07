@@ -24,7 +24,7 @@ allowed-tools:
 | `NoValidate` | Пропустить авто-валидацию |
 
 ```powershell
-powershell.exe -NoProfile -File "%USERPROFILE%\.cursor\skills\subsystem-edit\scripts/subsystem-edit.ps1" -SubsystemPath '<path>' -Operation add-content -Value 'Catalog.Товары'
+powershell.exe -NoProfile -File "{{SKILLS_ROOT}}\subsystem-edit\scripts/subsystem-edit.ps1" -SubsystemPath '<path>' -Operation add-content -Value 'Catalog.Товары'
 ```
 
 ## Операции

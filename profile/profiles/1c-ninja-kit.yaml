@@ -1,7 +1,7 @@
 # Aggregate profile — default apply target
 name: 1c-ninja-kit
 version: 0.1.0
-description: Full Cursor profile pack (skills + rules + agents) for 1C agent toolchain
+description: Full OpenCode profile pack (skills + rules + agents) for 1C agent toolchain
 packs:
   - core
   - xml-edit

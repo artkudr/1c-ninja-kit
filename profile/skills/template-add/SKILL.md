@@ -33,7 +33,7 @@ allowed-tools:
 ## Команда
 
 ```powershell
-powershell.exe -NoProfile -File "%USERPROFILE%\.cursor\skills\template-add\scripts/add-template.ps1" -ObjectName "<ObjectName>" -TemplateName "<TemplateName>" -TemplateType "<TemplateType>" [-Synonym "<Synonym>"] [-SrcDir "<SrcDir>"] [-SetMainSKD]
+powershell.exe -NoProfile -File "{{SKILLS_ROOT}}\template-add\scripts/add-template.ps1" -ObjectName "<ObjectName>" -TemplateName "<TemplateName>" -TemplateType "<TemplateType>" [-Synonym "<Synonym>"] [-SrcDir "<SrcDir>"] [-SetMainSKD]
 ```
 
 ## Пример
@@ -41,7 +41,7 @@ powershell.exe -NoProfile -File "%USERPROFILE%\.cursor\skills\template-add\scrip
 Добавить основную СКД к отчёту в расширении:
 
 ```powershell
-powershell.exe -NoProfile -File "%USERPROFILE%\.cursor\skills\template-add\scripts/add-template.ps1" -ObjectName "ОтчётПродажи" -TemplateName "ОсновнаяСхемаКомпоновкиДанных" -TemplateType "DataCompositionSchema" -SrcDir "src/cfe/МоёРасширение/Reports"
+powershell.exe -NoProfile -File "{{SKILLS_ROOT}}\template-add\scripts/add-template.ps1" -ObjectName "ОтчётПродажи" -TemplateName "ОсновнаяСхемаКомпоновкиДанных" -TemplateType "DataCompositionSchema" -SrcDir "src/cfe/МоёРасширение/Reports"
 ```
 
 ## Маппинг типов

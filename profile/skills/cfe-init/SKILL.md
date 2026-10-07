@@ -43,7 +43,7 @@ allowed-tools:
 ## Команда
 
 ```powershell
-powershell.exe -NoProfile -File "%USERPROFILE%\.cursor\skills\cfe-init\scripts/cfe-init.ps1" -Name "МоёРасширение" -OutputDir "src\cfe\МоёРасширение" -ConfigPath "src\cf"
+powershell.exe -NoProfile -File "{{SKILLS_ROOT}}\cfe-init\scripts/cfe-init.ps1" -Name "МоёРасширение" -OutputDir "src\cfe\МоёРасширение" -ConfigPath "src\cf"
 ```
 
 ## Примеры

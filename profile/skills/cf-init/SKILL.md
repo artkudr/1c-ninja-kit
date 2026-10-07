@@ -39,7 +39,7 @@ allowed-tools:
 не будет.
 
 ```powershell
-powershell.exe -NoProfile -File "%USERPROFILE%\.cursor\skills\cf-init\scripts/cf-init.ps1" -Name "МояКонфигурация"
+powershell.exe -NoProfile -File "{{SKILLS_ROOT}}\cf-init\scripts/cf-init.ps1" -Name "МояКонфигурация"
 ```
 
 ## Примеры

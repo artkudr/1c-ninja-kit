@@ -1,4 +1,4 @@
-# env-setup.ps1 — оркестратор развёртывания окружения 1С-проекта
+﻿# env-setup.ps1 — оркестратор развёртывания окружения 1С-проекта
 <#
 .SYNOPSIS
     Создаёт каркас каталогов и конфигов проекта 1С на той же машине.
@@ -10,7 +10,7 @@
 .EXAMPLE
     .\env-setup.ps1 -Mode Check
 .EXAMPLE
-    .\env-setup.ps1 -Mode Init -SourceProject C:\1C\projects\ecoladev -IbConnection '/S"srv/db"' -DbUser Admin -DbPwd secret
+    .\env-setup.ps1 -Mode Init -SourceProject C:\1C\projects\my-project -IbConnection '/S"srv/db"' -DbUser Admin -DbPwd secret
 #>
 
 [CmdletBinding()]
@@ -50,6 +50,13 @@ param(
     [string]$RepoAdmin = "Администратор",
 
     [Parameter(Mandatory = $false)]
+    [ValidateSet("opencode")]
+    [string]$Adapter = "opencode",
+
+    [Parameter(Mandatory = $false)]
+    [int]$WebPort = 0,
+
+    [Parameter(Mandatory = $false)]
     [switch]$Force,
 
     [Parameter(Mandatory = $false)]
@@ -62,6 +69,10 @@ param(
 $ErrorActionPreference = "Stop"
 $OutputEncoding = [System.Text.Encoding]::UTF8
 [Console]::OutputEncoding = [System.Text.Encoding]::UTF8
+
+# $PSBoundParameters inside a function is that function's own table, so an explicitly
+# passed -DbPwd "" (empty password) was never honored in MCP/config files. Capture once.
+$DbPwdProvided = $PSBoundParameters.ContainsKey("DbPwd")
 
 $scriptDir = Split-Path -Parent $MyInvocation.MyCommand.Path
 $templatesDir = Join-Path $scriptDir "templates"
@@ -184,11 +195,20 @@ function Copy-NinjaLive {
             [void]$candidates.Add((Resolve-Path -LiteralPath $fromSrc).Path)
         }
     }
-    $canonical = "C:\1C\projects\ecoladev\src\cfe\NinjaLive"
-    if (Test-Path -LiteralPath (Join-Path $canonical "Configuration.xml")) {
-        $rp = (Resolve-Path -LiteralPath $canonical).Path
-        if ($candidates -notcontains $rp) {
-            [void]$candidates.Add($rp)
+    # Fallback: probe sibling projects (any repo next to this one that carries
+    # NinjaLive sources). Generic on purpose - no project is hardcoded here.
+    $siblings = @()
+    try {
+        $parent = Split-Path -Parent $ProjectRoot
+        if ($parent -and (Test-Path -LiteralPath $parent)) {
+            $siblings = @(Get-ChildItem -LiteralPath $parent -Directory -Force -EA SilentlyContinue)
+        }
+    } catch { $siblings = @() }
+    foreach ($sib in $siblings) {
+        $probe = Join-Path $sib.FullName "src\cfe\NinjaLive"
+        if (Test-Path -LiteralPath (Join-Path $probe "Configuration.xml")) {
+            $rp = (Resolve-Path -LiteralPath $probe).Path
+            if ($candidates -notcontains $rp) { [void]$candidates.Add($rp) }
         }
     }
 
@@ -203,7 +223,7 @@ function Copy-NinjaLive {
         if (Test-Path -LiteralPath $destCfg) {
             Add-Report "src/cfe/NinjaLive" "ok" "already present"
         } else {
-            Add-Report "src/cfe/NinjaLive" "fail" "source missing (SourceProject or C:\1C\projects\ecoladev\src\cfe\NinjaLive)"
+            Add-Report "src/cfe/NinjaLive" "fail" "source missing (pass -SourceProject <path>, or keep NinjaLive sources in a sibling repo)"
             Write-Host "Warning: NinjaLive sources not found" -ForegroundColor Yellow
         }
         return
@@ -459,10 +479,12 @@ function Install-ScaffoldFile {
 }
 
 function Sync-CursorCommands {
-    $cmdDir = Join-Path $ProjectRoot ".cursor\commands"
-    $tplDir = Join-Path $templatesDir "cursor-commands"
+    $rel = if ($Adapter -eq "opencode") { ".opencode\commands" } else { ".cursor\commands" }
+    $relUnix = $rel -replace '\\', '/'
+    $cmdDir = Join-Path $ProjectRoot $rel
+    $tplDir = Join-Path $templatesDir "commands"
     if (-not (Test-Path -LiteralPath $tplDir)) {
-        Add-Report ".cursor/commands" "fail" "template dir missing"
+        Add-Report "$relUnix" "fail" "template dir missing"
         return
     }
     if ($dryRun) {
@@ -475,19 +497,19 @@ function Sync-CursorCommands {
         $dest = Join-Path $cmdDir $file.Name
         $exists = Test-Path -LiteralPath $dest
         if ($exists -and -not $Force) {
-            Add-Report ".cursor/commands/$($file.Name)" "skip" "exists"
+            Add-Report "$relUnix/$($file.Name)" "skip" "exists"
             continue
         }
         if ($dryRun) {
             $action = if ($exists) { "would-overwrite" } else { "would-create" }
-            Add-Report ".cursor/commands/$($file.Name)" $action $file.FullName
+            Add-Report "$relUnix/$($file.Name)" $action $file.FullName
             continue
         }
         Copy-Item -LiteralPath $file.FullName -Destination $dest -Force
-        Add-Report ".cursor/commands/$($file.Name)" $(if ($exists) { "updated" } else { "created" }) ""
+        Add-Report "$relUnix/$($file.Name)" $(if ($exists) { "updated" } else { "created" }) ""
     }
     if ($files.Count -gt 0) {
-        Add-Report ".cursor/commands" "synced" "$($files.Count) opsx commands"
+        Add-Report "$relUnix" "synced" "$($files.Count) opsx commands"
     }
 }
 
@@ -521,6 +543,13 @@ function Sync-OpenspecScaffold {
 }
 
 function Sync-ProjectRulesFromProfile {
+    if ($Adapter -eq "opencode") {
+        # OpenCode не читает .mdc. Always-on правила инлайнятся в глобальный
+        # ~/.config/opencode/AGENTS.md, on-demand — в ~/.config/opencode/kit-rules/
+        # (оба обновляются kit.ps1 apply -Adapter opencode). В проекте нечего делать.
+        Add-Report "rules" "n/a" "opencode: global AGENTS.md + kit-rules (kit.ps1 apply -Adapter opencode)"
+        return
+    }
     # Cursor читает только project .cursor/rules/*.mdc как файлы (не папку профиля, не folder junction).
     # Канон — %USERPROFILE%\.cursor\rules. Папку канона не удалять.
     # Directory junction (/J, /D) на папку запрещён: Cursor/индексатор его плохо ест.
@@ -652,16 +681,16 @@ function Write-AutumnProperties {
     $pwd = if ($null -ne $DbPwd) { $DbPwd } else { "" }
 
     $app = if ($AppName) { $AppName } else { (Split-Path $ProjectRoot -Leaf).ToLowerInvariant() }
-    $webPort = 8083
-    if ($v8 -like "8.5*") { $webPort = 8085 }
+    $webPort = Resolve-WebPort
 
     $tpl = Get-Template "autumn-properties.json.tpl"
+    # Values land in a JSON template: /F"path" and /S"server/base" contain quotes.
     $content = $tpl.
-        Replace("{{IBCONNECTION}}", $conn).
-        Replace("{{DB_USER}}", $user).
-        Replace("{{DB_PWD}}", $pwd).
-        Replace("{{V8VERSION}}", $v8).
-        Replace("{{APP_NAME}}", $app).
+        Replace("{{IBCONNECTION}}", (ConvertTo-McpJsonString $conn)).
+        Replace("{{DB_USER}}", (ConvertTo-McpJsonString $user)).
+        Replace("{{DB_PWD}}", (ConvertTo-McpJsonString $pwd)).
+        Replace("{{V8VERSION}}", (ConvertTo-McpJsonString $v8)).
+        Replace("{{APP_NAME}}", (ConvertTo-McpJsonString $app)).
         Replace("{{WEB_PORT}}", "$webPort")
 
     [void](Write-FileSafe -Path $path -Content $content)
@@ -670,7 +699,7 @@ function Write-AutumnProperties {
 function Patch-AutumnCredentials {
     $path = Join-Path $ProjectRoot "autumn-properties.json"
     if (-not (Test-Path -LiteralPath $path)) { return }
-    if (-not $IbConnection -and -not $DbUser -and $null -eq $DbPwd -and -not $V8Version) { return }
+    if (-not $IbConnection -and -not $DbUser -and -not $DbPwdProvided -and -not $V8Version) { return }
     if ($dryRun) {
         Add-Report "autumn-properties.json" "would-patch" "credentials/ibconnection"
         return
@@ -678,7 +707,7 @@ function Patch-AutumnCredentials {
     $j = Get-Content -LiteralPath $path -Raw -Encoding UTF8 | ConvertFrom-Json
     if ($IbConnection) { $j.vrunner.ibconnection = $IbConnection }
     if ($DbUser) { $j.vrunner.'db-user' = $DbUser }
-    if ($null -ne $DbPwd -and $PSBoundParameters.ContainsKey("DbPwd")) { $j.vrunner.'db-pwd' = $DbPwd }
+    if ($DbPwdProvided) { $j.vrunner.'db-pwd' = $DbPwd }
     if ($V8Version) { $j.vrunner.v8version = $V8Version }
     $utf8 = New-Object System.Text.UTF8Encoding($false)
     [System.IO.File]::WriteAllText($path, ($j | ConvertTo-Json -Depth 20), $utf8)
@@ -725,13 +754,38 @@ function ConvertTo-McpJsonString {
     return (($Value -replace '\\', '\\') -replace '"', '\"')
 }
 
+function Resolve-WebPort {
+    # Priority: -WebPort > autumn web.port > 8083/8085 by platform (kit rule).
+    if ($WebPort -gt 0) { return $WebPort }
+    $ap = Join-Path $ProjectRoot "autumn-properties.json"
+    if (Test-Path -LiteralPath $ap) {
+        try {
+            $aj = Get-Content -LiteralPath $ap -Raw -Encoding UTF8 | ConvertFrom-Json
+            if ($aj.web.port) { return [int]$aj.web.port }
+        } catch {}
+    }
+    if ($V8Version -like "8.5*") { return 8085 }
+    return 8083
+}
+
 function Get-McpMachinePaths {
-    $autumnRoot = "C:\1C\projects\1c-ninja-mcp"
+    # Ninja MCP main.os: env override, then the 1c-ninja-kit component, then the
+    # standalone C:\1C\projects\1c-ninja-mcp checkout.
+    $roots = @()
+    if ($env:NINJA_MCP_ROOT) { $roots += $env:NINJA_MCP_ROOT }
+    $roots += "C:\1C\projects\1c-ninja-kit\components\1c-ninja-mcp"
+    $roots += "C:\1C\projects\1c-ninja-mcp"
+    $autumnRoot = $null
+    foreach ($r in $roots) {
+        if (Test-Path -LiteralPath (Join-Path $r "main.os")) { $autumnRoot = $r; break }
+    }
+    if (-not $autumnRoot) { $autumnRoot = $roots[0] }
     return [pscustomobject]@{
         VrunnerMcpBat  = Join-Path $env:LOCALAPPDATA "ovm\current\bin\vrunner-mcp.bat"
         BslAnalyzerExe = Join-Path $env:LOCALAPPDATA "bsl-analyzer\bsl-analyzer.exe"
         AutumnMain     = Join-Path $autumnRoot "main.os"
         ShcntxHelpDb   = Join-Path $autumnRoot "src\data\shcntx_help.db"
+        AutumnRoot     = $autumnRoot
     }
 }
 
@@ -758,7 +812,10 @@ function Get-McpJsonFromSkillTemplate {
 }
 
 function Test-UserMcpOverlap {
-    $userMcp = Join-Path $env:USERPROFILE ".cursor\mcp.json"
+    $userMcp = if ($Adapter -eq "opencode") { Join-Path $env:USERPROFILE ".config\opencode\opencode.jsonc" } else { Join-Path $env:USERPROFILE ".cursor\mcp.json" }
+    if ($Adapter -eq "opencode" -and -not (Test-Path -LiteralPath $userMcp)) {
+        $userMcp = Join-Path $env:USERPROFILE ".config\opencode\opencode.json"
+    }
     $canonNames = @(
         "vrunner",
         "1c-mcp-toolkit",
@@ -774,7 +831,10 @@ function Test-UserMcpOverlap {
     try {
         $j = Get-Content -LiteralPath $userMcp -Raw -Encoding UTF8 | ConvertFrom-Json
         $names = @()
-        if ($j.mcpServers) {
+        if ($Adapter -eq "opencode") {
+            if ($j.mcp -and $j.mcp.servers) { $names = @($j.mcp.servers.PSObject.Properties.Name) }
+        }
+        elseif ($j.mcpServers) {
             $names = @($j.mcpServers.PSObject.Properties.Name)
         }
         $overlap = @($names | Where-Object { $canonNames -contains $_ })
@@ -788,11 +848,67 @@ function Test-UserMcpOverlap {
     }
 }
 
+function Get-OpenCodeConfigFromTemplate {
+    param(
+        [string]$User,
+        [string]$Password,
+        [string]$AppName,
+        [string]$WebPort,
+        [string]$ProjectRootPath
+    )
+    $paths = Get-McpMachinePaths
+    $tpl = Get-Template "opencode.jsonc.tpl"
+    return $tpl.
+        Replace("{{VRUNNER_MCP}}", (ConvertTo-McpJsonPath $paths.VrunnerMcpBat)).
+        Replace("{{NINJA_MAIN}}", (ConvertTo-McpJsonPath $paths.AutumnMain)).
+        Replace("{{SHCNTX_HELP_DB}}", (ConvertTo-McpJsonPath $paths.ShcntxHelpDb)).
+        Replace("{{BSL_ANALYZER_EXE}}", (ConvertTo-McpJsonPath $paths.BslAnalyzerExe)).
+        Replace("{{PROJECT_ROOT}}", (ConvertTo-McpJsonPath $ProjectRootPath)).
+        Replace("{{WEB_PORT}}", "$WebPort").
+        Replace("{{APP_NAME}}", $AppName).
+        Replace("{{IB_USER}}", (ConvertTo-McpJsonString $User)).
+        Replace("{{IB_PASSWORD}}", (ConvertTo-McpJsonString $Password))
+}
+
+function Write-OpenCodeMcpFiles {
+    # OpenCode V2: mcp.servers в project opencode.jsonc (в .gitignore) + .example без секретов.
+    $app = if ($AppName) { $AppName } else { (Split-Path $ProjectRoot -Leaf).ToLowerInvariant() }
+    $webPort = Resolve-WebPort
+
+    $exampleContent = Get-OpenCodeConfigFromTemplate -User "<user>" -Password "<password>" `
+        -AppName $app -WebPort "$webPort" -ProjectRootPath $ProjectRoot
+    [void](Write-FileSafe -Path (Join-Path $ProjectRoot "opencode.jsonc.example") `
+        -Content $exampleContent -OnlyIfMissing:(-not $Force))
+
+    $path = Join-Path $ProjectRoot "opencode.jsonc"
+    if ((Test-Path -LiteralPath $path) -and -not $Force -and $Mode -eq "Refresh") {
+        Add-Report "opencode.jsonc" "skip" "Refresh"
+        return
+    }
+    if ((Test-Path -LiteralPath $path) -and -not $Force) {
+        Add-Report "opencode.jsonc" "skip" "exists (use -Force)"
+        return
+    }
+    $user = if ($DbUser) { $DbUser } else { "<user>" }
+    $pwd = if ($DbPwdProvided) { $DbPwd } else { "<password>" }
+    $content = Get-OpenCodeConfigFromTemplate -User $user -Password $pwd `
+        -AppName $app -WebPort "$webPort" -ProjectRootPath $ProjectRoot
+    if ($dryRun) {
+        Add-Report "opencode.jsonc" "would-create" "from skill template"
+        return
+    }
+    [void](Write-FileSafe -Path $path -Content $content)
+    Add-Report "opencode.jsonc" "created" "NINJA_URL=http://localhost:$webPort/$app/hs/ninja-live"
+}
+
 function Write-McpFiles {
     # Эталон — шаблон скилла. Не копировать user mcp.json и не брать MCP из SourceProject.
+    if ($Adapter -eq "opencode") {
+        Write-OpenCodeMcpFiles
+        return
+    }
     $app = if ($AppName) { $AppName } else { (Split-Path $ProjectRoot -Leaf).ToLowerInvariant() }
-    $webPort = 8083
-    if ($V8Version -like "8.5*") { $webPort = 8085 }
+    $webPort = Resolve-WebPort
 
     $exampleContent = Get-McpJsonFromSkillTemplate -BslUser "<пользователь_ИБ>" -BslPassword "<пароль>" `
         -AppName $app -WebPort "$webPort" -ProjectRootPath $ProjectRoot
@@ -807,7 +923,7 @@ function Write-McpFiles {
     }
 
     $user = if ($DbUser) { $DbUser } else { "<пользователь_ИБ>" }
-    $pwd = if ($null -ne $DbPwd -and $PSBoundParameters.ContainsKey("DbPwd")) { $DbPwd } else { "<пароль>" }
+    $pwd = if ($null -ne $DbPwd -and $DbPwdProvided) { $DbPwd } else { "<пароль>" }
     $mcpContent = Get-McpJsonFromSkillTemplate -BslUser $user -BslPassword $pwd `
         -AppName $app -WebPort "$webPort" -ProjectRootPath $ProjectRoot
 
@@ -835,7 +951,7 @@ function Write-BslAnalyzerToml {
 
 # ========== MAIN ==========
 
-Write-Host "=== 1c-env-setup ($Mode) ===" -ForegroundColor Cyan
+Write-Host "=== 1c-env-setup ($Mode, adapter=$Adapter) ===" -ForegroundColor Cyan
 Write-Host "Project: $ProjectRoot"
 
 # Sanity
@@ -887,10 +1003,15 @@ $dirs = @(
     "build\out\syntax-check\junit", "build\out\syntax-check\allure",
     "build\out\epf", "build\out\erf",
     "tools\web-test\scenarios\after-load", "tools\web-test\scenarios\manual",
-    "docs", ".cursor", ".cursor\commands",
+    "docs", ".cursor", ".opencode",
     "openspec", "openspec\templates", "openspec\specs",
     "openspec\changes", "openspec\changes\archive"
 )
+if ($Adapter -eq "opencode") {
+    $dirs += ".opencode\commands"
+} else {
+    $dirs += ".cursor\commands"
+}
 foreach ($d in $dirs) {
     Ensure-Dir (Join-Path $ProjectRoot $d)
 }
@@ -940,15 +1061,7 @@ $smoke = Join-Path $ProjectRoot "tools\web-test\smoke.config.json"
 if (-not (Test-Path -LiteralPath $smoke)) {
     if (-not ($SourceProject -and (Copy-FromSource "tools\web-test\smoke.config.json"))) {
         $app = if ($AppName) { $AppName } else { (Split-Path $ProjectRoot -Leaf).ToLowerInvariant() }
-        $webPort = 8083
-        if ($V8Version -like "8.5*") { $webPort = 8085 }
-        elseif ((Test-Path (Join-Path $ProjectRoot "autumn-properties.json"))) {
-            try {
-                $aj = Get-Content (Join-Path $ProjectRoot "autumn-properties.json") -Raw -Encoding UTF8 | ConvertFrom-Json
-                if ($aj.vrunner.v8version -like "8.5*") { $webPort = 8085 }
-                if ($aj.web.port) { $webPort = [int]$aj.web.port }
-            } catch {}
-        }
+        $webPort = Resolve-WebPort
         $tpl = (Get-Template "smoke.config.json.tpl").Replace("{{APP_NAME}}", $app).Replace("{{WEB_PORT}}", "$webPort")
         [void](Write-FileSafe -Path $smoke -Content $tpl -OnlyIfMissing)
     }
@@ -990,8 +1103,17 @@ $report | Format-Table -AutoSize
 
 Write-Host ""
 Write-Host "Manual next steps:" -ForegroundColor Yellow
-Write-Host "  1. Reload MCP in Cursor (project .cursor/mcp.json is the only 1C MCP source)"
-Write-Host "  2. cfe_load NinjaLive -> web-publish -> live_extensions_list -> sync-cfe -ExtensionNames (NOT vrunner extensions list)"
-Write-Host "  3. Warm bsl-analyzer graph (metadata/graph status -> ready)"
-Write-Host "  4. toolkit :6003 only as fallback"
-Write-Host "  5. User %USERPROFILE%\.cursor\mcp.json must NOT repeat vrunner/autumn/toolkit/bsl-analyzer-*"
+if ($Adapter -eq "opencode") {
+    Write-Host "  1. Reload MCP in OpenCode (project opencode.jsonc is the only 1C MCP source)"
+    Write-Host "  2. cfe_load NinjaLive -> web-publish -> live_extensions_list -> sync-cfe -ExtensionNames (NOT vrunner extensions list)"
+    Write-Host "  3. Warm bsl-analyzer graph (metadata/graph status -> ready)"
+    Write-Host "  4. toolkit :6003 only as fallback (server is disabled in opencode.jsonc by default)"
+    Write-Host "  5. Global %USERPROFILE%\.config\opencode\opencode.json(c) must NOT repeat vrunner/ninja/toolkit/bsl-analyzer-*"
+    Write-Host "  6. Always-on rules come from %USERPROFILE%\.config\opencode\AGENTS.md (kit.ps1 apply -Adapter opencode)"
+} else {
+    Write-Host "  1. Reload MCP in Cursor (project .cursor/mcp.json is the only 1C MCP source)"
+    Write-Host "  2. cfe_load NinjaLive -> web-publish -> live_extensions_list -> sync-cfe -ExtensionNames (NOT vrunner extensions list)"
+    Write-Host "  3. Warm bsl-analyzer graph (metadata/graph status -> ready)"
+    Write-Host "  4. toolkit :6003 only as fallback"
+    Write-Host "  5. User %USERPROFILE%\.cursor\mcp.json must NOT repeat vrunner/autumn/toolkit/bsl-analyzer-*"
+}

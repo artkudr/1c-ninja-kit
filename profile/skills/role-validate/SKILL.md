@@ -23,7 +23,7 @@ allowed-tools:
 ## Команда
 
 ```powershell
-powershell.exe -NoProfile -File "%USERPROFILE%\.cursor\skills\role-validate\scripts/role-validate.ps1" -RightsPath "Roles/МояРоль"
+powershell.exe -NoProfile -File "{{SKILLS_ROOT}}\role-validate\scripts/role-validate.ps1" -RightsPath "Roles/МояРоль"
 ```
 
 ## Что считается ошибкой

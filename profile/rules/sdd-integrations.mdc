@@ -1,14 +1,14 @@
 ---
-description: OpenSpec / SDD (ecoladev). Load when working under openspec/ or when orchestrator routes a large full-cycle feature through specs.
+description: OpenSpec / SDD. Load when working under openspec/ or when orchestrator routes a large full-cycle feature through specs.
 alwaysApply: false
 globs: openspec/**
 ---
 
-<!-- ecoladev-adapted from itrous/ai_rules_1c content/rules/sdd-integrations.md -->
+<!-- kit-adapted from itrous/ai_rules_1c content/rules/sdd-integrations.md -->
 
-# SDD Integration — OpenSpec (ecoladev)
+# SDD Integration — OpenSpec
 
-[OpenSpec](https://github.com/Fission-AI/OpenSpec) — единственный SDD-контур в ecoladev. Memory Bank / Spec Kit / TaskMaster **не** поддерживаются.
+[OpenSpec](https://github.com/Fission-AI/OpenSpec) — единственный SDD-контур в ките. Memory Bank / Spec Kit / TaskMaster **не** поддерживаются.
 
 Layout и форматы — в workspace, не дублировать здесь:
 
@@ -40,7 +40,7 @@ Layout и форматы — в workspace, не дублировать здес�
 propose → согласование → apply → verify → archive
 ```
 
-Slash (проект `.cursor/commands/`): `/opsx-propose` → `/opsx-apply` → `/opsx-archive`. Explore: `/opsx-explore`.
+Slash (проект `{{COMMANDS_ROOT}}`): `/opsx-propose` → `/opsx-apply` → `/opsx-archive`. Explore: `/opsx-explore`.
 
 1. **propose** — `openspec/changes/<kebab>/` из `templates/`; analytic/planner/architect пишут артефакты; факты через MCP.
 2. **apply** — developer (+ skills meta/form/cfe); решения из артефактов locked; гейты process.

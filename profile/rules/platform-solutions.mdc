@@ -3,7 +3,7 @@ description: Case book of common 1C platform pitfalls and proven fix templates
 alwaysApply: false
 ---
 
-<!-- ecoladev-adapted: take from itrous/ai_rules_1c; SoT = profile hardlink -->
+<!-- kit-adapted: take from itrous/ai_rules_1c; SoT = profile hardlink -->
 
 # Platform Cases & Fix Templates
 
@@ -40,7 +40,6 @@ For form attributes with reference or composite types — first copy the value t
 
 ---
 
-<!-- ecoladev-adapted: take from itrous/ai_rules_1c; SoT = profile hardlink -->
 
 ## 2. Long-running operations
 
@@ -92,7 +91,6 @@ For form attributes with reference or composite types — first copy the value t
 
 ---
 
-<!-- ecoladev-adapted: take from itrous/ai_rules_1c; SoT = profile hardlink -->
 
 ## 4. Transactions in event handlers
 
@@ -147,7 +145,6 @@ For form attributes with reference or composite types — first copy the value t
 
 ---
 
-<!-- ecoladev-adapted: take from itrous/ai_rules_1c; SoT = profile hardlink -->
 
 ## 6. Time on the server
 
@@ -195,7 +192,6 @@ For form attributes with reference or composite types — first copy the value t
 
 ---
 
-<!-- ecoladev-adapted: take from itrous/ai_rules_1c; SoT = profile hardlink -->
 
 ## 8. External components on the thin client
 
@@ -261,7 +257,6 @@ Headlines of the rules to follow: lock **before** reading; use `Исключит
 
 ---
 
-<!-- ecoladev-adapted: take from itrous/ai_rules_1c; SoT = profile hardlink -->
 
 ## 10. Background jobs from an external data processor (БСП)
 

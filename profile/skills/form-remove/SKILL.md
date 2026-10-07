@@ -32,7 +32,7 @@ allowed-tools:
 ## Команда
 
 ```powershell
-powershell.exe -NoProfile -File "%USERPROFILE%\.cursor\skills\form-remove\scripts/remove-form.ps1" -ObjectName "<ObjectName>" -FormName "<FormName>" [-SrcDir "<SrcDir>"] [-Force]
+powershell.exe -NoProfile -File "{{SKILLS_ROOT}}\form-remove\scripts/remove-form.ps1" -ObjectName "<ObjectName>" -FormName "<FormName>" [-SrcDir "<SrcDir>"] [-Force]
 ```
 
 ## Что удаляется

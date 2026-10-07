@@ -1,5 +1,5 @@
 ﻿# epf-init v1.9 — Init 1C external data processor scaffold (nested layout)
-# Source: https://github.com/Nikolay-Shirokov/cc-1c-skills (+ ecoladev nested canon)
+# Source: https://github.com/Nikolay-Shirokov/cc-1c-skills (+ nested canon)
 param(
 	[Parameter(Mandatory)]
 	[string]$Name,

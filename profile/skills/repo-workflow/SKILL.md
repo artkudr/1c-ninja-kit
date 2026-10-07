@@ -16,11 +16,11 @@ description: >-
 
 ## Движок: `repo.ps1` (канон)
 
-Скрипт: `%USERPROFILE%\.cursor\skills\repo-workflow\scripts\repo.ps1`  
+Скрипт: `{{SKILLS_ROOT}}\repo-workflow\scripts\repo.ps1`  
 (движок: глобальный **vrunner 3**, `run designer`; IB — `autumn-properties.json` проекта).
 
 ```powershell
-powershell.exe -NoProfile -File "$env:USERPROFILE\.cursor\skills\repo-workflow\scripts\repo.ps1" `
+powershell.exe -NoProfile -File "{{SKILLS_ROOT}}\repo-workflow\scripts\repo.ps1" `
   -Action lock|load|commit|unlock|update|add-user <параметры>
 ```
 
@@ -108,7 +108,7 @@ flowchart TD
 Общий префикс команды:
 
 ```powershell
-powershell.exe -NoProfile -File "$env:USERPROFILE\.cursor\skills\repo-workflow\scripts\repo.ps1"
+powershell.exe -NoProfile -File "{{SKILLS_ROOT}}\repo-workflow\scripts\repo.ps1"
 ```
 
 Общие параметры пути (lock / unlock / commit / update):
@@ -218,7 +218,7 @@ powershell.exe -NoProfile -File "$env:USERPROFILE\.cursor\skills\repo-workflow\s
 |-------|-----|
 | Полный цикл до commit | Свой короткий сценарий по затронутой форме/документу (см. гейт 6) |
 | Авто после `load` без `-SkipWebTest` | `scenarios/after-load/*` — только если явно нужен регресс «как раньше» |
-| ecoladev OPV after-load | `opv.js` — подвал реализации/корректировки, **не** ГТД/возврат |
+| Пример OPV after-load | `opv.js` — подвал реализации/корректировки, **не** ГТД/возврат |
 
 Сценарии: `tools/web-test/scenarios/after-load/` и `manual/`. Закрытие форм — `closeForm({ save: false })`. Skill: `web-test`.
 

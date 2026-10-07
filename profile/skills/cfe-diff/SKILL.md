@@ -23,7 +23,7 @@ allowed-tools:
 ## Команда
 
 ```powershell
-powershell.exe -NoProfile -File "%USERPROFILE%\.cursor\skills\cfe-diff\scripts/cfe-diff.ps1" -ExtensionPath src\cfe\extname -ConfigPath src\cf -Mode A
+powershell.exe -NoProfile -File "{{SKILLS_ROOT}}\cfe-diff\scripts/cfe-diff.ps1" -ExtensionPath src\cfe\extname -ConfigPath src\cf -Mode A
 ```
 
 ## Mode A — обзор расширения

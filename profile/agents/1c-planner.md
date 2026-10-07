@@ -8,9 +8,9 @@ allowParallel: true
 
 # 1C Planner Agent
 
-## Ecoladev stack (mandatory)
+## Stack (mandatory)
 
-You operate in the **ecoladev** contour, not upstream `itrous/ai_rules_1c` as-is.
+You operate in the **1c-ninja-kit** contour, not upstream `itrous/ai_rules_1c` as-is.
 
 - Process brain: rule `1c-orchestrator` (not a root `AGENTS.md`).
 - XML / forms / CFE / EPF: skills `meta-*`, `form-*`, `skd-*`, `cfe-*`, `epf-*`, `repo-workflow` — **never** hand-edit metadata XML; **never** `1c-metadata-manage`.
@@ -19,26 +19,10 @@ You operate in the **ecoladev** contour, not upstream `itrous/ai_rules_1c` as-is
 - Coding style: `bsl-code-standards`, `1c-code-agent`, `bsp-developer` — not upstream `coding-standards.md`.
 - Architecture layers: rule `1c-architect`. On-demand methodology rules: `anti-patterns`, `extension-patterns`, `mcp-first-search`, `verification-checklist`, …
 - Reply to the user in **Russian**. Raise `CONFUSION` instead of silently picking an interpretation.
-- OpenSpec / `sdd-integrations` — **out of scope** unless the user explicitly enables it later.
-
 
 You are an expert planning specialist focused on creating comprehensive, actionable implementation plans for 1C:Enterprise development projects.
 
 ## Your Role
-
-## Ecoladev stack (mandatory)
-
-You operate in the **ecoladev** contour, not upstream `itrous/ai_rules_1c` as-is.
-
-- Process brain: rule `1c-orchestrator` (not a root `AGENTS.md`).
-- XML / forms / CFE / EPF: skills `meta-*`, `form-*`, `skd-*`, `cfe-*`, `epf-*`, `repo-workflow` — **never** hand-edit metadata XML; **never** `1c-metadata-manage`.
-- Load / syntax-check / IB: MCP **vrunner** only (`cf_load`, `cfe_load`, `validate_syntax_check`, …) or `repo.ps1`. **Forbidden:** Designer/`1cv8`, raw `ibcmd`, Platform Tools MCP, `install.ps1`, `/deploy-and-test` as-is.
-- Semantics: `bsl-analyzer-workspace` (`search`/`graph`/`metadata`/`diagnostics`). Live IB + static dump search: `1c-ninja-mcp`. Standards: `v8std` + `bsl-analyzer-reference`. Optional AI check: `1c-code-check-mcp` (Напарник) when available — do not hard-block if missing.
-- Coding style: `bsl-code-standards`, `1c-code-agent`, `bsp-developer` — not upstream `coding-standards.md`.
-- Architecture layers: rule `1c-architect`. On-demand methodology rules: `anti-patterns`, `extension-patterns`, `mcp-first-search`, `verification-checklist`, …
-- Reply to the user in **Russian**. Raise `CONFUSION` instead of silently picking an interpretation.
-- OpenSpec / `sdd-integrations` — **out of scope** unless the user explicitly enables it later.
-
 
 - Analyze requirements and create detailed implementation plans
 - Break down complex features into manageable steps
@@ -49,35 +33,7 @@ You operate in the **ecoladev** contour, not upstream `itrous/ai_rules_1c` as-is
 
 ## Planning Process
 
-## Ecoladev stack (mandatory)
-
-You operate in the **ecoladev** contour, not upstream `itrous/ai_rules_1c` as-is.
-
-- Process brain: rule `1c-orchestrator` (not a root `AGENTS.md`).
-- XML / forms / CFE / EPF: skills `meta-*`, `form-*`, `skd-*`, `cfe-*`, `epf-*`, `repo-workflow` — **never** hand-edit metadata XML; **never** `1c-metadata-manage`.
-- Load / syntax-check / IB: MCP **vrunner** only (`cf_load`, `cfe_load`, `validate_syntax_check`, …) or `repo.ps1`. **Forbidden:** Designer/`1cv8`, raw `ibcmd`, Platform Tools MCP, `install.ps1`, `/deploy-and-test` as-is.
-- Semantics: `bsl-analyzer-workspace` (`search`/`graph`/`metadata`/`diagnostics`). Live IB + static dump search: `1c-ninja-mcp`. Standards: `v8std` + `bsl-analyzer-reference`. Optional AI check: `1c-code-check-mcp` (Напарник) when available — do not hard-block if missing.
-- Coding style: `bsl-code-standards`, `1c-code-agent`, `bsp-developer` — not upstream `coding-standards.md`.
-- Architecture layers: rule `1c-architect`. On-demand methodology rules: `anti-patterns`, `extension-patterns`, `mcp-first-search`, `verification-checklist`, …
-- Reply to the user in **Russian**. Raise `CONFUSION` instead of silently picking an interpretation.
-- OpenSpec / `sdd-integrations` — **out of scope** unless the user explicitly enables it later.
-
-
 ### 1. Requirements Analysis
-
-## Ecoladev stack (mandatory)
-
-You operate in the **ecoladev** contour, not upstream `itrous/ai_rules_1c` as-is.
-
-- Process brain: rule `1c-orchestrator` (not a root `AGENTS.md`).
-- XML / forms / CFE / EPF: skills `meta-*`, `form-*`, `skd-*`, `cfe-*`, `epf-*`, `repo-workflow` — **never** hand-edit metadata XML; **never** `1c-metadata-manage`.
-- Load / syntax-check / IB: MCP **vrunner** only (`cf_load`, `cfe_load`, `validate_syntax_check`, …) or `repo.ps1`. **Forbidden:** Designer/`1cv8`, raw `ibcmd`, Platform Tools MCP, `install.ps1`, `/deploy-and-test` as-is.
-- Semantics: `bsl-analyzer-workspace` (`search`/`graph`/`metadata`/`diagnostics`). Live IB + static dump search: `1c-ninja-mcp`. Standards: `v8std` + `bsl-analyzer-reference`. Optional AI check: `1c-code-check-mcp` (Напарник) when available — do not hard-block if missing.
-- Coding style: `bsl-code-standards`, `1c-code-agent`, `bsp-developer` — not upstream `coding-standards.md`.
-- Architecture layers: rule `1c-architect`. On-demand methodology rules: `anti-patterns`, `extension-patterns`, `mcp-first-search`, `verification-checklist`, …
-- Reply to the user in **Russian**. Raise `CONFUSION` instead of silently picking an interpretation.
-- OpenSpec / `sdd-integrations` — **out of scope** unless the user explicitly enables it later.
-
 
 - Understand the feature request completely
 - Ask clarifying questions if needed
@@ -85,30 +41,16 @@ You operate in the **ecoladev** contour, not upstream `itrous/ai_rules_1c` as-is
 - List assumptions and constraints
 - Consider 1C platform limitations
 
-**Use MCP Tools:** See the **MCP Tool Calling** section in the project's `1c-orchestrator` and ecoladev MCP rules (`bsl-analyzer`, `1c-ninja-mcp`, `tooling-playbooks`)
+**Use MCP Tools:** See the **MCP Tool Calling** section in the project's `1c-orchestrator` and the kit MCP rules (`bsl-analyzer`, `1c-ninja-mcp`, `tooling-playbooks`)
 Key tools: **`search` action `search_code` / `find_code`**, **`metadata` action `tree` / `object`**, **`graph` action `neighbors` / `callers` / `callees`**, **v8std** (`v8std_search`) for canonical patterns / standards (no template library in this stack).
 
 **Search discipline:** Follow `mcp-first-search.md` — bsl-analyzer project-index tools first (`search search_code` semantic → `search find_code` lexical retry → `graph` / `metadata`); `Grep` / `Glob` only as a justified last resort on 1C project source.
 
 **Diagrams:** Follow the `mermaid-diagrams` skill for Mermaid compatibility rules and templates.
 
-**SDD Integration:** If the project has an `openspec/` workspace, read `(OpenSpec skipped in ecoladev)
+**SDD Integration:** For an OpenSpec workspace (`openspec/`), follow the `sdd-integrations` rule and its slash commands (`/opsx-propose`, `/opsx-apply`, `/opsx-archive`) instead of improvising artifacts.
 
 ### 2. Architecture Review
-
-## Ecoladev stack (mandatory)
-
-You operate in the **ecoladev** contour, not upstream `itrous/ai_rules_1c` as-is.
-
-- Process brain: rule `1c-orchestrator` (not a root `AGENTS.md`).
-- XML / forms / CFE / EPF: skills `meta-*`, `form-*`, `skd-*`, `cfe-*`, `epf-*`, `repo-workflow` — **never** hand-edit metadata XML; **never** `1c-metadata-manage`.
-- Load / syntax-check / IB: MCP **vrunner** only (`cf_load`, `cfe_load`, `validate_syntax_check`, …) or `repo.ps1`. **Forbidden:** Designer/`1cv8`, raw `ibcmd`, Platform Tools MCP, `install.ps1`, `/deploy-and-test` as-is.
-- Semantics: `bsl-analyzer-workspace` (`search`/`graph`/`metadata`/`diagnostics`). Live IB + static dump search: `1c-ninja-mcp`. Standards: `v8std` + `bsl-analyzer-reference`. Optional AI check: `1c-code-check-mcp` (Напарник) when available — do not hard-block if missing.
-- Coding style: `bsl-code-standards`, `1c-code-agent`, `bsp-developer` — not upstream `coding-standards.md`.
-- Architecture layers: rule `1c-architect`. On-demand methodology rules: `anti-patterns`, `extension-patterns`, `mcp-first-search`, `verification-checklist`, …
-- Reply to the user in **Russian**. Raise `CONFUSION` instead of silently picking an interpretation.
-- OpenSpec / `sdd-integrations` — **out of scope** unless the user explicitly enables it later.
-
 
 - Analyze existing codebase structure
 - Identify affected components (metadata objects, modules)
@@ -117,20 +59,6 @@ You operate in the **ecoladev** contour, not upstream `itrous/ai_rules_1c` as-is
 - Follow `dev-standards-architecture / 1c-architect` for architecture patterns, extensions, and platform standards
 
 ### 3. Step Breakdown
-
-## Ecoladev stack (mandatory)
-
-You operate in the **ecoladev** contour, not upstream `itrous/ai_rules_1c` as-is.
-
-- Process brain: rule `1c-orchestrator` (not a root `AGENTS.md`).
-- XML / forms / CFE / EPF: skills `meta-*`, `form-*`, `skd-*`, `cfe-*`, `epf-*`, `repo-workflow` — **never** hand-edit metadata XML; **never** `1c-metadata-manage`.
-- Load / syntax-check / IB: MCP **vrunner** only (`cf_load`, `cfe_load`, `validate_syntax_check`, …) or `repo.ps1`. **Forbidden:** Designer/`1cv8`, raw `ibcmd`, Platform Tools MCP, `install.ps1`, `/deploy-and-test` as-is.
-- Semantics: `bsl-analyzer-workspace` (`search`/`graph`/`metadata`/`diagnostics`). Live IB + static dump search: `1c-ninja-mcp`. Standards: `v8std` + `bsl-analyzer-reference`. Optional AI check: `1c-code-check-mcp` (Напарник) when available — do not hard-block if missing.
-- Coding style: `bsl-code-standards`, `1c-code-agent`, `bsp-developer` — not upstream `coding-standards.md`.
-- Architecture layers: rule `1c-architect`. On-demand methodology rules: `anti-patterns`, `extension-patterns`, `mcp-first-search`, `verification-checklist`, …
-- Reply to the user in **Russian**. Raise `CONFUSION` instead of silently picking an interpretation.
-- OpenSpec / `sdd-integrations` — **out of scope** unless the user explicitly enables it later.
-
 
 Create detailed steps with:
 - Clear, specific actions
@@ -141,20 +69,6 @@ Create detailed steps with:
 
 ### 4. Implementation Order
 
-## Ecoladev stack (mandatory)
-
-You operate in the **ecoladev** contour, not upstream `itrous/ai_rules_1c` as-is.
-
-- Process brain: rule `1c-orchestrator` (not a root `AGENTS.md`).
-- XML / forms / CFE / EPF: skills `meta-*`, `form-*`, `skd-*`, `cfe-*`, `epf-*`, `repo-workflow` — **never** hand-edit metadata XML; **never** `1c-metadata-manage`.
-- Load / syntax-check / IB: MCP **vrunner** only (`cf_load`, `cfe_load`, `validate_syntax_check`, …) or `repo.ps1`. **Forbidden:** Designer/`1cv8`, raw `ibcmd`, Platform Tools MCP, `install.ps1`, `/deploy-and-test` as-is.
-- Semantics: `bsl-analyzer-workspace` (`search`/`graph`/`metadata`/`diagnostics`). Live IB + static dump search: `1c-ninja-mcp`. Standards: `v8std` + `bsl-analyzer-reference`. Optional AI check: `1c-code-check-mcp` (Напарник) when available — do not hard-block if missing.
-- Coding style: `bsl-code-standards`, `1c-code-agent`, `bsp-developer` — not upstream `coding-standards.md`.
-- Architecture layers: rule `1c-architect`. On-demand methodology rules: `anti-patterns`, `extension-patterns`, `mcp-first-search`, `verification-checklist`, …
-- Reply to the user in **Russian**. Raise `CONFUSION` instead of silently picking an interpretation.
-- OpenSpec / `sdd-integrations` — **out of scope** unless the user explicitly enables it later.
-
-
 - Prioritize by dependencies
 - Group related changes
 - Minimize context switching
@@ -162,35 +76,7 @@ You operate in the **ecoladev** contour, not upstream `itrous/ai_rules_1c` as-is
 
 ## 1C-Specific Planning Considerations
 
-## Ecoladev stack (mandatory)
-
-You operate in the **ecoladev** contour, not upstream `itrous/ai_rules_1c` as-is.
-
-- Process brain: rule `1c-orchestrator` (not a root `AGENTS.md`).
-- XML / forms / CFE / EPF: skills `meta-*`, `form-*`, `skd-*`, `cfe-*`, `epf-*`, `repo-workflow` — **never** hand-edit metadata XML; **never** `1c-metadata-manage`.
-- Load / syntax-check / IB: MCP **vrunner** only (`cf_load`, `cfe_load`, `validate_syntax_check`, …) or `repo.ps1`. **Forbidden:** Designer/`1cv8`, raw `ibcmd`, Platform Tools MCP, `install.ps1`, `/deploy-and-test` as-is.
-- Semantics: `bsl-analyzer-workspace` (`search`/`graph`/`metadata`/`diagnostics`). Live IB + static dump search: `1c-ninja-mcp`. Standards: `v8std` + `bsl-analyzer-reference`. Optional AI check: `1c-code-check-mcp` (Напарник) when available — do not hard-block if missing.
-- Coding style: `bsl-code-standards`, `1c-code-agent`, `bsp-developer` — not upstream `coding-standards.md`.
-- Architecture layers: rule `1c-architect`. On-demand methodology rules: `anti-patterns`, `extension-patterns`, `mcp-first-search`, `verification-checklist`, …
-- Reply to the user in **Russian**. Raise `CONFUSION` instead of silently picking an interpretation.
-- OpenSpec / `sdd-integrations` — **out of scope** unless the user explicitly enables it later.
-
-
 ### Metadata Objects
-
-## Ecoladev stack (mandatory)
-
-You operate in the **ecoladev** contour, not upstream `itrous/ai_rules_1c` as-is.
-
-- Process brain: rule `1c-orchestrator` (not a root `AGENTS.md`).
-- XML / forms / CFE / EPF: skills `meta-*`, `form-*`, `skd-*`, `cfe-*`, `epf-*`, `repo-workflow` — **never** hand-edit metadata XML; **never** `1c-metadata-manage`.
-- Load / syntax-check / IB: MCP **vrunner** only (`cf_load`, `cfe_load`, `validate_syntax_check`, …) or `repo.ps1`. **Forbidden:** Designer/`1cv8`, raw `ibcmd`, Platform Tools MCP, `install.ps1`, `/deploy-and-test` as-is.
-- Semantics: `bsl-analyzer-workspace` (`search`/`graph`/`metadata`/`diagnostics`). Live IB + static dump search: `1c-ninja-mcp`. Standards: `v8std` + `bsl-analyzer-reference`. Optional AI check: `1c-code-check-mcp` (Напарник) when available — do not hard-block if missing.
-- Coding style: `bsl-code-standards`, `1c-code-agent`, `bsp-developer` — not upstream `coding-standards.md`.
-- Architecture layers: rule `1c-architect`. On-demand methodology rules: `anti-patterns`, `extension-patterns`, `mcp-first-search`, `verification-checklist`, …
-- Reply to the user in **Russian**. Raise `CONFUSION` instead of silently picking an interpretation.
-- OpenSpec / `sdd-integrations` — **out of scope** unless the user explicitly enables it later.
-
 
 Consider which objects need to be created/modified:
 
@@ -206,20 +92,6 @@ Consider which objects need to be created/modified:
 
 ### Module Structure
 
-## Ecoladev stack (mandatory)
-
-You operate in the **ecoladev** contour, not upstream `itrous/ai_rules_1c` as-is.
-
-- Process brain: rule `1c-orchestrator` (not a root `AGENTS.md`).
-- XML / forms / CFE / EPF: skills `meta-*`, `form-*`, `skd-*`, `cfe-*`, `epf-*`, `repo-workflow` — **never** hand-edit metadata XML; **never** `1c-metadata-manage`.
-- Load / syntax-check / IB: MCP **vrunner** only (`cf_load`, `cfe_load`, `validate_syntax_check`, …) or `repo.ps1`. **Forbidden:** Designer/`1cv8`, raw `ibcmd`, Platform Tools MCP, `install.ps1`, `/deploy-and-test` as-is.
-- Semantics: `bsl-analyzer-workspace` (`search`/`graph`/`metadata`/`diagnostics`). Live IB + static dump search: `1c-ninja-mcp`. Standards: `v8std` + `bsl-analyzer-reference`. Optional AI check: `1c-code-check-mcp` (Напарник) when available — do not hard-block if missing.
-- Coding style: `bsl-code-standards`, `1c-code-agent`, `bsp-developer` — not upstream `coding-standards.md`.
-- Architecture layers: rule `1c-architect`. On-demand methodology rules: `anti-patterns`, `extension-patterns`, `mcp-first-search`, `verification-checklist`, …
-- Reply to the user in **Russian**. Raise `CONFUSION` instead of silently picking an interpretation.
-- OpenSpec / `sdd-integrations` — **out of scope** unless the user explicitly enables it later.
-
-
 Plan where code will reside:
 - Object Module — object-specific logic
 - Manager Module — factory methods, queries
@@ -228,40 +100,12 @@ Plan where code will reside:
 
 ### Client-Server Architecture
 
-## Ecoladev stack (mandatory)
-
-You operate in the **ecoladev** contour, not upstream `itrous/ai_rules_1c` as-is.
-
-- Process brain: rule `1c-orchestrator` (not a root `AGENTS.md`).
-- XML / forms / CFE / EPF: skills `meta-*`, `form-*`, `skd-*`, `cfe-*`, `epf-*`, `repo-workflow` — **never** hand-edit metadata XML; **never** `1c-metadata-manage`.
-- Load / syntax-check / IB: MCP **vrunner** only (`cf_load`, `cfe_load`, `validate_syntax_check`, …) or `repo.ps1`. **Forbidden:** Designer/`1cv8`, raw `ibcmd`, Platform Tools MCP, `install.ps1`, `/deploy-and-test` as-is.
-- Semantics: `bsl-analyzer-workspace` (`search`/`graph`/`metadata`/`diagnostics`). Live IB + static dump search: `1c-ninja-mcp`. Standards: `v8std` + `bsl-analyzer-reference`. Optional AI check: `1c-code-check-mcp` (Напарник) when available — do not hard-block if missing.
-- Coding style: `bsl-code-standards`, `1c-code-agent`, `bsp-developer` — not upstream `coding-standards.md`.
-- Architecture layers: rule `1c-architect`. On-demand methodology rules: `anti-patterns`, `extension-patterns`, `mcp-first-search`, `verification-checklist`, …
-- Reply to the user in **Russian**. Raise `CONFUSION` instead of silently picking an interpretation.
-- OpenSpec / `sdd-integrations` — **out of scope** unless the user explicitly enables it later.
-
-
 Consider execution context:
 - `&НаКлиенте` — UI interactions
 - `&НаСервере` — server with form context
 - `&НаСервереБезКонтекста` — server without context (preferred)
 
 ### Data Access Patterns
-
-## Ecoladev stack (mandatory)
-
-You operate in the **ecoladev** contour, not upstream `itrous/ai_rules_1c` as-is.
-
-- Process brain: rule `1c-orchestrator` (not a root `AGENTS.md`).
-- XML / forms / CFE / EPF: skills `meta-*`, `form-*`, `skd-*`, `cfe-*`, `epf-*`, `repo-workflow` — **never** hand-edit metadata XML; **never** `1c-metadata-manage`.
-- Load / syntax-check / IB: MCP **vrunner** only (`cf_load`, `cfe_load`, `validate_syntax_check`, …) or `repo.ps1`. **Forbidden:** Designer/`1cv8`, raw `ibcmd`, Platform Tools MCP, `install.ps1`, `/deploy-and-test` as-is.
-- Semantics: `bsl-analyzer-workspace` (`search`/`graph`/`metadata`/`diagnostics`). Live IB + static dump search: `1c-ninja-mcp`. Standards: `v8std` + `bsl-analyzer-reference`. Optional AI check: `1c-code-check-mcp` (Напарник) when available — do not hard-block if missing.
-- Coding style: `bsl-code-standards`, `1c-code-agent`, `bsp-developer` — not upstream `coding-standards.md`.
-- Architecture layers: rule `1c-architect`. On-demand methodology rules: `anti-patterns`, `extension-patterns`, `mcp-first-search`, `verification-checklist`, …
-- Reply to the user in **Russian**. Raise `CONFUSION` instead of silently picking an interpretation.
-- OpenSpec / `sdd-integrations` — **out of scope** unless the user explicitly enables it later.
-
 
 Plan efficient data access:
 - Use SSL methods for attribute retrieval
@@ -271,20 +115,6 @@ Plan efficient data access:
 
 ### Integration Points
 
-## Ecoladev stack (mandatory)
-
-You operate in the **ecoladev** contour, not upstream `itrous/ai_rules_1c` as-is.
-
-- Process brain: rule `1c-orchestrator` (not a root `AGENTS.md`).
-- XML / forms / CFE / EPF: skills `meta-*`, `form-*`, `skd-*`, `cfe-*`, `epf-*`, `repo-workflow` — **never** hand-edit metadata XML; **never** `1c-metadata-manage`.
-- Load / syntax-check / IB: MCP **vrunner** only (`cf_load`, `cfe_load`, `validate_syntax_check`, …) or `repo.ps1`. **Forbidden:** Designer/`1cv8`, raw `ibcmd`, Platform Tools MCP, `install.ps1`, `/deploy-and-test` as-is.
-- Semantics: `bsl-analyzer-workspace` (`search`/`graph`/`metadata`/`diagnostics`). Live IB + static dump search: `1c-ninja-mcp`. Standards: `v8std` + `bsl-analyzer-reference`. Optional AI check: `1c-code-check-mcp` (Напарник) when available — do not hard-block if missing.
-- Coding style: `bsl-code-standards`, `1c-code-agent`, `bsp-developer` — not upstream `coding-standards.md`.
-- Architecture layers: rule `1c-architect`. On-demand methodology rules: `anti-patterns`, `extension-patterns`, `mcp-first-search`, `verification-checklist`, …
-- Reply to the user in **Russian**. Raise `CONFUSION` instead of silently picking an interpretation.
-- OpenSpec / `sdd-integrations` — **out of scope** unless the user explicitly enables it later.
-
-
 Identify integrations:
 - SSL subsystems to use
 - External system connections
@@ -293,120 +123,26 @@ Identify integrations:
 
 ## Plan Format
 
-## Ecoladev stack (mandatory)
-
-You operate in the **ecoladev** contour, not upstream `itrous/ai_rules_1c` as-is.
-
-- Process brain: rule `1c-orchestrator` (not a root `AGENTS.md`).
-- XML / forms / CFE / EPF: skills `meta-*`, `form-*`, `skd-*`, `cfe-*`, `epf-*`, `repo-workflow` — **never** hand-edit metadata XML; **never** `1c-metadata-manage`.
-- Load / syntax-check / IB: MCP **vrunner** only (`cf_load`, `cfe_load`, `validate_syntax_check`, …) or `repo.ps1`. **Forbidden:** Designer/`1cv8`, raw `ibcmd`, Platform Tools MCP, `install.ps1`, `/deploy-and-test` as-is.
-- Semantics: `bsl-analyzer-workspace` (`search`/`graph`/`metadata`/`diagnostics`). Live IB + static dump search: `1c-ninja-mcp`. Standards: `v8std` + `bsl-analyzer-reference`. Optional AI check: `1c-code-check-mcp` (Напарник) when available — do not hard-block if missing.
-- Coding style: `bsl-code-standards`, `1c-code-agent`, `bsp-developer` — not upstream `coding-standards.md`.
-- Architecture layers: rule `1c-architect`. On-demand methodology rules: `anti-patterns`, `extension-patterns`, `mcp-first-search`, `verification-checklist`, …
-- Reply to the user in **Russian**. Raise `CONFUSION` instead of silently picking an interpretation.
-- OpenSpec / `sdd-integrations` — **out of scope** unless the user explicitly enables it later.
-
-
 ```markdown
 # Implementation Plan: [Feature Name]
 
-## Ecoladev stack (mandatory)
-
-You operate in the **ecoladev** contour, not upstream `itrous/ai_rules_1c` as-is.
-
-- Process brain: rule `1c-orchestrator` (not a root `AGENTS.md`).
-- XML / forms / CFE / EPF: skills `meta-*`, `form-*`, `skd-*`, `cfe-*`, `epf-*`, `repo-workflow` — **never** hand-edit metadata XML; **never** `1c-metadata-manage`.
-- Load / syntax-check / IB: MCP **vrunner** only (`cf_load`, `cfe_load`, `validate_syntax_check`, …) or `repo.ps1`. **Forbidden:** Designer/`1cv8`, raw `ibcmd`, Platform Tools MCP, `install.ps1`, `/deploy-and-test` as-is.
-- Semantics: `bsl-analyzer-workspace` (`search`/`graph`/`metadata`/`diagnostics`). Live IB + static dump search: `1c-ninja-mcp`. Standards: `v8std` + `bsl-analyzer-reference`. Optional AI check: `1c-code-check-mcp` (Напарник) when available — do not hard-block if missing.
-- Coding style: `bsl-code-standards`, `1c-code-agent`, `bsp-developer` — not upstream `coding-standards.md`.
-- Architecture layers: rule `1c-architect`. On-demand methodology rules: `anti-patterns`, `extension-patterns`, `mcp-first-search`, `verification-checklist`, …
-- Reply to the user in **Russian**. Raise `CONFUSION` instead of silently picking an interpretation.
-- OpenSpec / `sdd-integrations` — **out of scope** unless the user explicitly enables it later.
-
-
 ## Overview
-
-## Ecoladev stack (mandatory)
-
-You operate in the **ecoladev** contour, not upstream `itrous/ai_rules_1c` as-is.
-
-- Process brain: rule `1c-orchestrator` (not a root `AGENTS.md`).
-- XML / forms / CFE / EPF: skills `meta-*`, `form-*`, `skd-*`, `cfe-*`, `epf-*`, `repo-workflow` — **never** hand-edit metadata XML; **never** `1c-metadata-manage`.
-- Load / syntax-check / IB: MCP **vrunner** only (`cf_load`, `cfe_load`, `validate_syntax_check`, …) or `repo.ps1`. **Forbidden:** Designer/`1cv8`, raw `ibcmd`, Platform Tools MCP, `install.ps1`, `/deploy-and-test` as-is.
-- Semantics: `bsl-analyzer-workspace` (`search`/`graph`/`metadata`/`diagnostics`). Live IB + static dump search: `1c-ninja-mcp`. Standards: `v8std` + `bsl-analyzer-reference`. Optional AI check: `1c-code-check-mcp` (Напарник) when available — do not hard-block if missing.
-- Coding style: `bsl-code-standards`, `1c-code-agent`, `bsp-developer` — not upstream `coding-standards.md`.
-- Architecture layers: rule `1c-architect`. On-demand methodology rules: `anti-patterns`, `extension-patterns`, `mcp-first-search`, `verification-checklist`, …
-- Reply to the user in **Russian**. Raise `CONFUSION` instead of silently picking an interpretation.
-- OpenSpec / `sdd-integrations` — **out of scope** unless the user explicitly enables it later.
 
 [2-3 sentence summary of what will be implemented]
 
 ## Requirements
-
-## Ecoladev stack (mandatory)
-
-You operate in the **ecoladev** contour, not upstream `itrous/ai_rules_1c` as-is.
-
-- Process brain: rule `1c-orchestrator` (not a root `AGENTS.md`).
-- XML / forms / CFE / EPF: skills `meta-*`, `form-*`, `skd-*`, `cfe-*`, `epf-*`, `repo-workflow` — **never** hand-edit metadata XML; **never** `1c-metadata-manage`.
-- Load / syntax-check / IB: MCP **vrunner** only (`cf_load`, `cfe_load`, `validate_syntax_check`, …) or `repo.ps1`. **Forbidden:** Designer/`1cv8`, raw `ibcmd`, Platform Tools MCP, `install.ps1`, `/deploy-and-test` as-is.
-- Semantics: `bsl-analyzer-workspace` (`search`/`graph`/`metadata`/`diagnostics`). Live IB + static dump search: `1c-ninja-mcp`. Standards: `v8std` + `bsl-analyzer-reference`. Optional AI check: `1c-code-check-mcp` (Напарник) when available — do not hard-block if missing.
-- Coding style: `bsl-code-standards`, `1c-code-agent`, `bsp-developer` — not upstream `coding-standards.md`.
-- Architecture layers: rule `1c-architect`. On-demand methodology rules: `anti-patterns`, `extension-patterns`, `mcp-first-search`, `verification-checklist`, …
-- Reply to the user in **Russian**. Raise `CONFUSION` instead of silently picking an interpretation.
-- OpenSpec / `sdd-integrations` — **out of scope** unless the user explicitly enables it later.
 
 - [Requirement 1]
 - [Requirement 2]
 
 ## Assumptions
 
-## Ecoladev stack (mandatory)
-
-You operate in the **ecoladev** contour, not upstream `itrous/ai_rules_1c` as-is.
-
-- Process brain: rule `1c-orchestrator` (not a root `AGENTS.md`).
-- XML / forms / CFE / EPF: skills `meta-*`, `form-*`, `skd-*`, `cfe-*`, `epf-*`, `repo-workflow` — **never** hand-edit metadata XML; **never** `1c-metadata-manage`.
-- Load / syntax-check / IB: MCP **vrunner** only (`cf_load`, `cfe_load`, `validate_syntax_check`, …) or `repo.ps1`. **Forbidden:** Designer/`1cv8`, raw `ibcmd`, Platform Tools MCP, `install.ps1`, `/deploy-and-test` as-is.
-- Semantics: `bsl-analyzer-workspace` (`search`/`graph`/`metadata`/`diagnostics`). Live IB + static dump search: `1c-ninja-mcp`. Standards: `v8std` + `bsl-analyzer-reference`. Optional AI check: `1c-code-check-mcp` (Напарник) when available — do not hard-block if missing.
-- Coding style: `bsl-code-standards`, `1c-code-agent`, `bsp-developer` — not upstream `coding-standards.md`.
-- Architecture layers: rule `1c-architect`. On-demand methodology rules: `anti-patterns`, `extension-patterns`, `mcp-first-search`, `verification-checklist`, …
-- Reply to the user in **Russian**. Raise `CONFUSION` instead of silently picking an interpretation.
-- OpenSpec / `sdd-integrations` — **out of scope** unless the user explicitly enables it later.
-
 - [Assumption 1]
 - [Assumption 2]
 
 ## Metadata Changes
 
-## Ecoladev stack (mandatory)
-
-You operate in the **ecoladev** contour, not upstream `itrous/ai_rules_1c` as-is.
-
-- Process brain: rule `1c-orchestrator` (not a root `AGENTS.md`).
-- XML / forms / CFE / EPF: skills `meta-*`, `form-*`, `skd-*`, `cfe-*`, `epf-*`, `repo-workflow` — **never** hand-edit metadata XML; **never** `1c-metadata-manage`.
-- Load / syntax-check / IB: MCP **vrunner** only (`cf_load`, `cfe_load`, `validate_syntax_check`, …) or `repo.ps1`. **Forbidden:** Designer/`1cv8`, raw `ibcmd`, Platform Tools MCP, `install.ps1`, `/deploy-and-test` as-is.
-- Semantics: `bsl-analyzer-workspace` (`search`/`graph`/`metadata`/`diagnostics`). Live IB + static dump search: `1c-ninja-mcp`. Standards: `v8std` + `bsl-analyzer-reference`. Optional AI check: `1c-code-check-mcp` (Напарник) when available — do not hard-block if missing.
-- Coding style: `bsl-code-standards`, `1c-code-agent`, `bsp-developer` — not upstream `coding-standards.md`.
-- Architecture layers: rule `1c-architect`. On-demand methodology rules: `anti-patterns`, `extension-patterns`, `mcp-first-search`, `verification-checklist`, …
-- Reply to the user in **Russian**. Raise `CONFUSION` instead of silently picking an interpretation.
-- OpenSpec / `sdd-integrations` — **out of scope** unless the user explicitly enables it later.
-
-
 ### New Objects
-
-## Ecoladev stack (mandatory)
-
-You operate in the **ecoladev** contour, not upstream `itrous/ai_rules_1c` as-is.
-
-- Process brain: rule `1c-orchestrator` (not a root `AGENTS.md`).
-- XML / forms / CFE / EPF: skills `meta-*`, `form-*`, `skd-*`, `cfe-*`, `epf-*`, `repo-workflow` — **never** hand-edit metadata XML; **never** `1c-metadata-manage`.
-- Load / syntax-check / IB: MCP **vrunner** only (`cf_load`, `cfe_load`, `validate_syntax_check`, …) or `repo.ps1`. **Forbidden:** Designer/`1cv8`, raw `ibcmd`, Platform Tools MCP, `install.ps1`, `/deploy-and-test` as-is.
-- Semantics: `bsl-analyzer-workspace` (`search`/`graph`/`metadata`/`diagnostics`). Live IB + static dump search: `1c-ninja-mcp`. Standards: `v8std` + `bsl-analyzer-reference`. Optional AI check: `1c-code-check-mcp` (Напарник) when available — do not hard-block if missing.
-- Coding style: `bsl-code-standards`, `1c-code-agent`, `bsp-developer` — not upstream `coding-standards.md`.
-- Architecture layers: rule `1c-architect`. On-demand methodology rules: `anti-patterns`, `extension-patterns`, `mcp-first-search`, `verification-checklist`, …
-- Reply to the user in **Russian**. Raise `CONFUSION` instead of silently picking an interpretation.
-- OpenSpec / `sdd-integrations` — **out of scope** unless the user explicitly enables it later.
 
 | Object Type | Name | Purpose |
 |-------------|------|---------|
@@ -414,53 +150,13 @@ You operate in the **ecoladev** contour, not upstream `itrous/ai_rules_1c` as-is
 
 ### Modified Objects
 
-## Ecoladev stack (mandatory)
-
-You operate in the **ecoladev** contour, not upstream `itrous/ai_rules_1c` as-is.
-
-- Process brain: rule `1c-orchestrator` (not a root `AGENTS.md`).
-- XML / forms / CFE / EPF: skills `meta-*`, `form-*`, `skd-*`, `cfe-*`, `epf-*`, `repo-workflow` — **never** hand-edit metadata XML; **never** `1c-metadata-manage`.
-- Load / syntax-check / IB: MCP **vrunner** only (`cf_load`, `cfe_load`, `validate_syntax_check`, …) or `repo.ps1`. **Forbidden:** Designer/`1cv8`, raw `ibcmd`, Platform Tools MCP, `install.ps1`, `/deploy-and-test` as-is.
-- Semantics: `bsl-analyzer-workspace` (`search`/`graph`/`metadata`/`diagnostics`). Live IB + static dump search: `1c-ninja-mcp`. Standards: `v8std` + `bsl-analyzer-reference`. Optional AI check: `1c-code-check-mcp` (Напарник) when available — do not hard-block if missing.
-- Coding style: `bsl-code-standards`, `1c-code-agent`, `bsp-developer` — not upstream `coding-standards.md`.
-- Architecture layers: rule `1c-architect`. On-demand methodology rules: `anti-patterns`, `extension-patterns`, `mcp-first-search`, `verification-checklist`, …
-- Reply to the user in **Russian**. Raise `CONFUSION` instead of silently picking an interpretation.
-- OpenSpec / `sdd-integrations` — **out of scope** unless the user explicitly enables it later.
-
 | Object | Changes |
 |--------|---------|
 | ... | ... |
 
 ## Implementation Steps
 
-## Ecoladev stack (mandatory)
-
-You operate in the **ecoladev** contour, not upstream `itrous/ai_rules_1c` as-is.
-
-- Process brain: rule `1c-orchestrator` (not a root `AGENTS.md`).
-- XML / forms / CFE / EPF: skills `meta-*`, `form-*`, `skd-*`, `cfe-*`, `epf-*`, `repo-workflow` — **never** hand-edit metadata XML; **never** `1c-metadata-manage`.
-- Load / syntax-check / IB: MCP **vrunner** only (`cf_load`, `cfe_load`, `validate_syntax_check`, …) or `repo.ps1`. **Forbidden:** Designer/`1cv8`, raw `ibcmd`, Platform Tools MCP, `install.ps1`, `/deploy-and-test` as-is.
-- Semantics: `bsl-analyzer-workspace` (`search`/`graph`/`metadata`/`diagnostics`). Live IB + static dump search: `1c-ninja-mcp`. Standards: `v8std` + `bsl-analyzer-reference`. Optional AI check: `1c-code-check-mcp` (Напарник) when available — do not hard-block if missing.
-- Coding style: `bsl-code-standards`, `1c-code-agent`, `bsp-developer` — not upstream `coding-standards.md`.
-- Architecture layers: rule `1c-architect`. On-demand methodology rules: `anti-patterns`, `extension-patterns`, `mcp-first-search`, `verification-checklist`, …
-- Reply to the user in **Russian**. Raise `CONFUSION` instead of silently picking an interpretation.
-- OpenSpec / `sdd-integrations` — **out of scope** unless the user explicitly enables it later.
-
-
 ### Phase 1: [Phase Name]
-
-## Ecoladev stack (mandatory)
-
-You operate in the **ecoladev** contour, not upstream `itrous/ai_rules_1c` as-is.
-
-- Process brain: rule `1c-orchestrator` (not a root `AGENTS.md`).
-- XML / forms / CFE / EPF: skills `meta-*`, `form-*`, `skd-*`, `cfe-*`, `epf-*`, `repo-workflow` — **never** hand-edit metadata XML; **never** `1c-metadata-manage`.
-- Load / syntax-check / IB: MCP **vrunner** only (`cf_load`, `cfe_load`, `validate_syntax_check`, …) or `repo.ps1`. **Forbidden:** Designer/`1cv8`, raw `ibcmd`, Platform Tools MCP, `install.ps1`, `/deploy-and-test` as-is.
-- Semantics: `bsl-analyzer-workspace` (`search`/`graph`/`metadata`/`diagnostics`). Live IB + static dump search: `1c-ninja-mcp`. Standards: `v8std` + `bsl-analyzer-reference`. Optional AI check: `1c-code-check-mcp` (Напарник) when available — do not hard-block if missing.
-- Coding style: `bsl-code-standards`, `1c-code-agent`, `bsp-developer` — not upstream `coding-standards.md`.
-- Architecture layers: rule `1c-architect`. On-demand methodology rules: `anti-patterns`, `extension-patterns`, `mcp-first-search`, `verification-checklist`, …
-- Reply to the user in **Russian**. Raise `CONFUSION` instead of silently picking an interpretation.
-- OpenSpec / `sdd-integrations` — **out of scope** unless the user explicitly enables it later.
 
 1. **[Step Name]** (File: `path/to/file.bsl`)
    - Action: Specific action to take
@@ -474,36 +170,9 @@ You operate in the **ecoladev** contour, not upstream `itrous/ai_rules_1c` as-is
 
 ### Phase 2: [Phase Name]
 
-## Ecoladev stack (mandatory)
-
-You operate in the **ecoladev** contour, not upstream `itrous/ai_rules_1c` as-is.
-
-- Process brain: rule `1c-orchestrator` (not a root `AGENTS.md`).
-- XML / forms / CFE / EPF: skills `meta-*`, `form-*`, `skd-*`, `cfe-*`, `epf-*`, `repo-workflow` — **never** hand-edit metadata XML; **never** `1c-metadata-manage`.
-- Load / syntax-check / IB: MCP **vrunner** only (`cf_load`, `cfe_load`, `validate_syntax_check`, …) or `repo.ps1`. **Forbidden:** Designer/`1cv8`, raw `ibcmd`, Platform Tools MCP, `install.ps1`, `/deploy-and-test` as-is.
-- Semantics: `bsl-analyzer-workspace` (`search`/`graph`/`metadata`/`diagnostics`). Live IB + static dump search: `1c-ninja-mcp`. Standards: `v8std` + `bsl-analyzer-reference`. Optional AI check: `1c-code-check-mcp` (Напарник) when available — do not hard-block if missing.
-- Coding style: `bsl-code-standards`, `1c-code-agent`, `bsp-developer` — not upstream `coding-standards.md`.
-- Architecture layers: rule `1c-architect`. On-demand methodology rules: `anti-patterns`, `extension-patterns`, `mcp-first-search`, `verification-checklist`, …
-- Reply to the user in **Russian**. Raise `CONFUSION` instead of silently picking an interpretation.
-- OpenSpec / `sdd-integrations` — **out of scope** unless the user explicitly enables it later.
-
 ...
 
 ## Data Flow
-
-## Ecoladev stack (mandatory)
-
-You operate in the **ecoladev** contour, not upstream `itrous/ai_rules_1c` as-is.
-
-- Process brain: rule `1c-orchestrator` (not a root `AGENTS.md`).
-- XML / forms / CFE / EPF: skills `meta-*`, `form-*`, `skd-*`, `cfe-*`, `epf-*`, `repo-workflow` — **never** hand-edit metadata XML; **never** `1c-metadata-manage`.
-- Load / syntax-check / IB: MCP **vrunner** only (`cf_load`, `cfe_load`, `validate_syntax_check`, …) or `repo.ps1`. **Forbidden:** Designer/`1cv8`, raw `ibcmd`, Platform Tools MCP, `install.ps1`, `/deploy-and-test` as-is.
-- Semantics: `bsl-analyzer-workspace` (`search`/`graph`/`metadata`/`diagnostics`). Live IB + static dump search: `1c-ninja-mcp`. Standards: `v8std` + `bsl-analyzer-reference`. Optional AI check: `1c-code-check-mcp` (Напарник) when available — do not hard-block if missing.
-- Coding style: `bsl-code-standards`, `1c-code-agent`, `bsp-developer` — not upstream `coding-standards.md`.
-- Architecture layers: rule `1c-architect`. On-demand methodology rules: `anti-patterns`, `extension-patterns`, `mcp-first-search`, `verification-checklist`, …
-- Reply to the user in **Russian**. Raise `CONFUSION` instead of silently picking an interpretation.
-- OpenSpec / `sdd-integrations` — **out of scope** unless the user explicitly enables it later.
-
 
 ```mermaid
 graph TD
@@ -513,37 +182,11 @@ graph TD
 
 ## Testing Strategy
 
-## Ecoladev stack (mandatory)
-
-You operate in the **ecoladev** contour, not upstream `itrous/ai_rules_1c` as-is.
-
-- Process brain: rule `1c-orchestrator` (not a root `AGENTS.md`).
-- XML / forms / CFE / EPF: skills `meta-*`, `form-*`, `skd-*`, `cfe-*`, `epf-*`, `repo-workflow` — **never** hand-edit metadata XML; **never** `1c-metadata-manage`.
-- Load / syntax-check / IB: MCP **vrunner** only (`cf_load`, `cfe_load`, `validate_syntax_check`, …) or `repo.ps1`. **Forbidden:** Designer/`1cv8`, raw `ibcmd`, Platform Tools MCP, `install.ps1`, `/deploy-and-test` as-is.
-- Semantics: `bsl-analyzer-workspace` (`search`/`graph`/`metadata`/`diagnostics`). Live IB + static dump search: `1c-ninja-mcp`. Standards: `v8std` + `bsl-analyzer-reference`. Optional AI check: `1c-code-check-mcp` (Напарник) when available — do not hard-block if missing.
-- Coding style: `bsl-code-standards`, `1c-code-agent`, `bsp-developer` — not upstream `coding-standards.md`.
-- Architecture layers: rule `1c-architect`. On-demand methodology rules: `anti-patterns`, `extension-patterns`, `mcp-first-search`, `verification-checklist`, …
-- Reply to the user in **Russian**. Raise `CONFUSION` instead of silently picking an interpretation.
-- OpenSpec / `sdd-integrations` — **out of scope** unless the user explicitly enables it later.
-
 - Functional tests: [what to test]
 - Edge cases: [scenarios]
 - Performance: [considerations]
 
 ## Risks & Mitigations
-
-## Ecoladev stack (mandatory)
-
-You operate in the **ecoladev** contour, not upstream `itrous/ai_rules_1c` as-is.
-
-- Process brain: rule `1c-orchestrator` (not a root `AGENTS.md`).
-- XML / forms / CFE / EPF: skills `meta-*`, `form-*`, `skd-*`, `cfe-*`, `epf-*`, `repo-workflow` — **never** hand-edit metadata XML; **never** `1c-metadata-manage`.
-- Load / syntax-check / IB: MCP **vrunner** only (`cf_load`, `cfe_load`, `validate_syntax_check`, …) or `repo.ps1`. **Forbidden:** Designer/`1cv8`, raw `ibcmd`, Platform Tools MCP, `install.ps1`, `/deploy-and-test` as-is.
-- Semantics: `bsl-analyzer-workspace` (`search`/`graph`/`metadata`/`diagnostics`). Live IB + static dump search: `1c-ninja-mcp`. Standards: `v8std` + `bsl-analyzer-reference`. Optional AI check: `1c-code-check-mcp` (Напарник) when available — do not hard-block if missing.
-- Coding style: `bsl-code-standards`, `1c-code-agent`, `bsp-developer` — not upstream `coding-standards.md`.
-- Architecture layers: rule `1c-architect`. On-demand methodology rules: `anti-patterns`, `extension-patterns`, `mcp-first-search`, `verification-checklist`, …
-- Reply to the user in **Russian**. Raise `CONFUSION` instead of silently picking an interpretation.
-- OpenSpec / `sdd-integrations` — **out of scope** unless the user explicitly enables it later.
 
 | Risk | Impact | Likelihood | Mitigation |
 |------|--------|------------|------------|
@@ -551,57 +194,17 @@ You operate in the **ecoladev** contour, not upstream `itrous/ai_rules_1c` as-is
 
 ## Dependencies
 
-## Ecoladev stack (mandatory)
-
-You operate in the **ecoladev** contour, not upstream `itrous/ai_rules_1c` as-is.
-
-- Process brain: rule `1c-orchestrator` (not a root `AGENTS.md`).
-- XML / forms / CFE / EPF: skills `meta-*`, `form-*`, `skd-*`, `cfe-*`, `epf-*`, `repo-workflow` — **never** hand-edit metadata XML; **never** `1c-metadata-manage`.
-- Load / syntax-check / IB: MCP **vrunner** only (`cf_load`, `cfe_load`, `validate_syntax_check`, …) or `repo.ps1`. **Forbidden:** Designer/`1cv8`, raw `ibcmd`, Platform Tools MCP, `install.ps1`, `/deploy-and-test` as-is.
-- Semantics: `bsl-analyzer-workspace` (`search`/`graph`/`metadata`/`diagnostics`). Live IB + static dump search: `1c-ninja-mcp`. Standards: `v8std` + `bsl-analyzer-reference`. Optional AI check: `1c-code-check-mcp` (Напарник) when available — do not hard-block if missing.
-- Coding style: `bsl-code-standards`, `1c-code-agent`, `bsp-developer` — not upstream `coding-standards.md`.
-- Architecture layers: rule `1c-architect`. On-demand methodology rules: `anti-patterns`, `extension-patterns`, `mcp-first-search`, `verification-checklist`, …
-- Reply to the user in **Russian**. Raise `CONFUSION` instead of silently picking an interpretation.
-- OpenSpec / `sdd-integrations` — **out of scope** unless the user explicitly enables it later.
-
 - SSL modules required: [list]
 - External systems: [list]
 - Configuration prerequisites: [list]
 
 ## Success Criteria
 
-## Ecoladev stack (mandatory)
-
-You operate in the **ecoladev** contour, not upstream `itrous/ai_rules_1c` as-is.
-
-- Process brain: rule `1c-orchestrator` (not a root `AGENTS.md`).
-- XML / forms / CFE / EPF: skills `meta-*`, `form-*`, `skd-*`, `cfe-*`, `epf-*`, `repo-workflow` — **never** hand-edit metadata XML; **never** `1c-metadata-manage`.
-- Load / syntax-check / IB: MCP **vrunner** only (`cf_load`, `cfe_load`, `validate_syntax_check`, …) or `repo.ps1`. **Forbidden:** Designer/`1cv8`, raw `ibcmd`, Platform Tools MCP, `install.ps1`, `/deploy-and-test` as-is.
-- Semantics: `bsl-analyzer-workspace` (`search`/`graph`/`metadata`/`diagnostics`). Live IB + static dump search: `1c-ninja-mcp`. Standards: `v8std` + `bsl-analyzer-reference`. Optional AI check: `1c-code-check-mcp` (Напарник) when available — do not hard-block if missing.
-- Coding style: `bsl-code-standards`, `1c-code-agent`, `bsp-developer` — not upstream `coding-standards.md`.
-- Architecture layers: rule `1c-architect`. On-demand methodology rules: `anti-patterns`, `extension-patterns`, `mcp-first-search`, `verification-checklist`, …
-- Reply to the user in **Russian**. Raise `CONFUSION` instead of silently picking an interpretation.
-- OpenSpec / `sdd-integrations` — **out of scope** unless the user explicitly enables it later.
-
 - [ ] Criterion 1
 - [ ] Criterion 2
 ```
 
 ## Best Practices
-
-## Ecoladev stack (mandatory)
-
-You operate in the **ecoladev** contour, not upstream `itrous/ai_rules_1c` as-is.
-
-- Process brain: rule `1c-orchestrator` (not a root `AGENTS.md`).
-- XML / forms / CFE / EPF: skills `meta-*`, `form-*`, `skd-*`, `cfe-*`, `epf-*`, `repo-workflow` — **never** hand-edit metadata XML; **never** `1c-metadata-manage`.
-- Load / syntax-check / IB: MCP **vrunner** only (`cf_load`, `cfe_load`, `validate_syntax_check`, …) or `repo.ps1`. **Forbidden:** Designer/`1cv8`, raw `ibcmd`, Platform Tools MCP, `install.ps1`, `/deploy-and-test` as-is.
-- Semantics: `bsl-analyzer-workspace` (`search`/`graph`/`metadata`/`diagnostics`). Live IB + static dump search: `1c-ninja-mcp`. Standards: `v8std` + `bsl-analyzer-reference`. Optional AI check: `1c-code-check-mcp` (Напарник) when available — do not hard-block if missing.
-- Coding style: `bsl-code-standards`, `1c-code-agent`, `bsp-developer` — not upstream `coding-standards.md`.
-- Architecture layers: rule `1c-architect`. On-demand methodology rules: `anti-patterns`, `extension-patterns`, `mcp-first-search`, `verification-checklist`, …
-- Reply to the user in **Russian**. Raise `CONFUSION` instead of silently picking an interpretation.
-- OpenSpec / `sdd-integrations` — **out of scope** unless the user explicitly enables it later.
-
 
 1. **Be Specific**: Use exact file paths, procedure names, metadata object names
 2. **Consider Edge Cases**: Think about error scenarios, null values, empty states
@@ -613,35 +216,7 @@ You operate in the **ecoladev** contour, not upstream `itrous/ai_rules_1c` as-is
 
 ## When Planning 1C Features
 
-## Ecoladev stack (mandatory)
-
-You operate in the **ecoladev** contour, not upstream `itrous/ai_rules_1c` as-is.
-
-- Process brain: rule `1c-orchestrator` (not a root `AGENTS.md`).
-- XML / forms / CFE / EPF: skills `meta-*`, `form-*`, `skd-*`, `cfe-*`, `epf-*`, `repo-workflow` — **never** hand-edit metadata XML; **never** `1c-metadata-manage`.
-- Load / syntax-check / IB: MCP **vrunner** only (`cf_load`, `cfe_load`, `validate_syntax_check`, …) or `repo.ps1`. **Forbidden:** Designer/`1cv8`, raw `ibcmd`, Platform Tools MCP, `install.ps1`, `/deploy-and-test` as-is.
-- Semantics: `bsl-analyzer-workspace` (`search`/`graph`/`metadata`/`diagnostics`). Live IB + static dump search: `1c-ninja-mcp`. Standards: `v8std` + `bsl-analyzer-reference`. Optional AI check: `1c-code-check-mcp` (Напарник) when available — do not hard-block if missing.
-- Coding style: `bsl-code-standards`, `1c-code-agent`, `bsp-developer` — not upstream `coding-standards.md`.
-- Architecture layers: rule `1c-architect`. On-demand methodology rules: `anti-patterns`, `extension-patterns`, `mcp-first-search`, `verification-checklist`, …
-- Reply to the user in **Russian**. Raise `CONFUSION` instead of silently picking an interpretation.
-- OpenSpec / `sdd-integrations` — **out of scope** unless the user explicitly enables it later.
-
-
 ### New Document Flow
-
-## Ecoladev stack (mandatory)
-
-You operate in the **ecoladev** contour, not upstream `itrous/ai_rules_1c` as-is.
-
-- Process brain: rule `1c-orchestrator` (not a root `AGENTS.md`).
-- XML / forms / CFE / EPF: skills `meta-*`, `form-*`, `skd-*`, `cfe-*`, `epf-*`, `repo-workflow` — **never** hand-edit metadata XML; **never** `1c-metadata-manage`.
-- Load / syntax-check / IB: MCP **vrunner** only (`cf_load`, `cfe_load`, `validate_syntax_check`, …) or `repo.ps1`. **Forbidden:** Designer/`1cv8`, raw `ibcmd`, Platform Tools MCP, `install.ps1`, `/deploy-and-test` as-is.
-- Semantics: `bsl-analyzer-workspace` (`search`/`graph`/`metadata`/`diagnostics`). Live IB + static dump search: `1c-ninja-mcp`. Standards: `v8std` + `bsl-analyzer-reference`. Optional AI check: `1c-code-check-mcp` (Напарник) when available — do not hard-block if missing.
-- Coding style: `bsl-code-standards`, `1c-code-agent`, `bsp-developer` — not upstream `coding-standards.md`.
-- Architecture layers: rule `1c-architect`. On-demand methodology rules: `anti-patterns`, `extension-patterns`, `mcp-first-search`, `verification-checklist`, …
-- Reply to the user in **Russian**. Raise `CONFUSION` instead of silently picking an interpretation.
-- OpenSpec / `sdd-integrations` — **out of scope** unless the user explicitly enables it later.
-
 
 1. Design document structure (header, tabular sections)
 2. Plan movements to registers
@@ -652,20 +227,6 @@ You operate in the **ecoladev** contour, not upstream `itrous/ai_rules_1c` as-is
 
 ### New Register
 
-## Ecoladev stack (mandatory)
-
-You operate in the **ecoladev** contour, not upstream `itrous/ai_rules_1c` as-is.
-
-- Process brain: rule `1c-orchestrator` (not a root `AGENTS.md`).
-- XML / forms / CFE / EPF: skills `meta-*`, `form-*`, `skd-*`, `cfe-*`, `epf-*`, `repo-workflow` — **never** hand-edit metadata XML; **never** `1c-metadata-manage`.
-- Load / syntax-check / IB: MCP **vrunner** only (`cf_load`, `cfe_load`, `validate_syntax_check`, …) or `repo.ps1`. **Forbidden:** Designer/`1cv8`, raw `ibcmd`, Platform Tools MCP, `install.ps1`, `/deploy-and-test` as-is.
-- Semantics: `bsl-analyzer-workspace` (`search`/`graph`/`metadata`/`diagnostics`). Live IB + static dump search: `1c-ninja-mcp`. Standards: `v8std` + `bsl-analyzer-reference`. Optional AI check: `1c-code-check-mcp` (Напарник) when available — do not hard-block if missing.
-- Coding style: `bsl-code-standards`, `1c-code-agent`, `bsp-developer` — not upstream `coding-standards.md`.
-- Architecture layers: rule `1c-architect`. On-demand methodology rules: `anti-patterns`, `extension-patterns`, `mcp-first-search`, `verification-checklist`, …
-- Reply to the user in **Russian**. Raise `CONFUSION` instead of silently picking an interpretation.
-- OpenSpec / `sdd-integrations` — **out of scope** unless the user explicitly enables it later.
-
-
 1. Define dimensions, resources, attributes
 2. Plan data access patterns (slices, turnovers)
 3. Design queries for common use cases
@@ -673,20 +234,6 @@ You operate in the **ecoladev** contour, not upstream `itrous/ai_rules_1c` as-is
 5. Plan maintenance (cleanup, archiving)
 
 ### New Report
-
-## Ecoladev stack (mandatory)
-
-You operate in the **ecoladev** contour, not upstream `itrous/ai_rules_1c` as-is.
-
-- Process brain: rule `1c-orchestrator` (not a root `AGENTS.md`).
-- XML / forms / CFE / EPF: skills `meta-*`, `form-*`, `skd-*`, `cfe-*`, `epf-*`, `repo-workflow` — **never** hand-edit metadata XML; **never** `1c-metadata-manage`.
-- Load / syntax-check / IB: MCP **vrunner** only (`cf_load`, `cfe_load`, `validate_syntax_check`, …) or `repo.ps1`. **Forbidden:** Designer/`1cv8`, raw `ibcmd`, Platform Tools MCP, `install.ps1`, `/deploy-and-test` as-is.
-- Semantics: `bsl-analyzer-workspace` (`search`/`graph`/`metadata`/`diagnostics`). Live IB + static dump search: `1c-ninja-mcp`. Standards: `v8std` + `bsl-analyzer-reference`. Optional AI check: `1c-code-check-mcp` (Напарник) when available — do not hard-block if missing.
-- Coding style: `bsl-code-standards`, `1c-code-agent`, `bsp-developer` — not upstream `coding-standards.md`.
-- Architecture layers: rule `1c-architect`. On-demand methodology rules: `anti-patterns`, `extension-patterns`, `mcp-first-search`, `verification-checklist`, …
-- Reply to the user in **Russian**. Raise `CONFUSION` instead of silently picking an interpretation.
-- OpenSpec / `sdd-integrations` — **out of scope** unless the user explicitly enables it later.
-
 
 1. Define data sources
 2. Design DCS schema
@@ -696,20 +243,6 @@ You operate in the **ecoladev** contour, not upstream `itrous/ai_rules_1c` as-is
 
 ### Integration Feature
 
-## Ecoladev stack (mandatory)
-
-You operate in the **ecoladev** contour, not upstream `itrous/ai_rules_1c` as-is.
-
-- Process brain: rule `1c-orchestrator` (not a root `AGENTS.md`).
-- XML / forms / CFE / EPF: skills `meta-*`, `form-*`, `skd-*`, `cfe-*`, `epf-*`, `repo-workflow` — **never** hand-edit metadata XML; **never** `1c-metadata-manage`.
-- Load / syntax-check / IB: MCP **vrunner** only (`cf_load`, `cfe_load`, `validate_syntax_check`, …) or `repo.ps1`. **Forbidden:** Designer/`1cv8`, raw `ibcmd`, Platform Tools MCP, `install.ps1`, `/deploy-and-test` as-is.
-- Semantics: `bsl-analyzer-workspace` (`search`/`graph`/`metadata`/`diagnostics`). Live IB + static dump search: `1c-ninja-mcp`. Standards: `v8std` + `bsl-analyzer-reference`. Optional AI check: `1c-code-check-mcp` (Напарник) when available — do not hard-block if missing.
-- Coding style: `bsl-code-standards`, `1c-code-agent`, `bsp-developer` — not upstream `coding-standards.md`.
-- Architecture layers: rule `1c-architect`. On-demand methodology rules: `anti-patterns`, `extension-patterns`, `mcp-first-search`, `verification-checklist`, …
-- Reply to the user in **Russian**. Raise `CONFUSION` instead of silently picking an interpretation.
-- OpenSpec / `sdd-integrations` — **out of scope** unless the user explicitly enables it later.
-
-
 1. Map data between systems
 2. Design error handling and retry logic
 3. Plan logging and monitoring
@@ -718,37 +251,9 @@ You operate in the **ecoladev** contour, not upstream `itrous/ai_rules_1c` as-is
 
 ## Red Flags to Check
 
-## Ecoladev stack (mandatory)
-
-You operate in the **ecoladev** contour, not upstream `itrous/ai_rules_1c` as-is.
-
-- Process brain: rule `1c-orchestrator` (not a root `AGENTS.md`).
-- XML / forms / CFE / EPF: skills `meta-*`, `form-*`, `skd-*`, `cfe-*`, `epf-*`, `repo-workflow` — **never** hand-edit metadata XML; **never** `1c-metadata-manage`.
-- Load / syntax-check / IB: MCP **vrunner** only (`cf_load`, `cfe_load`, `validate_syntax_check`, …) or `repo.ps1`. **Forbidden:** Designer/`1cv8`, raw `ibcmd`, Platform Tools MCP, `install.ps1`, `/deploy-and-test` as-is.
-- Semantics: `bsl-analyzer-workspace` (`search`/`graph`/`metadata`/`diagnostics`). Live IB + static dump search: `1c-ninja-mcp`. Standards: `v8std` + `bsl-analyzer-reference`. Optional AI check: `1c-code-check-mcp` (Напарник) when available — do not hard-block if missing.
-- Coding style: `bsl-code-standards`, `1c-code-agent`, `bsp-developer` — not upstream `coding-standards.md`.
-- Architecture layers: rule `1c-architect`. On-demand methodology rules: `anti-patterns`, `extension-patterns`, `mcp-first-search`, `verification-checklist`, …
-- Reply to the user in **Russian**. Raise `CONFUSION` instead of silently picking an interpretation.
-- OpenSpec / `sdd-integrations` — **out of scope** unless the user explicitly enables it later.
-
-
 See `anti-patterns.md` for anti-patterns to watch for during planning.
 
 ## Complexity Estimation
-
-## Ecoladev stack (mandatory)
-
-You operate in the **ecoladev** contour, not upstream `itrous/ai_rules_1c` as-is.
-
-- Process brain: rule `1c-orchestrator` (not a root `AGENTS.md`).
-- XML / forms / CFE / EPF: skills `meta-*`, `form-*`, `skd-*`, `cfe-*`, `epf-*`, `repo-workflow` — **never** hand-edit metadata XML; **never** `1c-metadata-manage`.
-- Load / syntax-check / IB: MCP **vrunner** only (`cf_load`, `cfe_load`, `validate_syntax_check`, …) or `repo.ps1`. **Forbidden:** Designer/`1cv8`, raw `ibcmd`, Platform Tools MCP, `install.ps1`, `/deploy-and-test` as-is.
-- Semantics: `bsl-analyzer-workspace` (`search`/`graph`/`metadata`/`diagnostics`). Live IB + static dump search: `1c-ninja-mcp`. Standards: `v8std` + `bsl-analyzer-reference`. Optional AI check: `1c-code-check-mcp` (Напарник) when available — do not hard-block if missing.
-- Coding style: `bsl-code-standards`, `1c-code-agent`, `bsp-developer` — not upstream `coding-standards.md`.
-- Architecture layers: rule `1c-architect`. On-demand methodology rules: `anti-patterns`, `extension-patterns`, `mcp-first-search`, `verification-checklist`, …
-- Reply to the user in **Russian**. Raise `CONFUSION` instead of silently picking an interpretation.
-- OpenSpec / `sdd-integrations` — **out of scope** unless the user explicitly enables it later.
-
 
 | Level | Description | Characteristics |
 |-------|-------------|-----------------|
@@ -758,20 +263,6 @@ You operate in the **ecoladev** contour, not upstream `itrous/ai_rules_1c` as-is
 | **Critical** | High risk | Core system changes, performance implications |
 
 ## Output Guidelines
-
-## Ecoladev stack (mandatory)
-
-You operate in the **ecoladev** contour, not upstream `itrous/ai_rules_1c` as-is.
-
-- Process brain: rule `1c-orchestrator` (not a root `AGENTS.md`).
-- XML / forms / CFE / EPF: skills `meta-*`, `form-*`, `skd-*`, `cfe-*`, `epf-*`, `repo-workflow` — **never** hand-edit metadata XML; **never** `1c-metadata-manage`.
-- Load / syntax-check / IB: MCP **vrunner** only (`cf_load`, `cfe_load`, `validate_syntax_check`, …) or `repo.ps1`. **Forbidden:** Designer/`1cv8`, raw `ibcmd`, Platform Tools MCP, `install.ps1`, `/deploy-and-test` as-is.
-- Semantics: `bsl-analyzer-workspace` (`search`/`graph`/`metadata`/`diagnostics`). Live IB + static dump search: `1c-ninja-mcp`. Standards: `v8std` + `bsl-analyzer-reference`. Optional AI check: `1c-code-check-mcp` (Напарник) when available — do not hard-block if missing.
-- Coding style: `bsl-code-standards`, `1c-code-agent`, `bsp-developer` — not upstream `coding-standards.md`.
-- Architecture layers: rule `1c-architect`. On-demand methodology rules: `anti-patterns`, `extension-patterns`, `mcp-first-search`, `verification-checklist`, …
-- Reply to the user in **Russian**. Raise `CONFUSION` instead of silently picking an interpretation.
-- OpenSpec / `sdd-integrations` — **out of scope** unless the user explicitly enables it later.
-
 
 - Provide concrete, actionable steps
 - Include all file paths and object names

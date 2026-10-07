@@ -4,7 +4,7 @@ description: >-
   MCP 1c-ninja-mcp: static-поиск по выгрузке (bsl/xml, read_module, syntax_help),
   live-доступ к ИБ (live_*), список расширений ИБ — live_extensions_list (главный способ, не Предприятие),
   gated CF/EPF: cf_dump_xml, cf_load_git, extensions_dump_list, epf_decompile / epf_compile.
-  Live URL — только из project .cursor/mcp.json. В user mcp.json ninja не дублировать.
+  Live URL — только из project MCP-конфига. В user-конфиге ninja не дублировать.
   toolkit — fallback.
 ---
 
@@ -30,11 +30,11 @@ description: >-
 
 | Уровень | Файл | Что там |
 |---------|------|---------|
-| Project (открытый репозиторий) | `<проект>\.cursor\mcp.json` | `1c-ninja-mcp` **с** URL/учётом этой ИБ (gitignore). Эталон — скилл `1c-env-setup`. |
-| Пример без секретов | `<проект>\.cursor\mcp.json.example` | тот же состав, плейсхолдеры |
-| User | `%USERPROFILE%\.cursor\mcp.json` | **без** `1c-ninja-mcp` (и без других 1С-серверов из шаблона скилла) |
+| Project (открытый репозиторий) | `<проект>\{{PROJECT_MCP}}` | `1c-ninja-mcp` **с** URL/учётом этой ИБ (gitignore). Эталон — скилл `1c-env-setup`. |
+| Пример без секретов | `<проект>\{{PROJECT_MCP}}.example` | тот же состав, плейсхолдеры |
+| User | `{{USER_MCP}}` | **без** `1c-ninja-mcp` (и без других 1С-серверов из шаблона скилла) |
 
-Cursor читает user **и** project. Одно имя сервера в обоих файлах = два MCP у агента. **Не** копировать user `mcp.json` в проект и **не** класть live-URL эколы (или любой другой базы) в глобальный `mcp.json`.
+Клиент читает user **и** project. Одно имя сервера в обоих файлах = два MCP у агента. **Не** копировать user-конфиг в проект и **не** класть live-URL проекта (или любой другой базы) в глобальный конфиг.
 
 Если `live_*` отвечает «не задан URL» — в этом workspace нет project `mcp.json` с `NINJA_URL`: возьми эталон скилла / `mcp.json.example` → `mcp.json` и заполни публикацию **этой** базы (`…/hs/ninja-live`). Либо передай явный параметр `url` на тул (не подставляй URL другого проекта «по памяти»).
 

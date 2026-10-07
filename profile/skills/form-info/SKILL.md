@@ -15,7 +15,7 @@ allowed-tools:
 ## Команда
 
 ```powershell
-powershell.exe -NoProfile -File "%USERPROFILE%\.cursor\skills\form-info\scripts/form-info.ps1" -FormPath "<путь к Form.xml>"
+powershell.exe -NoProfile -File "{{SKILLS_ROOT}}\form-info\scripts/form-info.ps1" -FormPath "<путь к Form.xml>"
 ```
 
 ## Параметры

@@ -1,4 +1,4 @@
-# ADAPTATION — чеклист на месте
+﻿# ADAPTATION — чеклист на месте
 
 Агент проходит **по порядку**. Статусы: `ready` / `blocked` / `needs-human`.
 
@@ -26,7 +26,7 @@ v0.1: soft **assumed** — doctor только предупреждает.
 
 | # | Действие | Примечание |
 |---|----------|------------|
-| 3.1 | Apply профиля `1c-ninja-kit` | v0.1: см. `adapters/cursor/install-profile.md` |
+| 3.1 | Apply профиля `1c-ninja-kit` | Cursor: `adapters/cursor/install-profile.md`; DeepSeek Harness: `adapters/deepseek/README.md` + `install/dsh-adapter.ps1` |
 | 3.2 | User mcp **без** 1С-серверов | иначе дубли |
 | 3.3 | Docs-patches vrunner (optional) | `profile/docs-patches/` |
 

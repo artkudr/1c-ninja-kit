@@ -24,7 +24,7 @@ allowed-tools:
 | `NoValidate` | Пропустить авто-валидацию |
 
 ```powershell
-powershell.exe -NoProfile -File "%USERPROFILE%\.cursor\skills\subsystem-compile\scripts/subsystem-compile.ps1" -Value '<json>' -OutputDir '<ConfigDir>'
+powershell.exe -NoProfile -File "{{SKILLS_ROOT}}\subsystem-compile\scripts/subsystem-compile.ps1" -Value '<json>' -OutputDir '<ConfigDir>'
 ```
 
 ## JSON-определение

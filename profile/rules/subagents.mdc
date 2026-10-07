@@ -1,13 +1,13 @@
 ---
-description: Каталог субагентов 1c-* и правила делегирования (ecoladev)
+description: Каталог субагентов 1c-* и правила делегирования
 alwaysApply: false
 ---
 
-<!-- ecoladev-adapted from itrous/ai_rules_1c subagents -->
+<!-- kit-adapted from itrous/ai_rules_1c subagents -->
 
 # Subagents — каталог и делегирование
 
-Грузи, когда задача крупная / многомодульная и есть смысл делегировать. Промпты: `%USERPROFILE%\.cursor\agents\1c-*.md`.
+Грузи, когда задача крупная / многомодульная и есть смысл делегировать. Промпты: `{{AGENTS_ROOT}}\1c-*.md`.
 
 ## Принцип
 

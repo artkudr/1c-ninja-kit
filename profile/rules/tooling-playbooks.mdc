@@ -1,11 +1,11 @@
 ---
-description: Per-task MCP playbooks for ecoladev (BSL, forms, CFE, live, review) — vrunner/ninja/skills, not Designer
+description: Per-task MCP playbooks (BSL, forms, CFE, live, review) - vrunner/ninja/skills, not Designer
 alwaysApply: false
 ---
 
-<!-- ecoladev-adapted from itrous/ai_rules_1c tooling-playbooks -->
+<!-- kit-adapted from itrous/ai_rules_1c tooling-playbooks -->
 
-# Tooling playbooks (ecoladev)
+# Tooling playbooks
 
 Каталог MCP и fallback — правила `bsl-analyzer`, `1c-ninja-mcp`, `1c-development-process`. Этот файл — последовательности по типу задачи. **Не** используй `1c-metadata-manage`, Designer, сырой `ibcmd`.
 
@@ -59,7 +59,7 @@ alwaysApply: false
 2. `graph` hot paths; индексы через `metadata`.
 3. Напарник check / rewrite — черновик + повторная валидация.
 
-## Metadata / forms (ecoladev)
+## Metadata / forms
 
 1. Найти объект: `meta-info` / `form-info` / `metadata`.
 2. Менять **только** скиллами: `meta-edit`/`meta-compile`, `form-edit`/`form-compile`, `cfe-borrow`/`cfe-patch-method`, `skd-*`, `role-*`, …

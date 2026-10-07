@@ -19,8 +19,8 @@ description: Операции 1С через MCP-сервер vrunner (vanessa-r
 ## Контекст
 
 - Чат привязан к **одному** корню проекта. ИБ и код — только из этого корня (`autumn-properties.json` или `env.json`).
-- Общие skills: `%USERPROFILE%\.cursor\skills\`. Контекст проекта: скилл `1c-project-context`.
-- **Платформа (load/unload/compile/syntax-check/ИБ/repo) — только этот контур.** MCP `vrunner` из project `.cursor/mcp.json` (namespace `project-*-vrunner`). Реестр PT и PT CLI **не использовать**.
+- Общие skills: `{{SKILLS_ROOT}}\`. Контекст проекта: скилл `1c-project-context`.
+- **Платформа (load/unload/compile/syntax-check/ИБ/repo) — только этот контур.** MCP `vrunner` из project `{{PROJECT_MCP}}` (namespace `project-*-vrunner`). Реестр PT и PT CLI **не использовать**.
 - Для запросов к данным — скилл `1c-ninja-mcp` (`live_*`), не vrunner.
 - Перед разрушающей загрузкой в ИБ покажи пользователю summary изменений.
 - Имена tools сверяй с актуальным списком MCP. Соглашение autumn-mcpify: путь подкоманды через `_` (`cf load` → `cf_load`).

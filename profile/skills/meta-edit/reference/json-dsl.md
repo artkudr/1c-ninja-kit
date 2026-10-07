@@ -3,7 +3,7 @@
 Для сложных и комбинированных операций используйте JSON-файл вместо inline-режима.
 
 ```powershell
-powershell.exe -NoProfile -File %USERPROFILE%\.cursor\skills\meta-edit\scripts/meta-edit.ps1 -DefinitionFile "<json>" -ObjectPath "<path>"
+powershell.exe -NoProfile -File {{SKILLS_ROOT}}\meta-edit\scripts/meta-edit.ps1 -DefinitionFile "<json>" -ObjectPath "<path>"
 ```
 
 ## add — добавить элементы

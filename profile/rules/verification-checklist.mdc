@@ -1,11 +1,11 @@
 ---
-description: Closing verification gate for full-cycle 1C changes (ecoladev stack)
+description: Closing verification gate for full-cycle 1C changes
 alwaysApply: false
 ---
 
-<!-- ecoladev-adapted from itrous/ai_rules_1c verification-checklist -->
+<!-- kit-adapted from itrous/ai_rules_1c verification-checklist -->
 
-# Verification checklist (ecoladev)
+# Verification checklist
 
 Грузи перед объявлением non-trivial изменения «готово». Компаньоны: `tooling-playbooks`, `subagent-pipeline`, `systematic-debugging`, `1c-development-process`.
 

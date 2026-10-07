@@ -1,11 +1,11 @@
 ---
-description: Full-cycle subagent pipeline — plan → implement → compliance → optional review → verification (ecoladev)
+description: Full-cycle subagent pipeline — plan → implement → compliance → optional review → verification
 alwaysApply: false
 ---
 
-<!-- ecoladev-adapted from itrous/ai_rules_1c subagent-pipeline -->
+<!-- kit-adapted from itrous/ai_rules_1c subagent-pipeline -->
 
-# Subagent pipeline (ecoladev)
+# Subagent pipeline
 
 Только для **full-cycle** (`1c-orchestrator` triage). Quick-fix: правка + `diagnostics file` (+ `*-validate`).
 

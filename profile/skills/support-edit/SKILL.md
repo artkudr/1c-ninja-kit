@@ -28,7 +28,7 @@ allowed-tools:
 `-Path` — тот же путь, который отклонил `support-guard` (объект, форма, макет или каталог дампа).
 
 ```powershell
-powershell.exe -NoProfile -File "%USERPROFILE%\.cursor\skills\support-edit\scripts/support-edit.ps1" -Path "Catalogs/Контрагенты.xml" -Set editable
+powershell.exe -NoProfile -File "{{SKILLS_ROOT}}\support-edit\scripts/support-edit.ps1" -Path "Catalogs/Контрагенты.xml" -Set editable
 ```
 
 ## editable или off-support?

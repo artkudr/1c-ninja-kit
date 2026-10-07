@@ -3,7 +3,7 @@ description: Positive logging strategy for 1C — when to write to the event log
 alwaysApply: false
 ---
 
-<!-- ecoladev-adapted: take from itrous/ai_rules_1c; SoT = profile hardlink -->
+<!-- kit-adapted: take from itrous/ai_rules_1c; SoT = profile hardlink -->
 
 # Logging Strategy
 

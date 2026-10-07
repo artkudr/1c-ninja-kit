@@ -3,7 +3,7 @@ description: 1C configuration extension (CFE) patterns — interceptor types (`&
 alwaysApply: false
 ---
 
-<!-- ecoladev-adapted: take from itrous/ai_rules_1c; SoT = profile hardlink -->
+<!-- kit-adapted: take from itrous/ai_rules_1c; SoT = profile hardlink -->
 
 # 1C Extension Patterns (CFE)
 
@@ -63,7 +63,6 @@ Background reference: `dev-standards-architecture.md §2` (Extensions) — modif
 
 ---
 
-<!-- ecoladev-adapted: take from itrous/ai_rules_1c; SoT = profile hardlink -->
 
 ## ПродолжитьВызов() rules
 
@@ -86,7 +85,6 @@ Markers preserve diff/merge semantics when the base configuration is updated and
 
 ---
 
-<!-- ecoladev-adapted: take from itrous/ai_rules_1c; SoT = profile hardlink -->
 
 ## Constraints on adopted (borrowed) objects
 
@@ -138,7 +136,6 @@ Markers preserve diff/merge semantics when the base configuration is updated and
 
 ---
 
-<!-- ecoladev-adapted: take from itrous/ai_rules_1c; SoT = profile hardlink -->
 
 ## Extension purpose tag
 

@@ -23,7 +23,20 @@ param(
 $OutputEncoding = [System.Text.Encoding]::UTF8
 [Console]::OutputEncoding = [System.Text.Encoding]::UTF8
 
-. (Join-Path $env:USERPROFILE ".cursor\skills\web-publish\scripts\Resolve-1cWebTargets.ps1")
+# Resolve-1cWebTargets.ps1 lives in the adapter's skills root - probe the known
+# ones instead of hardcoding a single client layout.
+$_resolver = $null
+foreach ($_sr in @(
+    (Join-Path $env:USERPROFILE '.config\opencode\skills'),
+    (Join-Path $env:USERPROFILE '.cursor\skills'),
+    (Join-Path $env:USERPROFILE '.dsh\skills'))) {
+  $_probe = Join-Path $_sr 'web-publish\scripts\Resolve-1cWebTargets.ps1'
+  if (Test-Path -LiteralPath $_probe) { $_resolver = $_probe; break }
+}
+if (-not $_resolver) {
+  throw "web-publish\scripts\Resolve-1cWebTargets.ps1 not found in any skill root (skill web-publish)."
+}
+. $_resolver
 $targets = Resolve-1cWebTargets -V8Version $V8Version -ApachePath $ApachePath
 $ApachePath = $targets.ApachePath
 Write-Host "Apache profile: apache-$($targets.ApacheLabel) -> $ApachePath" -ForegroundColor Yellow

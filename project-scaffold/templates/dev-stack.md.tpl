@@ -12,6 +12,7 @@
 | 1c-ninja-mcp live | project env `NINJA_URL` / `NINJA_USER` / `NINJA_PASSWORD` | приоритет для запросов/метаданных ИБ; CFE `NinjaLive` + Apache `/hs/ninja-live`. Список CFE в ИБ: `live_extensions_list` (не Предприятие) |
 | bsl-analyzer | лаунчер `%LOCALAPPDATA%\bsl-analyzer` ([itrous/bsl-analyzer releases](https://github.com/itrous/bsl-analyzer/releases)); кеш `<проект>\.build` | MCP workspace (project) |
 | 1c-mcp-toolkit | `http://127.0.0.1:6003/mcp` | fallback; EPF с [ROCTUP/1c-mcp-toolkit releases](https://github.com/ROCTUP/1c-mcp-toolkit/releases) → `%USERPROFILE%\tools\1c-mcp-toolkit\MCP_Toolkit.epf` |
+| OpenCode (если адаптер `opencode`) | `~/.config/opencode/{skills,agents,kit-rules}` + `~/.config/opencode/AGENTS.md`; project `opencode.jsonc` (gitignore) + `opencode.jsonc.example` | `kit.ps1 apply -Adapter opencode`; always-on правила инлайнятся в глобальный `AGENTS.md`, on-demand → `kit-rules/`; project MCP — в `mcp.servers` |
 | web-test | `tools/web-test/smoke.config.json` | UI smoke после `repo-workflow` load |
 | OpenSpec | `openspec/` + `.cursor/commands/opsx-*.md` | крупные full-cycle фичи: propose → apply → archive; slash `/opsx-propose`, `/opsx-apply`, `/opsx-archive`, `/opsx-explore` |
 

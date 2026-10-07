@@ -32,7 +32,7 @@ Apache **не в проекте**. Два профиля на машине:
 
 ```powershell
 powershell.exe -NoProfile -File "${CLAUDE_SKILL_DIR}/scripts/web-publish.ps1" `
-  -InfoBaseServer "k-server" -InfoBaseRef "ecola-aka-dev" `
+  -InfoBaseServer "k-server" -InfoBaseRef "my-ib-ref" `
   -UserName "..." -Password "..."
 ```
 
@@ -43,7 +43,7 @@ powershell.exe -NoProfile -File "${CLAUDE_SKILL_DIR}/scripts/web-publish.ps1" `
 ```json
 "vrunner": { "v8version": "8.3", "...": "..." },
 "web": {
-  "appName": "ecoladev-agent-test",
+  "appName": "<appName>",
   "port": 8083
 }
 ```

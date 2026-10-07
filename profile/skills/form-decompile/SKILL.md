@@ -31,7 +31,7 @@ allowed-tools:
 | `OutputPath` | Путь к выходному JSON. Если не задан — JSON в stdout |
 
 ```powershell
-powershell.exe -NoProfile -File "%USERPROFILE%\.cursor\skills\form-decompile\scripts/form-decompile.ps1" -FormPath "<Form.xml>" -OutputPath "<out.json>"
+powershell.exe -NoProfile -File "{{SKILLS_ROOT}}\form-decompile\scripts/form-decompile.ps1" -FormPath "<Form.xml>" -OutputPath "<out.json>"
 ```
 
 ## Что получаешь

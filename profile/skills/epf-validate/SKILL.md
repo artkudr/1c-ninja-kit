@@ -27,8 +27,8 @@ allowed-tools:
 ## Команда
 
 ```powershell
-powershell.exe -NoProfile -File "%USERPROFILE%\.cursor\skills\epf-validate\scripts/epf-validate.ps1" -ObjectPath "src/epf/МояОбработка"
-powershell.exe -NoProfile -File "%USERPROFILE%\.cursor\skills\epf-validate\scripts/epf-validate.ps1" -ObjectPath "src/epf/МояОбработка/МояОбработка.xml"
+powershell.exe -NoProfile -File "{{SKILLS_ROOT}}\epf-validate\scripts/epf-validate.ps1" -ObjectPath "src/epf/МояОбработка"
+powershell.exe -NoProfile -File "{{SKILLS_ROOT}}\epf-validate\scripts/epf-validate.ps1" -ObjectPath "src/epf/МояОбработка/МояОбработка.xml"
 ```
 
 Канон раскладки — nested: `src/epf/<Имя>/<Имя>.xml` + `src/epf/<Имя>/<Имя>/`. То же для ERF в `src/erf/`.

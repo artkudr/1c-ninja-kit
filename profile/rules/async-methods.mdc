@@ -3,7 +3,7 @@ description: 1C asynchronous methods (`Асинх` / `Ждать` / `Обеща�
 alwaysApply: false
 ---
 
-<!-- ecoladev-adapted: take from itrous/ai_rules_1c; SoT = profile hardlink -->
+<!-- kit-adapted: take from itrous/ai_rules_1c; SoT = profile hardlink -->
 
 # Asynchronous Methods in 1C (Асинх / Ждать / Обещание)
 
@@ -25,7 +25,6 @@ Authoritative reference: `dev-standards-architecture.md §3 → "Async and Modal
 
 ---
 
-<!-- ecoladev-adapted: take from itrous/ai_rules_1c; SoT = profile hardlink -->
 
 ## Old vs new method correspondence
 
@@ -55,7 +54,6 @@ Prefer the new `*Асинх` syntax over `Показать*` with `Описан�
 
 ---
 
-<!-- ecoladev-adapted: take from itrous/ai_rules_1c; SoT = profile hardlink -->
 
 ## Basic template
 
@@ -123,7 +121,6 @@ Unlike form event handlers, command handlers **can** safely be declared `Аси�
 
 ---
 
-<!-- ecoladev-adapted: take from itrous/ai_rules_1c; SoT = profile hardlink -->
 
 ## Pattern: question on form open
 
@@ -189,7 +186,6 @@ A flag variable prevents recursion:
 
 ---
 
-<!-- ecoladev-adapted: take from itrous/ai_rules_1c; SoT = profile hardlink -->
 
 ## Pattern: file workflow
 

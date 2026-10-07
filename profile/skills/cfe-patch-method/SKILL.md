@@ -111,7 +111,7 @@ allowed-tools:
 ## Команда
 
 ```powershell
-powershell.exe -NoProfile -File "%USERPROFILE%\.cursor\skills\cfe-patch-method\scripts/cfe-patch-method.ps1" -ExtensionPath src\cfe\extname -ConfigPath src\cf -ModulePath "Catalog.Контрагенты.ObjectModule" -MethodName "ПриЗаписи" -InterceptorType Before
+powershell.exe -NoProfile -File "{{SKILLS_ROOT}}\cfe-patch-method\scripts/cfe-patch-method.ps1" -ExtensionPath src\cfe\extname -ConfigPath src\cf -ModulePath "Catalog.Контрагенты.ObjectModule" -MethodName "ПриЗаписи" -InterceptorType Before
 ```
 
 ## Примеры

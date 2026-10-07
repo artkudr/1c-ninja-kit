@@ -25,7 +25,7 @@ allowed-tools:
 | `NoValidate` | Не запускать `role-validate` после правки |
 
 ```powershell
-powershell.exe -NoProfile -File "%USERPROFILE%\.cursor\skills\role-edit\scripts/role-edit.ps1" -RolePath "<роль>" -Operation <op> -Value "<значение>"
+powershell.exe -NoProfile -File "{{SKILLS_ROOT}}\role-edit\scripts/role-edit.ps1" -RolePath "<роль>" -Operation <op> -Value "<значение>"
 ```
 
 Операции применяются в том порядке, в котором перечислены.

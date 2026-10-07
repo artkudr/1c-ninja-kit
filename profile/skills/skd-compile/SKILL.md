@@ -23,10 +23,10 @@ allowed-tools:
 
 ```powershell
 # Из файла
-powershell.exe -NoProfile -File "%USERPROFILE%\.cursor\skills\skd-compile\scripts/skd-compile.ps1" -DefinitionFile "<json>" -OutputPath "<Template.xml>"
+powershell.exe -NoProfile -File "{{SKILLS_ROOT}}\skd-compile\scripts/skd-compile.ps1" -DefinitionFile "<json>" -OutputPath "<Template.xml>"
 
 # Из строки (без промежуточного файла)
-powershell.exe -NoProfile -File "%USERPROFILE%\.cursor\skills\skd-compile\scripts/skd-compile.ps1" -Value '<json-string>' -OutputPath "<Template.xml>"
+powershell.exe -NoProfile -File "{{SKILLS_ROOT}}\skd-compile\scripts/skd-compile.ps1" -Value '<json-string>' -OutputPath "<Template.xml>"
 ```
 
 ## JSON DSL — краткий справочник

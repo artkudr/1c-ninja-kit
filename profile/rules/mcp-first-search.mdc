@@ -3,9 +3,9 @@ description: MCP-first search — bsl-analyzer / ninja before Grep; mandatory ju
 alwaysApply: false
 ---
 
-<!-- ecoladev-adapted from itrous/ai_rules_1c mcp-first-search -->
+<!-- kit-adapted from itrous/ai_rules_1c mcp-first-search -->
 
-# MCP-first search (ecoladev)
+# MCP-first search
 
 Для любого поиска по **исходникам 1С** (код, метаданные, usages, граф, формы) сначала индекс/MCP проекта. `Grep` / `Glob` — **последний** шаг с явной причиной.
 

@@ -47,7 +47,7 @@ Read `tools/web-test/smoke.config.json` (`webUrl`) from project root (`1c-projec
 If `webUrl` is missing, ask the user or run `/web-publish` first (IB params from `autumn-properties.json`).
 Use `/web-publish` first if the database is not published.
 
-**Locale.** Canonical web-client URL ends with `/ru_RU/` (e.g. `http://localhost:8083/ecoladev-agent-test/ru_RU/`).
+**Locale.** Canonical web-client URL ends with `/ru_RU/` (e.g. `http://localhost:8083/<appName>/ru_RU/`).
 `connect` / `createContext` auto-append `/ru_RU/` when the path has only the app name; an explicit locale (`/en_US/`, `/ru/`, …) or service path (`/hs/`, `/odata/`, `/ws/`) is left unchanged.
 Playwright context uses `locale: 'ru-RU'` so `Accept-Language` matches.
 

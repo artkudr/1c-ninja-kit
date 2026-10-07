@@ -25,7 +25,7 @@ allowed-tools:
 | `OutFile` | Записать результат в файл (UTF-8 BOM) |
 
 ```powershell
-powershell.exe -NoProfile -File "%USERPROFILE%\.cursor\skills\skd-info\scripts/skd-info.ps1" -TemplatePath "<путь>"
+powershell.exe -NoProfile -File "{{SKILLS_ROOT}}\skd-info\scripts/skd-info.ps1" -TemplatePath "<путь>"
 ```
 
 С указанием режима:

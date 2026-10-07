@@ -24,6 +24,6 @@ allowed-tools:
 ## Команда
 
 ```powershell
-powershell.exe -NoProfile -File "%USERPROFILE%\.cursor\skills\meta-validate\scripts/meta-validate.ps1" -ObjectPath "Catalogs/Номенклатура/Номенклатура.xml"
-powershell.exe -NoProfile -File "%USERPROFILE%\.cursor\skills\meta-validate\scripts/meta-validate.ps1" -ObjectPath "Catalogs/Банки|Documents/Заказ"
+powershell.exe -NoProfile -File "{{SKILLS_ROOT}}\meta-validate\scripts/meta-validate.ps1" -ObjectPath "Catalogs/Номенклатура/Номенклатура.xml"
+powershell.exe -NoProfile -File "{{SKILLS_ROOT}}\meta-validate\scripts/meta-validate.ps1" -ObjectPath "Catalogs/Банки|Documents/Заказ"
 ```

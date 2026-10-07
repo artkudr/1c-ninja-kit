@@ -24,7 +24,7 @@ description: >-
 
 | Задача | Куда |
 |--------|------|
-| Load / dump / compile EPF / syntax-check / ИБ / repo_* | **только** `vrunner-mcp` (MCP `vrunner` из project `.cursor/mcp.json`) |
+| Load / dump / compile EPF / syntax-check / ИБ / repo_* | **только** `vrunner-mcp` (MCP `vrunner` из project `{{PROJECT_MCP}}`) |
 | Designer / enterprise | Shell: `vrunner run …` (тот же скилл) |
 | Правка XML (meta/form/skd/…) | профильные `*-edit` / `*-compile` — файлы, не платформа |
 | CFE из хранилища | `repo-workflow` |
@@ -37,9 +37,9 @@ description: >-
 ## Жёстко
 
 - ИБ и исходники — **только** корень открытого проекта.
-- Skills: `%USERPROFILE%\.cursor\skills\`.
-- Rules: канон `%USERPROFILE%\.cursor\rules\`; Cursor читает только `.cursor/rules/*.mdc` **проекта** (file symlink или копия из канона; folder junction нельзя).
-- MCP: все 1С-серверы **только** в `<репозиторий>\.cursor\mcp.json` (эталон — скилл `1c-env-setup`). User `%USERPROFILE%\.cursor\mcp.json` — без `vrunner` / `1c-ninja-mcp` / `1c-mcp-toolkit` / `bsl-analyzer-*` / `v8std` (иначе дубли).
+- Skills: `{{SKILLS_ROOT}}\`.
+- Rules: канон `{{RULES_ROOT}}\` — править SoT кита (`profile/rules/*.mdc`) и запускать `kit.ps1 apply`.
+- MCP: все 1С-серверы **только** в `<репозиторий>\{{PROJECT_MCP}}` (эталон — скилл `1c-env-setup`). User `{{USER_MCP}}` — без `vrunner` / `1c-ninja-mcp` / `1c-mcp-toolkit` / `bsl-analyzer-*` / `v8std` (иначе дубли).
 - Платформенные операции **без фаллбека на другой скилл/CLI**: vrunner недоступен → стоп, сообщить.
 - Локальные патчи ovm: скилл `cursor-local-patches` → `%USERPROFILE%\.cursor\docs\`.
 

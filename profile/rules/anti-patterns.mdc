@@ -3,7 +3,7 @@ description: 1C anti-patterns, performance guidelines, and code review scoring
 alwaysApply: false
 ---
 
-<!-- ecoladev-adapted: take from itrous/ai_rules_1c; SoT = profile hardlink -->
+<!-- kit-adapted: take from itrous/ai_rules_1c; SoT = profile hardlink -->
 # 1C Anti-Patterns and Performance Guidelines
 
 ## Critical Anti-Patterns (Must Fix)

@@ -31,7 +31,7 @@ allowed-tools:
 | `OutputPath` | Путь к выходному JSON. Если не задан — JSON в stdout |
 
 ```powershell
-powershell.exe -NoProfile -File "%USERPROFILE%\.cursor\skills\skd-decompile\scripts/skd-decompile.ps1" -TemplatePath "<Template.xml>" -OutputPath "<out.json>"
+powershell.exe -NoProfile -File "{{SKILLS_ROOT}}\skd-decompile\scripts/skd-decompile.ps1" -TemplatePath "<Template.xml>" -OutputPath "<out.json>"
 ```
 
 ## Что получаешь

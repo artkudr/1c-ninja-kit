@@ -421,9 +421,20 @@ function Invoke-RepoWebTestSmoke {
 		Write-Host "web-test: нет сценария для $ExtensionName — пропуск."
 		return
 	}
-	$runMjs = Join-Path $env:USERPROFILE '.cursor\skills\web-test\scripts\run.mjs'
-	if (-not (Test-Path -LiteralPath $runMjs)) {
-		throw "web-test: не найден $runMjs (skill web-test)."
+	# web-test lives in the adapter's skills root - probe the known ones instead
+	# of hardcoding one client layout.
+	$skillRoots = @(
+		(Join-Path $env:USERPROFILE '.config\opencode\skills'),
+		(Join-Path $env:USERPROFILE '.cursor\skills'),
+		(Join-Path $env:USERPROFILE '.dsh\skills')
+	)
+	$runMjs = $null
+	foreach ($sr in $skillRoots) {
+		$probe = Join-Path $sr 'web-test\scripts\run.mjs'
+		if (Test-Path -LiteralPath $probe) { $runMjs = $probe; break }
+	}
+	if (-not $runMjs) {
+		throw "web-test: scripts\run.mjs not found in any skill root: $($skillRoots -join '; ') (skill web-test)."
 	}
 	$timeoutMin = 15
 	if ($config.timeoutMin) {

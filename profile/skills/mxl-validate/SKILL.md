@@ -23,7 +23,7 @@ allowed-tools:
 ## Команда
 
 ```powershell
-powershell.exe -NoProfile -File "%USERPROFILE%\.cursor\skills\mxl-validate\scripts/mxl-validate.ps1" -TemplatePath "Catalogs/Номенклатура/Templates/Макет"
-powershell.exe -NoProfile -File "%USERPROFILE%\.cursor\skills\mxl-validate\scripts/mxl-validate.ps1" -TemplatePath "src/МояОбработка/Templates/ПечатнаяФорма"
+powershell.exe -NoProfile -File "{{SKILLS_ROOT}}\mxl-validate\scripts/mxl-validate.ps1" -TemplatePath "Catalogs/Номенклатура/Templates/Макет"
+powershell.exe -NoProfile -File "{{SKILLS_ROOT}}\mxl-validate\scripts/mxl-validate.ps1" -TemplatePath "src/МояОбработка/Templates/ПечатнаяФорма"
 ```
 

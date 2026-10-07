@@ -19,7 +19,26 @@ import time
 
 import psutil
 
-_RESOLVE_DIR = os.path.join(os.path.expanduser("~"), ".cursor", "skills", "web-publish", "scripts")
+# resolve_1c_web_targets lives in the adapter's skills root - probe the known
+# ones instead of hardcoding a single client layout.
+_SKILL_ROOTS = [
+    os.path.join(os.path.expanduser("~"), ".config", "opencode", "skills"),
+    os.path.join(os.path.expanduser("~"), ".cursor", "skills"),
+    os.path.join(os.path.expanduser("~"), ".dsh", "skills"),
+]
+_RESOLVE_DIR = next(
+    (
+        os.path.join(root, "web-publish", "scripts")
+        for root in _SKILL_ROOTS
+        if os.path.isfile(os.path.join(root, "web-publish", "scripts", "resolve_1c_web_targets.py"))
+    ),
+    None,
+)
+if _RESOLVE_DIR is None:
+    raise SystemExit(
+        "web-publish/scripts/resolve_1c_web_targets.py not found in any skill root: "
+        + "; ".join(_SKILL_ROOTS)
+    )
 if _RESOLVE_DIR not in sys.path:
     sys.path.insert(0, _RESOLVE_DIR)
 from resolve_1c_web_targets import resolve_1c_web_targets  # noqa: E402

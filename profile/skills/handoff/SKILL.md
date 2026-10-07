@@ -1,6 +1,6 @@
 ---
 name: handoff
-description: "Compact the current conversation into a self-contained handoff document so a fresh agent (new chat, another machine, another AI client) can continue the work without re-discovering the context. References durable artifacts (`<!-- openspec not used in ecoladev --> `, `memory.md`, commits, host-agent project-memory notes) instead of duplicating them. Use when the user says 'handoff', 'compact session', 'save context for continuation', or invokes `/handoff`."
+description: "Compact the current conversation into a self-contained handoff document so a fresh agent (new chat, another machine, another AI client) can continue the work without re-discovering the context. References durable artifacts (`openspec/changes/*`, `memory.md`, commits, host-agent project-memory notes) instead of duplicating them. Use when the user says 'handoff', 'compact session', 'save context for continuation', or invokes `/handoff`."
 argument-hint: "Optional: focus of the next session, or a target path/folder for the handoff file."
 ---
 
@@ -63,10 +63,10 @@ Which gates from `verification-checklist` passed / failed / were skipped. Latest
 - **Subagents**: `1c-<name>` when the task matches their role (see `sub1c-orchestrator`).
 - **On-demand rules**: `<name>.md` based on the task trigger (see `1c-orchestrator → Additional rules`).
 - **MCP tools**: especially relevant tools (`metadata object` for X, `graph neighbors`/`callers` before refactoring Y, `search search_code` over the БСП modules for topic Z).
-- **Slash commands**: (OpenSpec skipped) when there is an active OpenSpec proposal, cf dump via vrunner / 1c-ninja-mcp for metadata re-export, etc.
+- **Slash commands**: `/opsx-propose` when the task needs a new OpenSpec proposal, cf dump via vrunner / 1c-ninja-mcp for metadata re-export, etc.
 
 ## Links (DO NOT copy content)
-- `<!-- openspec not used in ecoladev --> changes/<id>/proposal.md`, `design.md`, `tasks.md`
+- `openspec/changes/<id>/proposal.md`, `design.md`, `tasks.md`
 - `memory.md` — relevant sections
 - Host-agent project-memory notes — keys / terms: `<term1>`, `<term2>`
 - Commits / PR / Issue
@@ -88,6 +88,6 @@ Which gates from `verification-checklist` passed / failed / were skipped. Latest
 ## Boundaries
 
 - Handoff is a session artifact, not configuration and not code. Do not run `diagnostics file` / `check_1c_code` / `review_1c_code` against it.
-- Handoff **does not replace** an OpenSpec proposal. If the task requires a proposal and it does not exist yet, additionally suggest (OpenSpec skipped) and reference the future ID from the handoff.
+- Handoff **does not replace** an OpenSpec proposal. If the task requires a proposal and it does not exist yet, additionally suggest `/opsx-propose` and reference the future ID from the handoff.
 - Handoff **does not duplicate** `memory.md` and host-agent project-memory notes. Memory and handoff are different channels (see `1c-orchestrator → Project memory`).
 - Handoff is written in normal grammar, not caveman style, so the next agent can read it without ambiguity.

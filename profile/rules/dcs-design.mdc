@@ -3,7 +3,7 @@ description: 1C Data Composition System (СКД / DCS) design rules — data set
 alwaysApply: false
 ---
 
-<!-- ecoladev-adapted: take from itrous/ai_rules_1c; SoT = profile hardlink -->
+<!-- kit-adapted: take from itrous/ai_rules_1c; SoT = profile hardlink -->
 
 # DCS / СКД — Report Design Rules
 

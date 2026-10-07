@@ -38,7 +38,7 @@ allowed-tools:
 | `OutputPath` | Путь к выходному JSON. Если не задан — JSON в stdout |
 
 ```powershell
-powershell.exe -NoProfile -File "%USERPROFILE%\.cursor\skills\meta-decompile\scripts/meta-decompile.ps1" -ObjectPath "<Объект.xml>" -OutputPath "<out.json>"
+powershell.exe -NoProfile -File "{{SKILLS_ROOT}}\meta-decompile\scripts/meta-decompile.ps1" -ObjectPath "<Объект.xml>" -OutputPath "<out.json>"
 ```
 
 Неподдерживаемый тип объекта или не-`MetaDataObject` root → ненулевой код выхода и сообщение в stderr.

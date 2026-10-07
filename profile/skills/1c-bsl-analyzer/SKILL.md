@@ -22,7 +22,7 @@ Rust MCP **workspace** (itrous/bsl-analyzer, **≥0.2.81**): модель исх
 | Releases (Windows launcher) | https://github.com/itrous/bsl-analyzer/releases → **`bsl-analyzer-windows-amd64.exe`** |
 | Лаунчер (куда положить) | `%LOCALAPPDATA%\bsl-analyzer\bsl-analyzer.exe` (`--launcher-update` / `--launcher-self-update` / `--launcher-version`) |
 | App | `%USERPROFILE%\.bsl-analyzer\bin\` (лаунчер качает нужную версию; не путать с ручной установкой `bsl-analyzer-app-windows-amd64.exe`) |
-| Project MCP | `<репозиторий>\.cursor\mcp.json` → `bsl-analyzer-workspace` и `bsl-analyzer-reference` |
+| Project MCP | `<репозиторий>\{{PROJECT_MCP}}` → `bsl-analyzer-workspace` и `bsl-analyzer-reference` |
 | User MCP | **без** `bsl-analyzer-*` (иначе дубли с проектом) |
 | Конфиг диагностик | `<репозиторий>\bsl-analyzer.toml` |
 | Кеш | `<репозиторий>\.build` (gitignore) |
@@ -31,7 +31,7 @@ Rust MCP **workspace** (itrous/bsl-analyzer, **≥0.2.81**): модель исх
 
 См. `docs/MACHINE-BOOTSTRAP.md` §2. Кратко: скачать launcher с GitHub Releases → переименовать/скопировать в `%LOCALAPPDATA%\bsl-analyzer\bsl-analyzer.exe` → при необходимости `--launcher-update`.
 
-Прогрев: `metadata`/`graph` `action=status` → `ready` (на ecoladev graph cold ~5 мин). Пока `loading` — повтори, не трактуй как «пусто».
+Прогрев: `metadata`/`graph` `action=status` → `ready` (на больших конфигурациях graph cold ~5 мин). Пока `loading` — повтори, не трактуй как «пусто».
 
 ## Модель исходников и EPF/ERF
 
@@ -58,7 +58,7 @@ externals = [
 - `depends_on` (опционально) — имена CFE из `extensions`; пустой/`[]` = только база; без поля — видит все расширения.
 - CLI: `--external`, `--external-depends-on`, `--no-externals`; проверка: `bsl-analyzer check-config -c bsl-analyzer.toml`.
 
-**Канон ecoladev — nested:** `src/epf/<Name>/<Name>.xml` + `src/epf/<Name>/<Name>/` (аналогично `src/erf`). Скиллы `epf-init` / `erf-init` создают сразу nested. Плоская выгрузка «много `Name.xml` + `Name/` прямо в `src/epf`» **не** подходит для auto-discovery. Пока объект не в индексе — BSL EPF/ERF через ninja `read_module` / `bsl_search` + `epf-validate`, не через graph/diagnostics анализатора.
+**Канон кита — nested:** `src/epf/<Name>/<Name>.xml` + `src/epf/<Name>/<Name>/` (аналогично `src/erf`). Скиллы `epf-init` / `erf-init` создают сразу nested. Плоская выгрузка «много `Name.xml` + `Name/` прямо в `src/epf`» **не** подходит для auto-discovery. Пока объект не в индексе — BSL EPF/ERF через ninja `read_module` / `bsl_search` + `epf-validate`, не через graph/diagnostics анализатора.
 
 ## Когда какой контур
 
@@ -84,7 +84,7 @@ externals = [
 5. `diagnostics` `action=file`, `path` = относительный или абсолютный путь к `.bsl`, `min_severity` = `warning`.
 6. Правишь код → снова `diagnostics file` на затронутые модули → при необходимости vrunner syntax-check по правилам проекта.
 
-Пример (ecoladev CFE):  
+Пример (CFE):  
 `ЦИС_СкидкиНаценкиЗаполнениеСервер.НазначитьРучнуюСкидку` → callers из форм Заказа/Реализации → diagnostics файла модуля.
 
 ## Инструменты workspace (кратко)

@@ -36,7 +36,7 @@ allowed-tools:
 ## Команда
 
 ```powershell
-powershell.exe -NoProfile -File "%USERPROFILE%\.cursor\skills\cfe-validate\scripts/cfe-validate.ps1" -ExtensionPath "src\cfe\extname"
-powershell.exe -NoProfile -File "%USERPROFILE%\.cursor\skills\cfe-validate\scripts/cfe-validate.ps1" -ExtensionPath "src\cfe\extname\Configuration.xml"
-powershell.exe -NoProfile -File "%USERPROFILE%\.cursor\skills\cfe-validate\scripts/cfe-validate.ps1" -ExtensionPath "src\cfe\extname" -ConfigPath "src\cf"
+powershell.exe -NoProfile -File "{{SKILLS_ROOT}}\cfe-validate\scripts/cfe-validate.ps1" -ExtensionPath "src\cfe\extname"
+powershell.exe -NoProfile -File "{{SKILLS_ROOT}}\cfe-validate\scripts/cfe-validate.ps1" -ExtensionPath "src\cfe\extname\Configuration.xml"
+powershell.exe -NoProfile -File "{{SKILLS_ROOT}}\cfe-validate\scripts/cfe-validate.ps1" -ExtensionPath "src\cfe\extname" -ConfigPath "src\cf"
 ```

@@ -23,7 +23,7 @@ allowed-tools:
 | `OutFile` | Записать результат в файл (UTF-8 BOM) |
 
 ```powershell
-powershell.exe -NoProfile -File "%USERPROFILE%\.cursor\skills\subsystem-info\scripts/subsystem-info.ps1" -SubsystemPath "<путь>"
+powershell.exe -NoProfile -File "{{SKILLS_ROOT}}\subsystem-info\scripts/subsystem-info.ps1" -SubsystemPath "<путь>"
 ```
 
 ## Пять режимов

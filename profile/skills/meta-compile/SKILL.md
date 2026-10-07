@@ -24,7 +24,7 @@ allowed-tools:
 3. Изменить созданный объект — `/meta-edit`; проверить — `/meta-validate`.
 
 ```powershell
-powershell.exe -NoProfile -File "%USERPROFILE%\.cursor\skills\meta-compile\scripts/meta-compile.ps1" -JsonPath "<json>" -OutputDir "<ConfigDir>"
+powershell.exe -NoProfile -File "{{SKILLS_ROOT}}\meta-compile\scripts/meta-compile.ps1" -JsonPath "<json>" -OutputDir "<ConfigDir>"
 ```
 
 | Параметр | Описание |

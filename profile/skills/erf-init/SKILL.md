@@ -13,7 +13,7 @@ allowed-tools:
 
 # /erf-init — Создание нового отчёта
 
-Генерирует минимальный набор XML-исходников для внешнего отчёта 1С в **nested**-раскладке (канон ecoladev / bsl-analyzer auto-discovery).
+Генерирует минимальный набор XML-исходников для внешнего отчёта 1С в **nested**-раскладке (канон bsl-analyzer auto-discovery).
 
 ## Раскладка
 
@@ -53,7 +53,7 @@ src/erf/<Name>/
 ## Команда
 
 ```powershell
-powershell.exe -NoProfile -File "%USERPROFILE%\.cursor\skills\erf-init\scripts/init.ps1" -Name "<Name>" [-Synonym "<Synonym>"] [-SrcDir "src/erf"] [-FormatVersion "<версия>"] [-WithSKD]
+powershell.exe -NoProfile -File "{{SKILLS_ROOT}}\erf-init\scripts/init.ps1" -Name "<Name>" [-Synonym "<Synonym>"] [-SrcDir "src/erf"] [-FormatVersion "<версия>"] [-WithSKD]
 ```
 
 ## Дальнейшие шаги

@@ -10,11 +10,22 @@ argument-hint: "[-SourceProject path] [-Mode Init|Refresh|Check] [-Force]"
 
 # /1c-env-setup — Развёртывание окружения 1С
 
-Личный скилл: `%USERPROFILE%\.cursor\skills\1c-env-setup\`.
+Личный скилл: `{{SKILLS_ROOT}}\1c-env-setup\`.
 
 Разворачивает **привычное** окружение в **новой папке** на **той же машине** (clone / копия / worktree). Софт уже установлен — скилл не ставит vrunner/OVM/Apache.
 
 Пользователь **не** правит JSON руками: агент показывает базы, спрашивает логин/пароль и **сам записывает** настройки.
+
+## Адаптер harness (`-Adapter cursor|opencode`)
+
+| | `cursor` (default) | `opencode` |
+|---|---|---|
+| MCP проекта | `{{PROJECT_MCP}}` + `.cursor/mcp.json.example` (`mcpServers`) | `opencode.jsonc` + `opencode.jsonc.example` (`mcp.servers`, `type: local/remote`, `oauth: false` у streamable-http) |
+| Команды | `.cursor/commands/opsx-*.md` | `.opencode/commands/opsx-*.md` |
+| Правила | hardlink `.cursor/rules/*.mdc` из профиля | **не создаются**: always-on → глобальный `~/.config/opencode/AGENTS.md`, on-demand → `~/.config/opencode/kit-rules/` (`kit.ps1 apply -Adapter opencode`) |
+| Проверка дублей | `~/.cursor/mcp.json` | `~/.config/opencode/opencode.json(c)` → `mcp.servers` |
+
+`-WebPort <n>` — переопределить порт публикации (иначе 8083/8085 по версии платформы). Нужен, когда Apache на машине слушает один порт на все базы.
 
 ## Когда вызывать
 
@@ -33,7 +44,7 @@ argument-hint: "[-SourceProject path] [-Mode Init|Refresh|Check] [-Force]"
 | `src/cfe/NinjaLive/` | bootstrap live (копия эталона, не хранилище) |
 | `src/cfe/<Имя>/` | пустые папки под остальные расширения |
 | `.cursor/mcp.json.example` | эталон скилла без секретов (в git) |
-| `.cursor/mcp.json` | полный MCP этой ИБ из шаблона скилла (gitignore) |
+| `{{PROJECT_MCP}}` | полный MCP этой ИБ из шаблона скилла (gitignore) |
 | `bsl-analyzer.toml` | диагностики / source roots |
 | `.cursor/rules/*.mdc` | из канона профиля: **hardlink** (`mklink /H`); file symlink если есть право; копия только другой диск; directory junction **запрещён** |
 | `.cursor/commands/opsx-*.md` | slash-команды OpenSpec (propose / apply / archive / explore) |
@@ -55,7 +66,7 @@ Folder junction (`mklink /J` / `/D` на `.cursor/rules`) **не использ�
 - **Не** отвечай «открой autumn-properties и впиши сам» — это провал сценария.
 - **Не** используй реестр PT — проект autumn-only (autumn / vrunner).
 - **Не** правь XML метаданных. В рамках setup в ИБ грузится **только** bootstrap CFE `NinjaLive` (MCP `cfe_load`) — чтобы список расширений шёл по HTTP, без запуска Предприятия.
-- **Не** копируй и **не** мержи `%USERPROFILE%\.cursor\mcp.json` в проект. Эталон JSON — шаблон скилла (`scripts/templates/mcp.json.example.tpl`) → `.cursor/mcp.json`.
+- **Не** копируй и **не** мержи `%USERPROFILE%\.cursor\mcp.json` в проект. Эталон JSON — шаблон скилла (`scripts/templates/mcp.json.example.tpl`) → `{{PROJECT_MCP}}`.
 - **Не** клади 1С-серверы (`vrunner`, `1c-ninja-mcp`, `1c-mcp-toolkit`, `bsl-analyzer-*`, `v8std`) в user `mcp.json`: Cursor читает оба файла, одинаковые имена дают дубли. User mcp — пустой `mcpServers` (или без этих имён). Live-URL только в project mcp **этой** ИБ.
 - Список расширений ИБ — **главный способ**: MCP `1c-ninja-mcp` `live_extensions_list` (HTTP `/hs/ninja-live`). Порядок: `src/cfe/NinjaLive` → `cfe_load` → публикация → `live_extensions_list`. **Не** `vrunner infobase extensions list` / MCP `extensions_list` (это запуск Предприятия). **Не** `extensions_dump_list` для обзора состава. **Не** удалённый `cfe-list`.
 - Список пользователей ИБ **не** запрашиваем.
@@ -63,6 +74,7 @@ Folder junction (`mklink /J` / `/D` на `.cursor/rules`) **не использ�
 
 ## История скилла
 
+- 2026-10-02: **`-Adapter opencode`**: project MCP в `opencode.jsonc` (`mcp.servers`, V2-схема) вместо `{{PROJECT_MCP}}`; команды в `.opencode/commands`; `.cursor/rules` не создаются (глобальный `AGENTS.md` + `kit-rules`). Добавлен `-WebPort`. `autumn-properties.json` и `opencode.jsonc` теперь JSON-экранируются (`/F"path"` с кавычками). `main.os` ищется в `NINJA_MCP_ROOT` → `1c-ninja-kit\components\1c-ninja-mcp` → `1c-ninja-mcp`.
 - 2026-09-17: Junction `/J` ≠ file symlink: `/J` не требует Developer Mode, но на папку `.cursor/rules` его не ставим (Cursor). File symlink пробуем первым; канон на этой машине — **hardlink** `mklink /H` файлов; копия только другой диск. Старый `/J` снимать через `cmd /c rmdir`.
 - 2026-09-17: Folder junction на `.cursor/rules` **запрещён** (Cursor/индексатор не видит правила).
 - 2026-09-22: В эталон MCP добавлен `v8std` (`https://ai.v8std.ru/mcp`, streamable-http; стандарты ITS/v8). Не класть в user `mcp.json`.
@@ -86,7 +98,7 @@ Folder junction (`mklink /J` / `/D` на `.cursor/rules`) **не использ�
 ### 3. Выбор базы (интерактив)
 
 ```powershell
-powershell.exe -NoProfile -File "$env:USERPROFILE\.cursor\skills\1c-env-setup\scripts\read-ibases.ps1"
+powershell.exe -NoProfile -File "{{SKILLS_ROOT}}\1c-env-setup\scripts\read-ibases.ps1"
 # или -Json
 ```
 
@@ -109,10 +121,11 @@ powershell.exe -NoProfile -File "$env:USERPROFILE\.cursor\skills\1c-env-setup\sc
 ### 5. Запись файлов
 
 ```powershell
-powershell.exe -NoProfile -File "$env:USERPROFILE\.cursor\skills\1c-env-setup\scripts\env-setup.ps1" `
+powershell.exe -NoProfile -File "{{SKILLS_ROOT}}\1c-env-setup\scripts\env-setup.ps1" `
   -Mode Init `
   -ProjectRoot "<корень>" `
   -SourceProject "<соседний>" `
+  -Adapter cursor `
   -IbConnection '<строка>' `
   -DbUser "<имя>" `
   -DbPwd "<пароль>" `
@@ -120,7 +133,23 @@ powershell.exe -NoProfile -File "$env:USERPROFILE\.cursor\skills\1c-env-setup\sc
   -AppName "<имя-публикации>"
 ```
 
-Скрипт создаёт каталоги, autumn, repository, mcp example + mcp.json **из шаблона скилла** (не из user settings), bsl-analyzer.toml, gitignore, docs, smoke.config; **копирует** `src/cfe/NinjaLive` с эталона (SourceProject или `C:\1C\projects\ecoladev\src\cfe\NinjaLive`); **синхронизирует** `.cursor/rules/*.mdc` из профиля; **разворачивает** OpenSpec scaffold (`.cursor/commands/opsx-*.md`, `openspec/templates/`, README, `config.yaml`/`project.md` из tpl); вызывает `sync-cfe.ps1` **без** опроса ИБ через Предприятие (пусто или `-ExtensionNames`, если агент уже снял список). Warn, если user `mcp.json` содержит те же имена серверов.
+Для OpenCode-проекта меняется только harness-конфиг (каркас, autumn, NinjaLive, openspec — те же):
+
+```powershell
+powershell.exe -NoProfile -File "$env:USERPROFILE\.config\opencode\skills\1c-env-setup\scripts\env-setup.ps1" `
+  -Mode Init `
+  -ProjectRoot "<корень>" `
+  -SourceProject "<соседний>" `
+  -Adapter opencode `
+  -WebPort 8083 `
+  -IbConnection '/F"C:\1C\bases\base"' `
+  -DbUser "<имя>" `
+  -DbPwd "" `
+  -V8Version "8.5.1.1343" `
+  -AppName "<имя-публикации>"
+```
+
+Скрипт создаёт каталоги, autumn, repository, mcp example + mcp.json **из шаблона скилла** (не из user settings), bsl-analyzer.toml, gitignore, docs, smoke.config; **копирует** `src/cfe/NinjaLive` с эталона (SourceProject или `C:\1C\projects\my-project\src\cfe\NinjaLive`); **синхронизирует** `.cursor/rules/*.mdc` из профиля; **разворачивает** OpenSpec scaffold (`.cursor/commands/opsx-*.md`, `openspec/templates/`, README, `config.yaml`/`project.md` из tpl); вызывает `sync-cfe.ps1` **без** опроса ИБ через Предприятие (пусто или `-ExtensionNames`, если агент уже снял список). Warn, если user `mcp.json` содержит те же имена серверов.
 
 Режимы:
 
@@ -134,7 +163,7 @@ powershell.exe -NoProfile -File "$env:USERPROFILE\.cursor\skills\1c-env-setup\sc
 
 После записи файлов агент **обязан** (это не «ручной шаг пользователя»):
 
-1. Убедиться, что `src/cfe/NinjaLive/Configuration.xml` есть (скрипт Init копирует с эталона). Эталон: SourceProject `src/cfe/NinjaLive`, иначе `C:\1C\projects\ecoladev\src\cfe\NinjaLive`.
+1. Убедиться, что `src/cfe/NinjaLive/Configuration.xml` есть (скрипт Init копирует с эталона). Эталон: SourceProject `src/cfe/NinjaLive`, иначе `C:\1C\projects\my-project\src\cfe\NinjaLive`.
 2. MCP vrunner `cfe_load`: `SRC=./src/cfe/NinjaLive`, `extension-name=NinjaLive`, `active=true`, `safe-mode=false`. NinjaLive **не** в `repository.json` → не `repo.ps1`.
 3. `web-publish` этой ИБ, если нет HTTP `/hs/ninja-live` (`publishExtensionsByDefault`).
 4. Reload MCP. В project mcp: `NINJA_URL=http://localhost:{8083|8085}/{appName}/hs/ninja-live`.
@@ -146,7 +175,7 @@ powershell.exe -NoProfile -File "$env:USERPROFILE\.cursor\skills\1c-env-setup\sc
 
 Готово / пропущено / **ручные шаги**:
 
-1. Reload MCP в Cursor (источник 1С-серверов — project `.cursor/mcp.json`)
+1. Reload MCP в Cursor (источник 1С-серверов — project `{{PROJECT_MCP}}`)
 2. Если агент не сделал шаг 6: `cfe_load` NinjaLive → `web-publish` → `live_extensions_list` → `sync-cfe -ExtensionNames`
 3. Прогрев bsl-analyzer (`graph`/`metadata` status → ready)
 4. toolkit `:6003` — только fallback
@@ -158,17 +187,44 @@ powershell.exe -NoProfile -File "$env:USERPROFILE\.cursor\skills\1c-env-setup\sc
 | `scripts/read-ibases.ps1` | таблица / `-Json` из `ibases.v8i` |
 | `scripts/env-setup.ps1` | оркестратор каркаса и конфигов |
 | `scripts/sync-cfe.ps1` | имена из `-ExtensionNames` (агент: `live_extensions_list`) → `src/cfe/<Имя>` + `repository.json.cfe`; **не** запускает Предприятие |
+| `scripts/sync-ninja-properties.ps1` | синхронизирует контролируемые свойства bootstrap-расширения с конфигурацией, которую оно расширяет |
 
 ```powershell
 # Только список баз
-powershell.exe -NoProfile -File "$env:USERPROFILE\.cursor\skills\1c-env-setup\scripts\read-ibases.ps1" -Json
+powershell.exe -NoProfile -File "{{SKILLS_ROOT}}\1c-env-setup\scripts\read-ibases.ps1" -Json
 
 # Только sync CFE (имена с live_extensions_list; без Предприятия)
-powershell.exe -NoProfile -File "$env:USERPROFILE\.cursor\skills\1c-env-setup\scripts\sync-cfe.ps1" -ProjectRoot "." -ExtensionNames @("Имя1","Имя2")
+powershell.exe -NoProfile -File "{{SKILLS_ROOT}}\1c-env-setup\scripts\sync-cfe.ps1" -ProjectRoot "." -ExtensionNames @("Имя1","Имя2")
 
 # Check на текущем проекте
-powershell.exe -NoProfile -File "$env:USERPROFILE\.cursor\skills\1c-env-setup\scripts\env-setup.ps1" -Mode Check -ProjectRoot "."
+powershell.exe -NoProfile -File "{{SKILLS_ROOT}}\1c-env-setup\scripts\env-setup.ps1" -Mode Check -ProjectRoot "."
 ```
+
+### Свойства расширения под базу (шаг 6.0)
+
+Bootstrap-расширение, скопированное из другого проекта или из кита, несёт значения **чужой**
+конфигурации, и `cfe_load` падает:
+
+```text
+NinjaLive: Значение контролируемого свойства РежимСовместимостиИнтерфейса ... не совпадает
+           со значением в расширяемой конфигурации
+NinjaLive: Значение контролируемого свойства ОбъектРасширяемойКонфигурации
+           у объекта Язык.Русский не совпадает ...
+```
+
+Причина — три значения, которые обязаны зеркалить расширяемую конфигурацию:
+`Configuration.xml/ConfigurationExtensionCompatibilityMode`, `Configuration.xml/InterfaceCompatibilityMode`,
+`Languages/<язык>.xml/ExtendedConfigurationObject` (uuid языка в базе). Команды vrunner/MCP для
+этой синхронизации в стеке нет, платформа даёт её только интерактивно в конфигураторе
+(«обновить свойства расширения»). Скрипт делает это механически, идемпотентно, не трогая
+выгрузку конфигурации:
+
+```powershell
+powershell.exe -NoProfile -File "...\1c-env-setup\scripts\sync-ninja-properties.ps1" -ProjectRoot "." -Check
+powershell.exe -NoProfile -File "...\1c-env-setup\scripts\sync-ninja-properties.ps1" -ProjectRoot "."
+```
+
+Работает и для любого другого bootstrap-расширения: `-ExtensionName`, `-ConfigDir`, `-ExtensionDir`.
 
 ## Связанные скиллы
 

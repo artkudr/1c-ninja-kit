@@ -3,7 +3,7 @@ description: Safe-refactoring checklist and sequencing — top-down analysis, bo
 alwaysApply: false
 ---
 
-<!-- ecoladev-adapted: take from itrous/ai_rules_1c; SoT = profile hardlink -->
+<!-- kit-adapted: take from itrous/ai_rules_1c; SoT = profile hardlink -->
 
 # Safe Refactoring — Methodology
 

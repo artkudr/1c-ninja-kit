@@ -23,7 +23,7 @@ allowed-tools:
 | `OutFile` | Записать результат в файл (UTF-8 BOM) |
 
 ```powershell
-powershell.exe -NoProfile -File "%USERPROFILE%\.cursor\skills\meta-info\scripts/meta-info.ps1" -ObjectPath "<путь>"
+powershell.exe -NoProfile -File "{{SKILLS_ROOT}}\meta-info\scripts/meta-info.ps1" -ObjectPath "<путь>"
 ```
 
 ## Три режима

@@ -13,7 +13,7 @@ allowed-tools:
 
 # /epf-init — Создание новой обработки
 
-Генерирует минимальный набор XML-исходников для внешней обработки 1С в **nested**-раскладке (канон ecoladev / bsl-analyzer auto-discovery).
+Генерирует минимальный набор XML-исходников для внешней обработки 1С в **nested**-раскладке (канон bsl-analyzer auto-discovery).
 
 ## Раскладка
 
@@ -50,7 +50,7 @@ src/epf/<Name>/
 ## Команда
 
 ```powershell
-powershell.exe -NoProfile -File "%USERPROFILE%\.cursor\skills\epf-init\scripts/init.ps1" -Name "<Name>" [-Synonym "<Synonym>"] [-SrcDir "src/epf"] [-FormatVersion "<версия>"]
+powershell.exe -NoProfile -File "{{SKILLS_ROOT}}\epf-init\scripts/init.ps1" -Name "<Name>" [-Synonym "<Synonym>"] [-SrcDir "src/epf"] [-FormatVersion "<версия>"]
 ```
 
 ## Дальнейшие шаги

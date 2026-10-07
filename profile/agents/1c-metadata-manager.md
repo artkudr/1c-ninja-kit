@@ -1,6 +1,6 @@
 ---
 name: 1c-metadata-manager
-description: "STUB (ecoladev) — do not use for real work. Metadata/forms/CFE go through meta-*/form-*/cfe-*/skd-*/role-* skills and 1c-development-process. Kept so prompts that mention the id fail closed."
+description: "STUB (kit) — do not use for real work. Metadata/forms/CFE go through meta-*/form-*/cfe-*/skd-*/role-* skills and 1c-development-process. Kept so prompts that mention the id fail closed."
 model: inherit
 tools: ["Read", "MCP"]
 allowParallel: false

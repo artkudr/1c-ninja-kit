@@ -1,5 +1,5 @@
 ---
-description: MCP 1c-ninja-mcp — static + live только из project .cursor/mcp.json открытого workspace
+description: MCP 1c-ninja-mcp — static + live только из project MCP-конфига открытого workspace
 alwaysApply: true
 ---
 
@@ -7,8 +7,8 @@ alwaysApply: true
 
 ## Scope
 
-- **Project** `<репозиторий>\.cursor\mcp.json` (gitignore) — полный MCP этой ИБ, в т.ч. ninja с `NINJA_URL` / `NINJA_USER` / `NINJA_PASSWORD`. Эталон: скилл `1c-env-setup` (`mcp.json.example.tpl`).
-- **User** `%USERPROFILE%\.cursor\mcp.json` — **без** `1c-ninja-mcp` и прочих 1С-серверов (иначе дубли с проектом). Live-URL в user не класть.
+- **Project** `<репозиторий>\{{PROJECT_MCP}}` (gitignore) — полный MCP этой ИБ, в т.ч. ninja с `NINJA_URL` / `NINJA_USER` / `NINJA_PASSWORD`. Эталон: скилл `1c-env-setup` (там шаблон project-конфига для этого адаптера).
+- **User** `{{USER_MCP}}` — **без** `1c-ninja-mcp` и прочих 1С-серверов (иначе дубли с проектом). Live-URL в user не класть.
 - Не подставляй URL другой базы «по умолчанию». Нет project env → явный `url` у тула или отказ, не угадывание.
 
 ## Живые данные ИБ (приоритет)

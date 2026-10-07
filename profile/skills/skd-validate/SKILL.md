@@ -24,6 +24,6 @@ allowed-tools:
 ## Команда
 
 ```powershell
-powershell.exe -NoProfile -File "%USERPROFILE%\.cursor\skills\skd-validate\scripts/skd-validate.ps1" -TemplatePath "src/МойОтчёт/Templates/ОсновнаяСхема"
-powershell.exe -NoProfile -File "%USERPROFILE%\.cursor\skills\skd-validate\scripts/skd-validate.ps1" -TemplatePath "Catalogs/Номенклатура/Templates/СКД/Ext/Template.xml"
+powershell.exe -NoProfile -File "{{SKILLS_ROOT}}\skd-validate\scripts/skd-validate.ps1" -TemplatePath "src/МойОтчёт/Templates/ОсновнаяСхема"
+powershell.exe -NoProfile -File "{{SKILLS_ROOT}}\skd-validate\scripts/skd-validate.ps1" -TemplatePath "Catalogs/Номенклатура/Templates/СКД/Ext/Template.xml"
 ```
