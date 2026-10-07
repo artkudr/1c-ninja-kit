@@ -19,8 +19,6 @@ import psutil
 # ones instead of hardcoding a single client layout.
 _SKILL_ROOTS = [
     os.path.join(os.path.expanduser("~"), ".config", "opencode", "skills"),
-    os.path.join(os.path.expanduser("~"), ".cursor", "skills"),
-    os.path.join(os.path.expanduser("~"), ".dsh", "skills"),
 ]
 _RESOLVE_DIR = next(
     (

@@ -1,6 +1,6 @@
 # 1c-ninja-kit
 
-Агентная обвязка разработки 1С: skills, rules, MCP (**1c-ninja-mcp** + CFE **NinjaLive**), vrunner, bsl-analyzer, адаптеры **Cursor / DeepSeek Harness / Hermes / OpenCode**.
+Агентная обвязка разработки 1С: skills, rules, MCP (**1c-ninja-mcp** + CFE **NinjaLive**), vrunner, bsl-analyzer, харнесс **OpenCode**.
 
 **VERSION:** 0.4.0
 
@@ -12,16 +12,13 @@ cd 1c-ninja-kit
 # If the machine has only the 1C platform installed:
 # read docs/MACHINE-BOOTSTRAP.md first
 powershell -NoProfile -File .\install\kit.ps1 doctor
-powershell -NoProfile -File .\install\kit.ps1 apply -Adapter cursor   # or deepseek | hermes | opencode
+powershell -NoProfile -File .\install\kit.ps1 apply -Adapter opencode
 ```
 
 ## Adapters
 
 | Harness | Guide |
 |---------|--------|
-| Cursor | `adapters/cursor/` |
-| DeepSeek Harness | `adapters/deepseek/` + **`docs/TEST-GUIDE-deepseek.md`** |
-| Hermes | `adapters/hermes/` + **`docs/TEST-GUIDE-hermes.md`** |
 | OpenCode (V2) | `adapters/opencode/` + **`docs/TEST-GUIDE-opencode.md`** |
 
 Bridge contract: `adapters/BRIDGE-CONTRACT.md`.

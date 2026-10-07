@@ -1,4 +1,4 @@
-﻿# Общие функции скиллов хранилища расширений 1С.
+# Общие функции скиллов хранилища расширений 1С.
 $ErrorActionPreference = 'Stop'
 [Console]::OutputEncoding = [System.Text.Encoding]::UTF8
 
@@ -425,8 +425,6 @@ function Invoke-RepoWebTestSmoke {
 	# of hardcoding one client layout.
 	$skillRoots = @(
 		(Join-Path $env:USERPROFILE '.config\opencode\skills'),
-		(Join-Path $env:USERPROFILE '.cursor\skills'),
-		(Join-Path $env:USERPROFILE '.dsh\skills')
 	)
 	$runMjs = $null
 	foreach ($sr in $skillRoots) {

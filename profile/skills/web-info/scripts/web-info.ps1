@@ -1,4 +1,4 @@
-﻿# web-info — Apache & 1C publication status (profile apache-83 / apache-85)
+# web-info — Apache & 1C publication status (profile apache-83 / apache-85)
 # Source: https://github.com/Nikolay-Shirokov/cc-1c-skills
 <#
 .SYNOPSIS
@@ -28,8 +28,6 @@ $OutputEncoding = [System.Text.Encoding]::UTF8
 $_resolver = $null
 foreach ($_sr in @(
     (Join-Path $env:USERPROFILE '.config\opencode\skills'),
-    (Join-Path $env:USERPROFILE '.cursor\skills'),
-    (Join-Path $env:USERPROFILE '.dsh\skills'))) {
   $_probe = Join-Path $_sr 'web-publish\scripts\Resolve-1cWebTargets.ps1'
   if (Test-Path -LiteralPath $_probe) { $_resolver = $_probe; break }
 }

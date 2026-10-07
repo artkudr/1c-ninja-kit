@@ -8,7 +8,6 @@ Repo: https://github.com/artkudr/1c-ninja-kit
 git clone https://github.com/artkudr/1c-ninja-kit.git
 cd 1c-ninja-kit
 # 1) docs/MACHINE-BOOTSTRAP.md  — OVM, bsl-analyzer, toolkit from GitHub
-# 2) docs/TEST-GUIDE-deepseek.md or docs/TEST-GUIDE-hermes.md
 ```
 
 Companion downloads:
@@ -18,5 +17,4 @@ Companion downloads:
 
 ## Testers
 
-- DeepSeek: `docs/PASTE-TO-DEEPSEEK.txt` + `docs/TEST-GUIDE-deepseek.md`
-- Hermes: `docs/PASTE-TO-HERMES.txt` + `docs/TEST-GUIDE-hermes.md`
+# 2) docs/TEST-GUIDE-opencode.md

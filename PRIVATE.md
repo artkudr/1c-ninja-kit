@@ -4,7 +4,7 @@ Starting with **v0.3.0** this repository is intended for public GitHub distribut
 
 Still required before you rely on it in production:
 
-- Run harness test guides (`docs/TEST-GUIDE-deepseek.md`, `docs/TEST-GUIDE-hermes.md`)
+- Run the harness test guide (`docs/TEST-GUIDE-opencode.md`)
 - Complete `docs/MACHINE-BOOTSTRAP.md` on machines that only have the 1C platform
 - Keep secrets out of git (see `docs/SECRETS.md`)
 

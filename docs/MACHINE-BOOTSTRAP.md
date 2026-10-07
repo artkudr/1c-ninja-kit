@@ -94,8 +94,6 @@ Toolkit missing → WARN (ок для ninja-only).
 
 ## 7. Дальше по харнессу
 
-- DeepSeek: `docs/TEST-GUIDE-deepseek.md`
-- Hermes: `docs/TEST-GUIDE-hermes.md`
 - Cursor: `adapters/cursor/` + `docs/ADAPTATION.md`
 
 ## Локальные патчи vrunner (optional)

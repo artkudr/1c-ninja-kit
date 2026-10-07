@@ -19,13 +19,13 @@ powershell -NoProfile -File C:\1C\projects\1c-ninja-kit\install\kit.ps1 apply -A
 
 Что делает:
 
-1. `profile/skills` → `~/.config/opencode/skills` (robocopy mirror, как у cursor/deepseek/hermes).
+1. `profile/skills` → `~/.config/opencode/skills` (robocopy mirror).
 2. `profile/agents/*.md` → `~/.config/opencode/agents/*.md` с конвертацией frontmatter
    (`tools` / `allowParallel` / `model: inherit` выбрасываются, добавляется `mode: subagent`).
 3. `profile/rules/*.mdc` → `~/.config/opencode/kit-rules/*.md` (без frontmatter) + пересборка managed-блока в `AGENTS.md`.
 4. Проверка: в глобальном `~/.config/opencode/opencode.json(c)` не должно быть 1С MCP-серверов.
 
-Полезный флаг: `-DryRun`. Перезапись — по умолчанию (как у cursor/deepseek/hermes): ручные правки
+Полезный флаг: `-DryRun`. Перезапись — по умолчанию: ручные правки
 в `~/.config/opencode/{skills,agents,kit-rules}` и в managed-блоке `AGENTS.md` будут затёрты следующим `apply`.
 Текст вне маркеров `<!-- 1c-ninja-kit:begin -->` / `<!-- 1c-ninja-kit:end -->` в `AGENTS.md` сохраняется.
 

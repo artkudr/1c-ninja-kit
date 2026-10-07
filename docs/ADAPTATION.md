@@ -1,4 +1,4 @@
-﻿# ADAPTATION — чеклист на месте
+# ADAPTATION — чеклист на месте
 
 Агент проходит **по порядку**. Статусы: `ready` / `blocked` / `needs-human`.
 
@@ -22,11 +22,11 @@ v0.1: soft **assumed** — doctor только предупреждает.
 | 2.2 | `project-scaffold/cfe/NinjaLive` | doctor |
 | 2.3 | Профиль `profile/profiles/1c-ninja-kit.yaml` | `kit verify` |
 
-## 3. Профиль Cursor
+## 3. Профиль OpenCode
 
 | # | Действие | Примечание |
 |---|----------|------------|
-| 3.1 | Apply профиля `1c-ninja-kit` | Cursor: `adapters/cursor/install-profile.md`; DeepSeek Harness: `adapters/deepseek/README.md` + `install/dsh-adapter.ps1` |
+| 3.1 | Apply профиля `1c-ninja-kit` | OpenCode: `adapters/opencode/README.md` |
 | 3.2 | User mcp **без** 1С-серверов | иначе дубли |
 | 3.3 | Docs-patches vrunner (optional) | `profile/docs-patches/` |
 
@@ -50,7 +50,7 @@ v0.1: soft **assumed** — doctor только предупреждает.
 
 ## 5. Не копировать из ecoladev
 
-- Живой `.cursor/mcp.json` с паролями
+- Живой `opencode.jsonc` с паролями
 - Product `openspec/changes/*` (opv, screens)
 - `.build` / кэши
 - `autumn-properties.json` с секретами

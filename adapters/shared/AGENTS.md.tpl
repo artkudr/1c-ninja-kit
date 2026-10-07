@@ -40,7 +40,7 @@ Install kit profile skills into the harness skill root, then use `1c-env-setup`,
 ```text
 kit.ps1 doctor
 kit.ps1 verify
-kit.ps1 apply -Adapter <cursor|deepseek|hermes|opencode>
+kit.ps1 apply -Adapter opencode
 kit.ps1 init-project -ProjectPath <dir> -Adapter <...>
 ```
 
