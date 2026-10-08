@@ -2,7 +2,7 @@
 
 Агентная обвязка разработки 1С: skills, rules, MCP (**1c-ninja-mcp** + CFE **NinjaLive**), vrunner, bsl-analyzer, харнесс **OpenCode**.
 
-**VERSION:** 0.4.0
+**VERSION:** 0.4.1
 
 ## Quick start
 
