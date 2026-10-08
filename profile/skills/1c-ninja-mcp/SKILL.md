@@ -10,7 +10,7 @@ description: >-
 
 # 1c-ninja-mcp (static + live + gated)
 
-Исходники сервера: `C:\1C\projects\1c-ninja-mcp`. Namespace Cursor: **1c-ninja-mcp**.  
+Исходники сервера: `C:\1C\projects\1c-ninja-kit\components\1c-ninja-mcp` (компонент кита; отдельного checkout `1c-ninja-mcp` больше нет). Namespace Cursor: **1c-ninja-mcp**.  
 Ранее: `mcp-1c-autumn` / скилл `1c-mcp-autumn`.
 
 ## Матрица владения (vrunner ↔ ninja)
@@ -92,7 +92,7 @@ description: >-
 
 | Tool | Суть |
 |------|------|
-| `cf_dump_xml` | `out` + `mode` Full/Changes(по умолч.)/Partial/UpdateInfo; опц. `objects`, `extension`. Full без extension → `vrunner cf decompile`; иначе Designer `DumpConfigToFiles` |
+| `cf_dump_xml` | `out` + `mode` Full/Changes(по умолч.)/Partial/UpdateInfo; опц. `objects`, `extension`. Full без extension → `vrunner cf decompile`; иначе Designer `DumpConfigToFiles`. **Канон выгрузки расширения из ИБ** (нативная схема 2.21; vrunner `cfe_decompile` без `cfe-file` пишет 2.20 — только запасной путь). При ошибке Designer лог платформы удаляется вместе с temp-каталогом — причина видна пустым выводом; при коде 0 в `/Out` может быть «Соединение с хранилищем конфигурации не установлено» — это не сбой, результат проверяй по файлам |
 | `cf_load_git` | `SRC` (git-каталог XML) → list → load. `source` All/Staged/Unstaged/Commit (+ `commit_range`); `dry_run`; опц. `extension` → Designer. CF без extension → `vrunner cf load --list` |
 | `extensions_dump_list` | Designer `/DumpDBCfgList -AllExtensions`; опц. `name`. **Не** для обзора состава ИБ (канон — `live_extensions_list`) |
 | `epf_decompile` | `SRC` обязателен; под капотом `vrunner epf decompile` |

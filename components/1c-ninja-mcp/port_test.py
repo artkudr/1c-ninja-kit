@@ -8,7 +8,7 @@ import os
 from mcp import ClientSession, StdioServerParameters
 from mcp.client.stdio import stdio_client
 
-ROOT = r"C:\1C\projects\1c-ninja-mcp"
+ROOT = r"C:\1C\projects\1c-ninja-kit\components\1c-ninja-mcp"
 SERVER = os.path.join(ROOT, "main.os")
 HELP_DB = os.path.join(ROOT, "src", "data", "shcntx_help.db")
 CF = r"C:\1C\projects\qbikdev\src\cf"

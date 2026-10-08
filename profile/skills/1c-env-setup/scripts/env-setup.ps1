@@ -769,12 +769,11 @@ function Resolve-WebPort {
 }
 
 function Get-McpMachinePaths {
-    # Ninja MCP main.os: env override, then the 1c-ninja-kit component, then the
-    # standalone C:\1C\projects\1c-ninja-mcp checkout.
+    # Ninja MCP main.os: env override, then the 1c-ninja-kit component
+    # (единственный источник — отдельного checkout 1c-ninja-mcp больше нет).
     $roots = @()
     if ($env:NINJA_MCP_ROOT) { $roots += $env:NINJA_MCP_ROOT }
     $roots += "C:\1C\projects\1c-ninja-kit\components\1c-ninja-mcp"
-    $roots += "C:\1C\projects\1c-ninja-mcp"
     $autumnRoot = $null
     foreach ($r in $roots) {
         if (Test-Path -LiteralPath (Join-Path $r "main.os")) { $autumnRoot = $r; break }

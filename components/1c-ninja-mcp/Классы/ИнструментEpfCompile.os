@@ -151,7 +151,7 @@
 	КонецПопытки;
 
 	Кандидаты.Добавить(ФС.ОбъединитьПути(ФС.ОбъединитьПути(ТекущийКаталог(), "scripts"), "epf-precheck.ps1"));
-	Кандидаты.Добавить("C:\1C\projects\1c-ninja-mcp\scripts\epf-precheck.ps1");
+	Кандидаты.Добавить("C:\1C\projects\1c-ninja-kit\components\1c-ninja-mcp\scripts\epf-precheck.ps1");
 
 	Для Каждого Кандидат Из Кандидаты Цикл
 		Если ФС.ФайлСуществует(Кандидат) Тогда
