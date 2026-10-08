@@ -2,7 +2,7 @@
 
 | Компонент | Где | Версия / заметка |
 |-----------|-----|------------------|
-| OneScript | OVM `%LOCALAPPDATA%\ovm\current` | ≥ 2.0.0 |
+| OneScript | OVM `%LOCALAPPDATA%\ovm\current` | ≥ 2.2.0 |
 | vanessa-runner | глобально `opm install vanessa-runner@3.0.2` | 3.0.2 |
 | Skills / rules | `%USERPROFILE%\.cursor\skills\`, `%USERPROFILE%\.cursor\rules\` | канон в профиле; в проекте обычная папка `.cursor/rules` + hardlink (`mklink /H`) каждого `.mdc` (не folder junction, gitignore) |
 | MCP (user) | `%USERPROFILE%\.cursor\mcp.json` | **без** 1С-серверов (`mcpServers: {}`); иначе дубли с проектом |

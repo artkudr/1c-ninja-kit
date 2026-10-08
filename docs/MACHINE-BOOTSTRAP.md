@@ -16,6 +16,14 @@ Get-ChildItem "C:\Program Files\1cv8\*" -ErrorAction SilentlyContinue | Select-O
 3. `vrunner --version` → **3.0.2**
 4. Рядом должен быть `vrunner-mcp.bat`
 
+Проверено на машине: OneScript **2.2.0**, vanessa-runner 3.0.2, opm 1.6.5.
+
+Если CLI `ovm` нет (на этой машине нет) — движок обновляется слотами, а не перезаписью:
+скопировать текущий слот в `%LOCALAPPDATA%\ovm\<версия>`, наложить `bin\*` из архива
+релиза, затем переключить junction `current` (`cmd /c mklink /J`).
+Папку `lib` не трогать: в ней opm, vanessa-runner и локальные патчи.
+Подробности и откат — `%USERPROFILE%\.cursor\docs\ovm-slot-switch-2.2.0.md`.
+
 ## 2. bsl-analyzer (обязателен для семантики MCP)
 
 **Upstream:** https://github.com/itrous/bsl-analyzer/releases  
@@ -38,7 +46,7 @@ Copy-Item "$env:USERPROFILE\Downloads\bsl-analyzer-windows-amd64.exe" `
 ```
 
 3. В project MCP: `bsl-analyzer-workspace` / `bsl-analyzer-reference` (см. шаблоны kit).  
-4. Версия app: **≥ 0.2.81** (релиз v0.2.81).
+4. Версия app: **≥ 0.2.86** (релиз v0.2.86 от 2026-10-07).
 
 Документация MCP: репозиторий itrous/bsl-analyzer → docs/mcp.  
 Скилл в kit: `profile/skills/1c-bsl-analyzer`.

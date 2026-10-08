@@ -4,8 +4,8 @@
     "releases": "https://github.com/itrous/bsl-analyzer/releases",
     "windowsLauncherAsset": "bsl-analyzer-windows-amd64.exe",
     "installAs": "%LOCALAPPDATA%\\bsl-analyzer\\bsl-analyzer.exe",
-    "minAppVersion": "0.2.81",
-    "note": "Launcher downloads app into %USERPROFILE%\\.bsl-analyzer\\bin. Prefer launcher asset, not bsl-analyzer-app-*.exe unless you know you need the full binary."
+    "minAppVersion": "0.2.86",
+    "note": "Launcher downloads app into %USERPROFILE%\\.bsl-analyzer\\bin. Prefer launcher asset, not bsl-analyzer-app-*.exe unless you know you need the full binary. Launcher is a separate version line (bsl-analyzer-launcher); replace the exe to move it -- it stays locked while MCP servers run on it."
   },
   "mcpToolkit": {
     "upstream": "https://github.com/ROCTUP/1c-mcp-toolkit",
@@ -27,6 +27,15 @@
   },
   "oneScript": {
     "site": "https://oscript.io/",
-    "ovmCurrent": "%LOCALAPPDATA%\\ovm\\current"
-  }
+    "ovmCurrent": "%LOCALAPPDATA%\\ovm\\current",
+    "engineVersion": "2.2.0",
+    "slots": "%LOCALAPPDATA%\\ovm\\<version> + junction `current`",
+    "note": "No ovm CLI on this machine: update = copy the current slot to a new %LOCALAPPDATA%\\ovm\\<version>, overlay bin\\\* from the GitHub release zip, then repoint the `current` junction (cmd mklink /J). Never overlay lib\\ -- it holds opm + vanessa-runner with the local patches from profile/docs-patches/vrunner-local-patches.md. Restart the MCP servers afterwards: a running oscript keeps the engine it was started with."
+  },
+  "vanessaRunner": {
+    "version": "3.0.2",
+    "install": "opm install vanessa-runner@3.0.2",
+    "localPatches": "profile/docs-patches/vrunner-local-patches.md"
+  },
+  "opm": { "version": "1.6.5" }
 }
