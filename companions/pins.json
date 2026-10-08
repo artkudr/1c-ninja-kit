@@ -5,7 +5,7 @@
     "windowsLauncherAsset": "bsl-analyzer-windows-amd64.exe",
     "installAs": "%LOCALAPPDATA%\\bsl-analyzer\\bsl-analyzer.exe",
     "minAppVersion": "0.2.86",
-    "note": "Launcher downloads app into %USERPROFILE%\\.bsl-analyzer\\bin. Prefer launcher asset, not bsl-analyzer-app-*.exe unless you know you need the full binary. Launcher is a separate version line (bsl-analyzer-launcher); replace the exe to move it -- it stays locked while MCP servers run on it."
+    "note": "Launcher downloads app into %USERPROFILE%\\.bsl-analyzer\\bin. Prefer launcher asset, not bsl-analyzer-app-*.exe unless you know you need the full binary. The launcher is a separate version line (--launcher-version); to move it, replace %LOCALAPPDATA%\\bsl-analyzer\\bsl-analyzer.exe -- Windows refuses to overwrite a running exe, so copy the new asset in as a side file, rename the old one to *.bak, then rename the new one onto the battle path. --launcher-update only refreshes the app inside."
   },
   "mcpToolkit": {
     "upstream": "https://github.com/ROCTUP/1c-mcp-toolkit",
