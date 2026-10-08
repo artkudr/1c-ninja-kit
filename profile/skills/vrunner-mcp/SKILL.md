@@ -44,6 +44,8 @@ description: Операции 1С через MCP-сервер vrunner (vanessa-r
 | Разобрать EPF/ERF | **не vrunner** → `1c-ninja-mcp` `epf_decompile` | gate: `ibconnection`; см. скилл `1c-ninja-mcp` |
 | Список расширений в ИБ | **не vrunner** → `1c-ninja-mcp` `live_extensions_list` | после `cfe_load` NinjaLive. MCP `extensions_list` / CLI `vrunner infobase extensions list` — устаревший fallback (запуск Предприятия), не использовать |
 | Загрузить расширение (не из repository.json) | `cfe_load` | SRC=`./src/cfe/<Имя>`, extension-name=`<Имя>` |
+| Выгрузить расширение из ИБ в XML-исходники | **не vrunner** → `1c-ninja-mcp` `cf_dump_xml` | Канон: нативный формат платформы (схема 2.21). Запасной — `cfe_decompile` **без `cfe-file`**: работает без Designer и без Конфигуратора вручную, но пишет старую схему 2.20 — годятся только исходники, для которых формат не важен |
+| Выгрузить расширение из ИБ в `.cfe` | `cfe_unload` | OUT=`./build/out/cfe/<Имя>.cfe`, extension-name=`<Имя>` |
 | CFE из repository.json | скилл `repo-workflow` (`repo.ps1`; не MCP `repo_*`) | не `cfe_load` |
 | Выгрузить DT | `infobase_dump_dt` | из tools/list |
 | Загрузить DT | `infobase_restore_dt` | из tools/list |
