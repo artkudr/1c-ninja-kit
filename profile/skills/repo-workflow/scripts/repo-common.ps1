@@ -1,4 +1,4 @@
-# Общие функции скиллов хранилища расширений 1С.
+﻿# Общие функции скиллов хранилища расширений 1С.
 $ErrorActionPreference = 'Stop'
 [Console]::OutputEncoding = [System.Text.Encoding]::UTF8
 
@@ -304,6 +304,8 @@ function Get-RepoDesignerFailureMessage {
 	$platformText = ($platformLines -join "`n")
 	$errorPatterns = @(
 		'(?im)^\s*Ошибка\b',
+		'(?im)^\s*Исключение\b',
+		'(?im)Исключение\s+XDTO',
 		'(?im)отсутствующие в обеих конфигурациях',
 		'(?im)захвачен[^\n]{0,40}друг(им|ого)\s+пользовател',
 		'(?im)не\s+удалось',
@@ -424,7 +426,7 @@ function Invoke-RepoWebTestSmoke {
 	# web-test lives in the adapter's skills root - probe the known ones instead
 	# of hardcoding one client layout.
 	$skillRoots = @(
-		(Join-Path $env:USERPROFILE '.config\opencode\skills'),
+		(Join-Path $env:USERPROFILE '.config\opencode\skills')
 	)
 	$runMjs = $null
 	foreach ($sr in $skillRoots) {

@@ -1,4 +1,4 @@
-# web-stop — Stop profile Apache (apache-83 / apache-85)
+﻿# web-stop — Stop profile Apache (apache-83 / apache-85)
 # Source: https://github.com/Nikolay-Shirokov/cc-1c-skills
 <#
 .SYNOPSIS
@@ -27,7 +27,8 @@ $OutputEncoding = [System.Text.Encoding]::UTF8
 # ones instead of hardcoding a single client layout.
 $_resolver = $null
 foreach ($_sr in @(
-    (Join-Path $env:USERPROFILE '.config\opencode\skills'),
+    (Join-Path $env:USERPROFILE '.config\opencode\skills')
+  )) {
   $_probe = Join-Path $_sr 'web-publish\scripts\Resolve-1cWebTargets.ps1'
   if (Test-Path -LiteralPath $_probe) { $_resolver = $_probe; break }
 }
