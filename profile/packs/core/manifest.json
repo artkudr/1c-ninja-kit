@@ -5,16 +5,14 @@
                    "1c-env-setup",
                    "1c-mcp-toolkit",
                    "1c-ninja-mcp",
-                   "1c-project-bootstrap",
                    "1c-project-context",
                    "1c-spravochnye-dannye",
+                   "1c-syntax-check",
                    "1c-versioning",
                    "composing-1c-queries",
                    "cursor-local-patches",
                    "handoff",
-                   "repo-workflow",
-                   "sync-cc-1c-skills",
-                   "vrunner-mcp"
+                   "repo-workflow"
                ],
     "rules":  [
                   "1c-architect.mdc",

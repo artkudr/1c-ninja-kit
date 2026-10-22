@@ -13,7 +13,7 @@ description: >-
 
 ## Алгоритм
 
-1. Найди исходники расширения: каталог `src/cfe/<Имя>` или `Configuration.xml` расширения. При необходимости уточни список расширений в ИБ: MCP `1c-ninja-mcp` `live_extensions_list` (**главный способ**; не vrunner `extensions_list` / Предприятие), каталоги `src/cfe`, или ключи `repository.json` → `cfe`.
+1. Найди исходники расширения: каталог `src/cfe/<Имя>` или `Configuration.xml` расширения. При необходимости уточни список расширений в ИБ: MCP `1c-ninja-mcp` `live_extensions_list` (**главный способ**; не Предприятие), каталоги `src/cfe`, или `extensions[]` в `.v8-project.json`.
 2. Прочитай свойства корня расширения (`meta-info` / `cf-info`, `Configuration.xml`):
    - уникальное **имя**;
    - задана **версия** (частая причина отказа аудита);

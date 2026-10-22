@@ -3,23 +3,23 @@
 # Import from web-* scripts. No Apache inside projects.
 #
 # Profile roots:
-#   %USERPROFILE%\tools\apache-83  → port 8083  (v8version 8.3*)
-#   %USERPROFILE%\tools\apache-85  → port 8085  (v8version 8.5*)
+#   %USERPROFILE%\tools\apache-83  → port 8083  (платформа 8.3*)
+#   %USERPROFILE%\tools\apache-85  → port 8085  (платформа 8.5*)
 #
-# Workspace overrides (autumn-properties.json):
-#   vrunner.v8version, web.appName, web.port, web.apachePath
+# Workspace overrides (.v8-project.json):
+#   v8path (версия платформы), web.appName, web.port, web.apachePath
 
 import json
 import os
+import re
+import glob
 from urllib.parse import urlparse
 
 
 def find_1c_project_root(start_dir=None):
     d = os.path.abspath(start_dir or os.getcwd())
     while True:
-        if os.path.isfile(os.path.join(d, "autumn-properties.json")) or os.path.isfile(
-            os.path.join(d, "env.json")
-        ):
+        if os.path.isfile(os.path.join(d, ".v8-project.json")):
             return d
         parent = os.path.dirname(d)
         if parent == d:
@@ -57,6 +57,34 @@ def port_from_web_url(web_url):
         return None
 
 
+def v8_version_from_path(v8path):
+    if not v8path:
+        return None
+    m = re.search(r"(\d+\.\d+(\.\d+){0,2})", str(v8path))
+    return m.group(1) if m else None
+
+
+def detected_v8_version_mask():
+    candidates = []
+    for pattern in (
+        r"C:\Program Files\1cv8\*\bin\1cv8.exe",
+        r"C:\Program Files (x86)\1cv8\*\bin\1cv8.exe",
+    ):
+        candidates.extend(glob.glob(pattern))
+    if not candidates:
+        return None
+
+    def ver_key(p):
+        name = os.path.basename(os.path.dirname(os.path.dirname(p)))
+        try:
+            return tuple(int(x) for x in name.split("."))
+        except Exception:
+            return (0,)
+
+    best = max(candidates, key=ver_key)
+    return os.path.basename(os.path.dirname(os.path.dirname(best)))
+
+
 def platform_apache_defaults(v8version):
     ver = (v8version or "8.3").strip()
     if ver.startswith("8.5"):
@@ -82,21 +110,22 @@ def resolve_1c_web_targets(
     if not project_root:
         project_root = find_1c_project_root()
 
-    autumn = read_1c_json(os.path.join(project_root, "autumn-properties.json"))
-    if not autumn:
-        autumn = read_1c_json(os.path.join(project_root, "env.json"))
+    registry = read_1c_json(os.path.join(project_root, ".v8-project.json"))
     smoke = read_1c_json(os.path.join(project_root, "tools", "web-test", "smoke.config.json"))
 
     cfg_v8 = None
     cfg_app = None
     cfg_port = None
     cfg_apache = None
-    if autumn and isinstance(autumn.get("vrunner"), dict):
-        cfg_v8 = autumn["vrunner"].get("v8version")
-    if autumn and isinstance(autumn.get("web"), dict):
-        cfg_app = autumn["web"].get("appName")
-        cfg_port = autumn["web"].get("port")
-        cfg_apache = autumn["web"].get("apachePath")
+    if registry:
+        cfg_v8 = v8_version_from_path(registry.get("v8path"))
+        web = registry.get("web")
+        if isinstance(web, dict):
+            cfg_app = web.get("appName")
+            cfg_port = web.get("port")
+            cfg_apache = web.get("apachePath")
+    if not cfg_v8:
+        cfg_v8 = detected_v8_version_mask()
     if smoke and smoke.get("webUrl"):
         if not cfg_app:
             cfg_app = app_name_from_web_url(smoke["webUrl"])

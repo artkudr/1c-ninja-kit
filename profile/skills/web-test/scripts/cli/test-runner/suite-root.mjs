@@ -13,7 +13,7 @@ const MARKERS = ['webtest.config.mjs', '_hooks.mjs'];
 // so a wrong boundary degrades to "root not found" (= the pre-v1.9 behaviour plus a clear
 // message) and can never produce a wrong root. `package.json` is deliberately absent: it
 // occurs nested and would stop the climb below a legitimate suite root.
-const BOUNDARIES = ['.git', 'autumn-properties.json'];
+const BOUNDARIES = ['.git', '.v8-project.json'];
 
 const isDir = (p) => { try { return statSync(p).isDirectory(); } catch { return false; } };
 
@@ -24,7 +24,7 @@ const isDir = (p) => { try { return statSync(p).isDirectory(); } catch { return 
  * @param {{cwd?: string}} [opts]
  * @returns {{root: string, marker: string} | null} null when no marker was found within bounds.
  *
- * Stops after examining the first directory that contains `.git` / `autumn-properties.json`
+ * Stops after examining the first directory that contains `.git` / `.v8-project.json`
  * (that directory IS examined for markers), or — when neither is met — after examining `cwd`.
  * A path outside `cwd` degenerates to the filesystem root; the marker requirement still
  * makes a wrong hit unlikely, and the resolved root is printed in the run banner.

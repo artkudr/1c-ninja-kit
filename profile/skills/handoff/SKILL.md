@@ -63,7 +63,7 @@ Which gates from `verification-checklist` passed / failed / were skipped. Latest
 - **Subagents**: `1c-<name>` when the task matches their role (see `sub1c-orchestrator`).
 - **On-demand rules**: `<name>.md` based on the task trigger (see `1c-orchestrator → Additional rules`).
 - **MCP tools**: especially relevant tools (`metadata object` for X, `graph neighbors`/`callers` before refactoring Y, `search search_code` over the БСП modules for topic Z).
-- **Slash commands**: `/opsx-propose` when the task needs a new OpenSpec proposal, cf dump via vrunner / 1c-ninja-mcp for metadata re-export, etc.
+- **Slash commands**: `/opsx-propose` when the task needs a new OpenSpec proposal, cf dump via `db-dump-xml` / 1c-ninja-mcp for metadata re-export, etc.
 
 ## Links (DO NOT copy content)
 - `openspec/changes/<id>/proposal.md`, `design.md`, `tasks.md`

@@ -9,11 +9,6 @@
       "startup": 120000
     },
     "servers": {
-      "vrunner": {
-        "type": "local",
-        "command": ["{{VRUNNER_MCP}}"]
-      },
-
       "1c-ninja-mcp": {
         "type": "local",
         "command": ["oscript", "{{NINJA_MAIN}}"],
@@ -21,8 +16,7 @@
           "SHCNTX_HELP_DB": "{{SHCNTX_HELP_DB}}",
           "NINJA_URL": "http://localhost:{{WEB_PORT}}/{{APP_NAME}}/hs/ninja-live",
           "NINJA_USER": "{{IB_USER}}",
-          "NINJA_PASSWORD": "{{IB_PASSWORD}}",
-          "AUTUMN_PROPERTIES": "{{AUTUMN_PROPERTIES}}"
+          "NINJA_PASSWORD": "{{IB_PASSWORD}}"
         }
       },
 
@@ -33,7 +27,7 @@
 
       "bsl-analyzer-workspace": {
         "type": "local",
-        "command": ["{{BSL_ANALYZER_EXE}}", "mcp", "serve", "--profile", "workspace", "--source-dir", "{{PROJECT_ROOT}}"]
+        "command": ["{{BSL_ANALYZER_EXE}}", "mcp", "serve", "--profile", "workspace", "--source-dir", "{{PROJECT_ROOT}}", "--cache-dir", "{{PROJECT_ROOT}}\\.build"]
       },
 
       // Стандарты ITS/v8. streamable-http без OAuth -> oauth: false обязателен.

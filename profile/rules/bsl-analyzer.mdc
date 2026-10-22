@@ -1,5 +1,5 @@
 ---
-description: Семантика BSL через bsl-analyzer MCP — graph, symbol_info, diagnostics; маршрутизация vs autumn/vrunner
+description: Семантика BSL через bsl-analyzer MCP — graph, symbol_info, diagnostics; маршрутизация: анализатор и скиллы контура
 alwaysApply: true
 ---
 
@@ -7,12 +7,13 @@ alwaysApply: true
 
 Если в проекте подключён MCP `bsl-analyzer-workspace` — используй его для **семантики кода**, не подменяй grep/live.
 
-Живые данные ИБ и static-поиск по выгрузке — `1c-ninja-mcp`. Гейты синтаксиса платформы и load — `1c-development-process` / vrunner.
+Живые данные ИБ и static-поиск по выгрузке — `1c-ninja-mcp`. Гейты синтаксиса платформы и load — `1c-development-process` (скиллы контура).
 
 ## Маршрут
 
 | Нужно | Инструмент |
 |-------|------------|
+| Поиск по имени/тексту в BSL | `search` `action=search_code` (см. всегда-он `mcp-first-search`) |
 | Кто вызывает / влияние правки | `graph` (`resolve` → `callers`/`callees`) + `symbol_info` |
 | Сигнатура, doc, usages | `symbol_info` (`Модуль.Метод`) |
 | Замечания по модулю | `diagnostics` `file` (не весь workspace) |

@@ -9,7 +9,7 @@ description: >-
 # 1c-mcp-toolkit (живая ИБ, fallback)
 
 MCP-сервер **1c-mcp-toolkit** — доступ к **работающей** информационной базе 1С через обработку `MCP_Toolkit.epf`.  
-Не путать с **vrunner** (загрузка XML, хранилище) и с **1c-ninja-mcp** live (HTTP NinjaLive).
+Не путать со скиллами контура (загрузка XML, хранилище — `db-*`, `repo-workflow`) и с **1c-ninja-mcp** live (HTTP NinjaLive).
 
 ## Приоритет live-доступа
 
@@ -24,7 +24,7 @@ MCP-сервер **1c-mcp-toolkit** — доступ к **работающей**
 | Upstream / скачать EPF | https://github.com/ROCTUP/1c-mcp-toolkit/releases → asset **`MCP_Toolkit.epf`** |
 | Рекомендуемый локальный путь | `%USERPROFILE%\tools\1c-mcp-toolkit\MCP_Toolkit.epf` |
 | Legacy (не требовать) | `C:\1C\soft\MCP_Toolkit.epf` — только если уже так заведено на машине |
-| MCP в Cursor | project `{{PROJECT_MCP}}` → `http://127.0.0.1:6003/mcp` (не дублировать в user mcp.json) |
+| MCP (project) | `opencode.jsonc` → `http://127.0.0.1:6003/mcp` (не дублировать в user-конфиг) |
 | Namespace MCP | `1c-mcp-toolkit` |
 
 ## Запуск (встроенный сервер, без Python)
@@ -35,7 +35,7 @@ MCP-сервер **1c-mcp-toolkit** — доступ к **работающей**
 4. Режим **«Встроенный сервер»** → **«Запустить сервер»** (порт **6003**).
 5. Перезагрузить MCP в агенте, если сервер только что подняли.
 
-> Без запущенной обработки MCP недоступен — это нормально. Для запросов к ИБ предпочитай **1c-ninja-mcp** `live_*`. Для dev без живой базы — **vrunner** и skills `meta-*`.
+> Без запущенной обработки MCP недоступен — это нормально. Для запросов к ИБ предпочитай **1c-ninja-mcp** `live_*`. Для dev без живой базы — скиллы `meta-*` / `form-*` (файлы).
 
 ## Когда использовать
 
@@ -49,7 +49,7 @@ MCP-сервер **1c-mcp-toolkit** — доступ к **работающей**
 | Справка по BSL (сеанс toolkit открыт) | `get_bsl_syntax_help` |
 | Offline-справка / поиск по выгрузке | **1c-ninja-mcp** static |
 | Граф / symbol_info / diagnostics файла | **bsl-analyzer** → скилл `1c-bsl-analyzer` |
-| Загрузка CFE / update БД / syntax-check | **vrunner**, не toolkit |
+| Загрузка CFE / update БД / синтакс-контроль | скиллы `db-*` / `1c-syntax-check`, не toolkit |
 
 **Workflow для запросов (toolkit):** `get_metadata` → составить запрос (`composing-1c-queries`) → `execute_query`.
 
@@ -71,15 +71,15 @@ MCP-сервер **1c-mcp-toolkit** — доступ к **работающей**
 
 Имена и схемы — через `GetDynamicTools` / `CallDynamicTool` namespace `1c-mcp-toolkit`.
 
-## Конфликты с vrunner
+## Конфликты с загрузкой в ИБ
 
-- Сеанс с **MCP_Toolkit.epf** держит базу открытой. Перед `repo-workflow` load, `infobase update`, конфигуратором — **закрыть обработку** или вызвать `close_1c_session`.
+- Сеанс с **MCP_Toolkit.epf** держит базу открытой. Перед `repo-workflow` load, `db-update`, Конфигуратором — **закрыть обработку** или вызвать `close_1c_session`.
 - После `repo-workflow` load + update конфигурации может понадобиться `restart_1c_session`.
 
 ## Безопасность
 
 - Не вызывай `execute_code` без явной необходимости.
-- Для проверки запросов достаточно `execute_query` + `get_metadata` (или autumn `live_*`).
+- Для проверки запросов достаточно `execute_query` + `get_metadata` (или ninja `live_*`).
 - Bearer-токен на форме обработки — опционально; при включении добавь `Authorization` в `mcp.json`.
 
 ## Обновление

@@ -25,17 +25,27 @@
     "8.3": { "port": 8083, "toolsDir": "%USERPROFILE%\\tools\\apache-83" },
     "8.5": { "port": 8085, "toolsDir": "%USERPROFILE%\\tools\\apache-85" }
   },
+  "ripgrep": {
+    "upstream": "https://github.com/BurntSushi/ripgrep",
+    "releases": "https://github.com/BurntSushi/ripgrep/releases",
+    "windowsAsset": "ripgrep-15.2.0-x86_64-pc-windows-msvc.zip",
+    "version": "15.2.0",
+    "recommendedPath": "%USERPROFILE%\\tools\\ripgrep\\rg.exe",
+    "pathEntry": "%USERPROFILE%\\tools\\ripgrep",
+    "note": "Ставится рядом с apache-83/85 в %USERPROFILE%\\tools и прописывается в user PATH. Нужен для быстрого поиска по коду из shell; встроенный rg opencode (%USERPROFILE%\\.cache\\opencode\\bin) — не замена, его кеш живёт своей жизнью."
+  },
   "oneScript": {
     "site": "https://oscript.io/",
     "ovmCurrent": "%LOCALAPPDATA%\\ovm\\current",
     "engineVersion": "2.2.0",
     "slots": "%LOCALAPPDATA%\\ovm\\<version> + junction `current`",
-    "note": "No ovm CLI on this machine: update = copy the current slot to a new %LOCALAPPDATA%\\ovm\\<version>, overlay bin\\\* from the GitHub release zip, then repoint the `current` junction (cmd mklink /J). Never overlay lib\\ -- it holds opm + vanessa-runner with the local patches from profile/docs-patches/vrunner-local-patches.md. Restart the MCP servers afterwards: a running oscript keeps the engine it was started with."
+    "note": "No ovm CLI on this machine: update = copy the current slot to a new %LOCALAPPDATA%\\ovm\\<version>, overlay bin\\* from the GitHub release zip, then repoint the `current` junction (cmd mklink /J). Never overlay lib\\ -- it holds opm and the oscript packages used by the MCP servers. Restart the MCP servers afterwards: a running oscript keeps the engine it was started with."
   },
-  "vanessaRunner": {
-    "version": "3.0.2",
-    "install": "opm install vanessa-runner@3.0.2",
-    "localPatches": "profile/docs-patches/vrunner-local-patches.md"
+  "cc1cSkills": {
+    "repo": "https://github.com/Nikolay-Shirokov/cc-1c-skills",
+    "branch": "port-opencode",
+    "ref": null,
+    "installer": "install/cc-skills.ps1"
   },
   "opm": { "version": "1.6.5" }
 }

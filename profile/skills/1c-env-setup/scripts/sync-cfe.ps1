@@ -1,16 +1,13 @@
-# sync-cfe.ps1 - sync empty src/cfe folders and repository.json cfe section
+﻿# sync-cfe.ps1 - sync src/cfe folders and .v8-project.json extensions section
 <#
 .SYNOPSIS
-    Syncs empty src/cfe directories and repository.json cfe keys
+    Syncs src/cfe directories and .v8-project.json extensions keys
     with names from live_extensions_list (-ExtensionNames).
-    Does not launch Enterprise / vrunner infobase extensions list by default.
 
 .EXAMPLE
     .\sync-cfe.ps1 -ProjectRoot . -ExtensionNames @("MyExt","Other")
 .EXAMPLE
     .\sync-cfe.ps1 -ProjectRoot . -DryRun
-.EXAMPLE
-    .\sync-cfe.ps1 -ProjectRoot . -UseVrunnerList
 #>
 
 [CmdletBinding()]
@@ -25,13 +22,7 @@ param(
     [switch]$Prune,
 
     [Parameter(Mandatory = $false)]
-    [switch]$DryRun,
-
-    [Parameter(Mandatory = $false)]
-    [switch]$SkipIb,
-
-    [Parameter(Mandatory = $false)]
-    [switch]$UseVrunnerList
+    [switch]$DryRun
 )
 
 $ErrorActionPreference = "Stop"
@@ -40,16 +31,14 @@ $OutputEncoding = [System.Text.Encoding]::UTF8
 
 $ProjectRoot = (Resolve-Path -LiteralPath $ProjectRoot).Path
 $cfeDir = Join-Path $ProjectRoot "src\cfe"
-$repoPath = Join-Path $ProjectRoot "repository.json"
-$autumnPath = Join-Path $ProjectRoot "autumn-properties.json"
+$registryPath = Join-Path $ProjectRoot ".v8-project.json"
 
-function Get-RepoCfeKeys {
-    if (-not (Test-Path -LiteralPath $repoPath)) { return @() }
+function Get-RegistryExtNames {
+    if (-not (Test-Path -LiteralPath $registryPath)) { return @() }
     try {
-        $j = Get-Content -LiteralPath $repoPath -Raw -Encoding UTF8 | ConvertFrom-Json
-        if ($j.cfe) {
-            return @($j.cfe.PSObject.Properties.Name)
-        }
+        $j = Get-Content -LiteralPath $registryPath -Raw -Encoding UTF8 | ConvertFrom-Json
+        $db = @($j.databases)[0]
+        if ($db -and $db.extensions) { return @($db.extensions | ForEach-Object { $_.name }) }
     } catch {}
     return @()
 }
@@ -71,105 +60,48 @@ function Test-RepoManagedName {
     return ($NotInRepository -notcontains $Name)
 }
 
-function Get-IbExtensionsViaVrunner {
-    Write-Host "Warning: -UseVrunnerList launches Enterprise; canonical list is live_extensions_list" -ForegroundColor Yellow
-    if (-not (Test-Path -LiteralPath $autumnPath)) {
-        Write-Host "Warning: autumn-properties.json missing - skip IB list" -ForegroundColor Yellow
-        return @()
-    }
-    try {
-        Push-Location $ProjectRoot
-        $prevEap = $ErrorActionPreference
-        $ErrorActionPreference = "Continue"
-        $raw = & vrunner infobase extensions list --json 2>&1 | Out-String
-        $ErrorActionPreference = $prevEap
-        Pop-Location
-
-        $names = New-Object System.Collections.Generic.List[string]
-        $trimmed = $raw.Trim()
-        if ($trimmed -match '^\s*[\[{]') {
-            try {
-                $parsed = $trimmed | ConvertFrom-Json
-                if ($parsed -is [System.Array]) {
-                    foreach ($item in $parsed) {
-                        if ($item.name) { [void]$names.Add([string]$item.name) }
-                        elseif ($item.Name) { [void]$names.Add([string]$item.Name) }
-                        elseif ($item -is [string]) { [void]$names.Add($item) }
-                    }
-                } elseif ($parsed.extensions) {
-                    foreach ($item in @($parsed.extensions)) {
-                        if ($item.name) { [void]$names.Add([string]$item.name) }
-                        elseif ($item -is [string]) { [void]$names.Add($item) }
-                    }
-                } elseif ($parsed.PSObject.Properties.Name -contains "data") {
-                    foreach ($item in @($parsed.data)) {
-                        if ($item.name) { [void]$names.Add([string]$item.name) }
-                        elseif ($item -is [string]) { [void]$names.Add($item) }
-                    }
-                }
-            } catch {}
-        }
-
-        if ($names.Count -eq 0) {
-            foreach ($line in ($raw -split "`r?`n")) {
-                $line = $line.Trim().Trim('"')
-                if (-not $line) { continue }
-                if ($line -match '(?i)^(info|warn|error|done|using|vrunner)') { continue }
-                if ($line.Contains('=') -or $line.Contains(':') -or $line.Contains('{') -or $line.Contains('[')) { continue }
-                if ($line -match '^\w+$' -and $line.Length -gt 1) {
-                    [void]$names.Add($line)
-                }
-            }
-        }
-
-        return [string[]]@($names | Select-Object -Unique)
-    } catch {
-        Write-Host "Warning: vrunner extensions list failed: $_" -ForegroundColor Yellow
-        if ((Get-Location).Path -eq $ProjectRoot) { Pop-Location -ErrorAction SilentlyContinue }
-        return @()
-    }
-}
-
-function Ensure-RepoCfeKeys {
+function Ensure-RegistryExtNames {
     param([string[]]$Names)
-    if (-not (Test-Path -LiteralPath $repoPath)) {
-        Write-Host "Error: repository.json required at $repoPath" -ForegroundColor Red
+    if (-not (Test-Path -LiteralPath $registryPath)) {
+        Write-Host "Error: .v8-project.json required at $registryPath" -ForegroundColor Red
         exit 1
     }
-    $raw = Get-Content -LiteralPath $repoPath -Raw -Encoding UTF8
+    $raw = Get-Content -LiteralPath $registryPath -Raw -Encoding UTF8
     $j = $raw | ConvertFrom-Json
-    if (-not $j.cfe) {
-        $j | Add-Member -NotePropertyName cfe -NotePropertyValue ([pscustomobject]@{}) -Force
+    if (-not $j.databases -or @($j.databases).Count -eq 0) {
+        Write-Host "Error: .v8-project.json has no databases" -ForegroundColor Red
+        exit 1
     }
+    $db = $j.databases[0]
+    if (-not $db.extensions) {
+        $db | Add-Member -NotePropertyName extensions -NotePropertyValue @() -Force
+    }
+    $existing = @($db.extensions | ForEach-Object { $_.name })
     $added = New-Object System.Collections.Generic.List[string]
     foreach ($n in $Names) {
         if (-not $n) { continue }
         if (-not (Test-RepoManagedName $n)) { continue }
-        $exists = $j.cfe.PSObject.Properties.Name -contains $n
-        if (-not $exists) {
-            $j.cfe | Add-Member -NotePropertyName $n -NotePropertyValue $n -Force
-            [void]$added.Add($n)
-        }
+        if ($existing -contains $n) { continue }
+        $entry = [ordered]@{ name = $n; src = "src\cfe\$n" }
+        $db.extensions = @($db.extensions) + @([pscustomobject]$entry)
+        [void]$added.Add($n)
     }
     if ($added.Count -gt 0 -and -not $DryRun) {
         $utf8 = New-Object System.Text.UTF8Encoding($false)
-        [System.IO.File]::WriteAllText($repoPath, ($j | ConvertTo-Json -Depth 20), $utf8)
+        [System.IO.File]::WriteAllText($registryPath, ($j | ConvertTo-Json -Depth 20), $utf8)
     }
     return [string[]]$added.ToArray()
 }
 
 # --- main ---
 $fromIb = @()
-$fromRepo = @(Get-RepoCfeKeys)
+$fromRepo = @(Get-RegistryExtNames)
 $fromSrc = @(Get-SrcCfeFolders)
 
 if ($ExtensionNames -and $ExtensionNames.Count -gt 0) {
     $fromIb = @($ExtensionNames)
-} elseif ($UseVrunnerList -and -not $SkipIb) {
-    Write-Host "Fetching extensions from IB via vrunner (deprecated)..." -ForegroundColor DarkGray
-    $fromIb = @(Get-IbExtensionsViaVrunner)
-} elseif (-not $SkipIb -and -not $UseVrunnerList) {
-    Write-Host "Skip IB list via Enterprise; pass -ExtensionNames from live_extensions_list" -ForegroundColor DarkGray
+} else {
+    Write-Host "Pass -ExtensionNames from live_extensions_list for IB sync" -ForegroundColor DarkGray
 }
 
 $target = @()
@@ -179,7 +111,7 @@ if ($fromIb.Count -gt 0) {
     foreach ($n in $fromIb) { Write-Host "  $n" }
 } else {
     $target = @($fromRepo + $fromSrc | Select-Object -Unique | Sort-Object)
-    Write-Host "=== Fallback: repository.json + src/cfe ===" -ForegroundColor Yellow
+    Write-Host "=== Fallback: .v8-project.json + src/cfe ===" -ForegroundColor Yellow
     foreach ($n in $target) { Write-Host "  $n" }
 }
 
@@ -203,7 +135,7 @@ foreach ($n in $target) {
     }
 }
 
-$repoAdded = @(Ensure-RepoCfeKeys -Names $target)
+$repoAdded = @(Ensure-RegistryExtNames -Names $target)
 
 Write-Host ""
 Write-Host "=== Created folders ===" -ForegroundColor Cyan
@@ -217,7 +149,7 @@ if ($created.Count -eq 0) {
 }
 
 Write-Host ""
-Write-Host "=== repository.json cfe keys added ===" -ForegroundColor Cyan
+Write-Host "=== .v8-project.json extensions added ===" -ForegroundColor Cyan
 if ($repoAdded.Count -eq 0) {
     Write-Host "  (nothing)" -ForegroundColor Yellow
 } else {
@@ -228,7 +160,7 @@ if ($fromIb.Count -gt 0) {
     $extra = @($fromRepo | Where-Object { $fromIb -notcontains $_ })
     if ($extra.Count -gt 0) {
         Write-Host ""
-        Write-Host "=== Warning: in repository.json but not in IB ===" -ForegroundColor Yellow
+        Write-Host "=== Warning: in .v8-project.json but not in IB ===" -ForegroundColor Yellow
         foreach ($n in $extra) { Write-Host "  $n" }
         if ($Prune -and -not $DryRun) {
             Write-Host "Prune does not auto-remove keys (manual review)." -ForegroundColor Yellow

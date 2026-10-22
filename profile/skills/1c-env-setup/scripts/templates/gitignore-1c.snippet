@@ -1,4 +1,4 @@
-# Vanessa / OPM (локальные зависимости не используем — vrunner 3 глобально)
+# OPM / сборка (локальные зависимости не используем)
 /oscript_modules/
 /packagedef
 /build/
@@ -20,3 +20,15 @@ lastUploadedCommit.txt
 .cursor/mcp.json
 # пример без секретов — в git; рабочие секреты только в mcp.json (выше)
 !.cursor/mcp.json.example
+
+# OpenCode: проектный opencode.jsonc хранит пароль ИБ -> gitignore; пример — в git
+opencode.jsonc
+opencode.json
+!.opencode/commands/
+!opencode.jsonc.example
+
+# Secrets
+.v8-project.json
+.v8-xsd/
+.env
+.dev.env

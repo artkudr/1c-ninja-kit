@@ -1,39 +1,42 @@
 ---
-description: MCP-first search — bsl-analyzer / ninja before Grep; mandatory justification before fallback
-alwaysApply: false
+description: Поиск по исходникам 1С — индекс/MCP раньше grep; жёсткий порядок, запрет shell-поиска, поведение при неготовом индексе
+alwaysApply: true
 ---
 
-<!-- kit-adapted from itrous/ai_rules_1c mcp-first-search -->
+# Поиск по исходникам 1С: сначала индекс
 
-# MCP-first search
+Любой поиск по исходникам 1С — BSL, метаданные, формы, запросы, usages — начинается с индекса проекта.
+`grep` / `glob` — запасной путь, а не первый.
 
-Для любого поиска по **исходникам 1С** (код, метаданные, usages, граф, формы) сначала индекс/MCP проекта. `Grep` / `Glob` — **последний** шаг с явной причиной.
+## Порядок
 
-## Цепочка
+1. `bsl-analyzer-workspace` `search` → `action: "search_code"`, `query` — по смыслу и по имени.
+2. Нужен XML выгрузки → `1c-ninja-mcp` `xml_search` (`path` — корень выгрузки, напр. `src/cf`).
+   Нужна структура объекта → `bsl-analyzer-workspace` `metadata` (`action: "object"`).
+   Нужен граф вызовов → `graph` (`resolve` → `callers`).
+3. Только потом `grep` / `glob` — и с одной строкой-причиной: что уже пробовал и почему MCP не хватил.
 
-1. **`bsl-analyzer-workspace`**
-   - `search` → `search_code` (семантика; если embeddings нет — сразу `find_code`)
-   - `search` → `find_code` (лексика / FTS)
-   - `graph` → `resolve` → `callers` / `callees` / `neighbors` / `node`
-   - `metadata` → `object` / `tree` / `form`
-2. **`1c-ninja-mcp`** (если нужен static по выгрузке / live) — `bsl_search`, `xml_search`, `read_module`, `live_*`
-3. **Скиллы** `meta-info` / `form-info` / `skd-info` — структура XML-объекта
-4. **Только затем** `Grep` / `Glob` — и только с 1–2 предложениями: что уже пробовали и почему не хватило
+## Почему не наоборот
 
-Внешние: `bsl-analyzer-reference`, `v8std`, Напарник — по необходимости знаний, не как fallback поиска по проекту.
+Типовая выгрузка ERP — десятки тысяч файлов и единицы гигабайт. Поиск через PowerShell
+(`Select-String`, `Get-ChildItem | Select-String`) по такой конфигурации идёт минутами,
+индекс отвечает за доли секунды. Тот же запрос, тот же ответ, разница на порядки.
 
-## Быстрая таблица
+## Ограничения
 
-| Нужно | Сначала |
-|--------|---------|
-| Код по смыслу | `search_code` → `find_code` |
-| Точный идентификатор | `find_code` → затем Grep |
-| Процедура по имени | `graph resolve` → `node` |
-| Объект метаданных | `metadata object` / `meta-info` |
-| Usages / impact | `graph neighbors` / `callers` |
-| Форма | `metadata form` / `form-info` |
-| BSL в EPF/ERF (если в индексе) | `diagnostics file` / `search` / `graph` (см. `bsl-analyzer`, ключ `externals`) |
-| Стандарт | `v8std_search` + примеры в проекте |
-| API платформы | `syntax_help` / reference `search` |
+- `grep` по исходникам — всегда с `path` (`src/cf`) и `include` (`*.bsl`, `*.xml`).
+  Поиск по всему воркспейсу задевает `vendor/` и кеш `.build/` — это пустая работа.
+  В проектах кита есть `.ignore` — `rg` уже исключает `build/`, `.build/`, `vendor/`; руками исключать не нужно.
+- Поиск по коду через shell (`Select-String`, `findstr`, `Get-ChildItem | Select-String`) — не использовать.
+  `rg` в PATH — можно.
+- Без MCP-попытки `grep` / `glob` — только по тому, что MCP не индексирует: `.md`, rules, `handoffs/`,
+  логи, `openspec/`, JSON/YAML-конфиги, `.v8-project.json`, `bsl-analyzer.toml`.
 
-`Grep` без MCP-попытки допустим для неиндексируемого: `.md`, rules, `handoffs/`, логи, JSON конфигов.
+## Если индекс не готов
+
+- `status: "not_ready"`, `loading`, retry-envelope — это не «ничего не нашлось». Подожди и повтори.
+- Холодная сборка индекса на большой конфигурации — минуты. Это повод подождать, а не переключиться на grep.
+- Сервер не поднят (инструмента нет в каталоге, `connection closed`) — инфраструктурная поломка:
+  скажи пользователю. `grep` — временный обход, и называй его явно.
+
+Маршруты по видам задач и частые ошибки — скилл `1c-bsl-analyzer`.

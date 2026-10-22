@@ -1,19 +1,18 @@
-# Shared resolver: profile Apache by platform line (8.3 / 8.5).
+﻿# Shared resolver: profile Apache by platform line (8.3 / 8.5).
 # Dot-source from web-* scripts. No Apache inside projects.
 #
 # Profile roots:
-#   %USERPROFILE%\tools\apache-83  → port 8083  (v8version 8.3*)
-#   %USERPROFILE%\tools\apache-85  → port 8085  (v8version 8.5*)
+#   %USERPROFILE%\tools\apache-83  → port 8083  (платформа 8.3*)
+#   %USERPROFILE%\tools\apache-85  → port 8085  (платформа 8.5*)
 #
-# Workspace overrides (autumn-properties.json):
-#   vrunner.v8version, web.appName, web.port, web.apachePath
+# Workspace overrides (.v8-project.json):
+#   v8path (версия платформы), web.appName, web.port, web.apachePath
 
 function Find-1cProjectRoot {
     param([string]$StartDir = (Get-Location).Path)
     $dir = $StartDir
     while ($dir) {
-        if (Test-Path (Join-Path $dir "autumn-properties.json")) { return $dir }
-        if (Test-Path (Join-Path $dir "env.json")) { return $dir }
+        if (Test-Path (Join-Path $dir ".v8-project.json")) { return $dir }
         $parent = Split-Path $dir -Parent
         if (-not $parent -or $parent -eq $dir) { break }
         $dir = $parent
@@ -47,6 +46,23 @@ function Get-PortFromWebUrl([string]$webUrl) {
     } catch { return $null }
 }
 
+function Get-V8VersionFromPath([string]$v8path) {
+    if (-not $v8path) { return $null }
+    if ($v8path -match '(\d+\.\d+(\.\d+){0,2})') { return $Matches[1] }
+    return $null
+}
+
+function Get-DetectedV8VersionMask {
+    $found = Get-ChildItem @(
+        "C:\Program Files\1cv8\*\bin\1cv8.exe",
+        "C:\Program Files (x86)\1cv8\*\bin\1cv8.exe"
+    ) -ErrorAction SilentlyContinue |
+        Sort-Object { try { [version]$_.Directory.Parent.Name } catch { [version]"0.0.0.0" } } -Descending |
+        Select-Object -First 1
+    if ($found) { return $found.Directory.Parent.Name }
+    return $null
+}
+
 function Get-PlatformApacheDefaults([string]$v8version) {
     $ver = if ($v8version) { $v8version.Trim() } else { "8.3" }
     if ($ver -like "8.5*") {
@@ -74,24 +90,24 @@ function Resolve-1cWebTargets {
 
     if (-not $ProjectRoot) { $ProjectRoot = Find-1cProjectRoot }
 
-    $autumn = Read-1cJsonFile (Join-Path $ProjectRoot "autumn-properties.json")
-    if (-not $autumn) { $autumn = Read-1cJsonFile (Join-Path $ProjectRoot "env.json") }
+    $registry = Read-1cJsonFile (Join-Path $ProjectRoot ".v8-project.json")
     $smoke = Read-1cJsonFile (Join-Path $ProjectRoot "tools\web-test\smoke.config.json")
 
     $cfgV8 = $null
     $cfgApp = $null
     $cfgPort = $null
     $cfgApache = $null
-    if ($autumn -and $autumn.vrunner -and $autumn.vrunner.v8version) {
-        $cfgV8 = [string]$autumn.vrunner.v8version
-    }
-    if ($autumn -and $autumn.web) {
-        if ($autumn.web.appName) { $cfgApp = [string]$autumn.web.appName }
-        if ($null -ne $autumn.web.port -and "$($autumn.web.port)" -ne "") {
-            $cfgPort = [int]$autumn.web.port
+    if ($registry) {
+        $cfgV8 = Get-V8VersionFromPath ([string]$registry.v8path)
+        if ($registry.web) {
+            if ($registry.web.appName) { $cfgApp = [string]$registry.web.appName }
+            if ($null -ne $registry.web.port -and "$($registry.web.port)" -ne "") {
+                $cfgPort = [int]$registry.web.port
+            }
+            if ($registry.web.apachePath) { $cfgApache = [string]$registry.web.apachePath }
         }
-        if ($autumn.web.apachePath) { $cfgApache = [string]$autumn.web.apachePath }
     }
+    if (-not $cfgV8) { $cfgV8 = Get-DetectedV8VersionMask }
     if ($smoke -and $smoke.webUrl) {
         if (-not $cfgApp) { $cfgApp = Get-AppNameFromWebUrl ([string]$smoke.webUrl) }
         if (-not $cfgPort) { $cfgPort = Get-PortFromWebUrl ([string]$smoke.webUrl) }

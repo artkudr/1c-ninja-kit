@@ -4,17 +4,17 @@ project:
   name: {{PROJECT_NAME}}
   description: >-
     1С-проект: основная конфигурация (`src/cf`) + расширения (`src/cfe`).
-    Разработка в XML-выгрузке через autumn/vrunner, семантика BSL — bsl-analyzer,
+    Разработка в XML-выгрузке через скиллы контура, семантика BSL — bsl-analyzer,
     live — 1c-ninja-mcp.
 
 context:
   tech_stack:
     - "1C:Enterprise 8.3 (CompatibilityMode {{COMPAT_MODE}})"
     - "Расширения конфигурации (src/cfe, часть в repository.json)"
-    - "vanessa-runner 3 / autumn-properties.json"
+    - ".v8-project.json (реестр баз) + скиллы db-*/meta-*/form-*"
   conventions:
     - "Не править XML метаданных руками — skills meta-*/form-*/cfe-*/skd-*"
-    - "Load / syntax-check только через vrunner / repo-workflow (не Designer, не сырой ibcmd)"
+    - "Load / синтакс-контроль — только скиллы контура (db-*, repo-workflow, 1c-syntax-check)"
     - "Семантика: bsl-analyzer-workspace; live данные: 1c-ninja-mcp live_*"
     - "OpenSpec только для крупных full-cycle задач (см. 1c-orchestrator)"
     - "Факты о метаданных/API в спеках — только после MCP-подтверждения"

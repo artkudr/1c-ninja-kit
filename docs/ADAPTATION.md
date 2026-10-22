@@ -7,7 +7,7 @@
 | # | Проверка | Как | Кто |
 |---|----------|-----|-----|
 | 1.1 | OVM / oscript | `kit.ps1 doctor` | auto |
-| 1.2 | vrunner 3.x | `vrunner --version` | auto |
+| 1.2 | Платформа 1cv8 (8.3/8.5) | doctor: `C:\Program Files\1cv8\*\bin` | auto |
 | 1.3 | bsl-analyzer.exe | doctor; install from [itrous/bsl-analyzer releases](https://github.com/itrous/bsl-analyzer/releases) → `bsl-analyzer-windows-amd64.exe` as `%LOCALAPPDATA%\bsl-analyzer\bsl-analyzer.exe` | auto / needs-human |
 | 1.4 | Apache tools 83/85 | `%USERPROFILE%\tools\apache-83` / `apache-85` | auto / needs-human если нет |
 | 1.5 | Toolkit EPF (optional) | [ROCTUP/1c-mcp-toolkit releases](https://github.com/ROCTUP/1c-mcp-toolkit/releases) → `%USERPROFILE%\tools\1c-mcp-toolkit\MCP_Toolkit.epf` | needs-human |
@@ -28,32 +28,32 @@ v0.1: soft **assumed** — doctor только предупреждает.
 |---|----------|------------|
 | 3.1 | Apply профиля `1c-ninja-kit` | OpenCode: `adapters/opencode/README.md` |
 | 3.2 | User mcp **без** 1С-серверов | иначе дубли |
-| 3.3 | Docs-patches vrunner (optional) | `profile/docs-patches/` |
+| 3.3 | cc-1c-skills установлен | `install/cc-skills.ps1` (`db-list` в skills root) |
 
 ## 4. Проект
 
 | # | Спросить у человека | Записать в |
 |---|---------------------|------------|
-| 4.1 | ИБ (`ibconnection`) | `autumn-properties.json` (gitignore) |
+| 4.1 | ИБ (запись базы) | `.v8-project.json` (gitignore) |
 | 4.2 | Логин/пароль ИБ | туда же + `NINJA_USER`/`NINJA_PASSWORD` в project mcp |
-| 4.3 | Имя публикации (`APP_NAME`) | autumn `web.appName` + mcp `NINJA_URL` |
+| 4.3 | Имя публикации (`APP_NAME`) | `web.appName` в `.v8-project.json` + mcp `NINJA_URL` |
 | 4.4 | Порт Apache | **8083** если 8.3, **8085** если 8.5 (`docs/stack-defaults.md`) |
-| 4.5 | Пользователь хранилища CFE | `repository.json` (без пароля в git если возможно) |
+| 4.5 | Пользователь хранилища CFE | `extensions[].repository` в `.v8-project.json` (gitignore) |
 
 Затем:
 
 1. Скопировать `NinjaLive` → `src/cfe/NinjaLive`
-2. `cfe_load` через vrunner
+2. `db-load-xml -ConfigDir "src\cfe\NinjaLive" -Mode Full -Extension "NinjaLive" -UpdateDB`
 3. Опубликовать `/hs/ninja-live`
 4. Проверить `live_version` / `live_extensions_list`
-5. Hardlink rules из профиля (не junction)
+5. Правила: глобальный `AGENTS.md` + `kit-rules` (`kit.ps1 apply -Adapter opencode`)
 
 ## 5. Не копировать из ecoladev
 
 - Живой `opencode.jsonc` с паролями
 - Product `openspec/changes/*` (opv, screens)
 - `.build` / кэши
-- `autumn-properties.json` с секретами
+- `.v8-project.json` с секретами
 
 ## 6. Готово
 

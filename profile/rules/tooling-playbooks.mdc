@@ -1,5 +1,5 @@
 ---
-description: Per-task MCP playbooks (BSL, forms, CFE, live, review) - vrunner/ninja/skills, not Designer
+description: Per-task playbooks (BSL, forms, CFE, live, review) - contour skills/ninja, not manual Designer
 alwaysApply: false
 ---
 
@@ -7,7 +7,7 @@ alwaysApply: false
 
 # Tooling playbooks
 
-Каталог MCP и fallback — правила `bsl-analyzer`, `1c-ninja-mcp`, `1c-development-process`. Этот файл — последовательности по типу задачи. **Не** используй `1c-metadata-manage`, Designer, сырой `ibcmd`.
+Каталог MCP и fallback — правила `bsl-analyzer`, `1c-ninja-mcp`, `1c-development-process`. Этот файл — последовательности по типу задачи. **Не** используй `1c-metadata-manage`; операции с ИБ — только скиллы контура (`db-*`, `repo-workflow`), не ручные вызовы Конфигуратора.
 
 ## Minimum evidence
 
@@ -16,9 +16,9 @@ alwaysApply: false
 | Quick-fix BSL | Прочитать целевой метод | `diagnostics file` |
 | Full-cycle BSL | `search`/`graph`/`metadata` (+ v8std при паттернах) | `diagnostics file` → Напарник (если есть) → impact `graph` при публичной поверхности |
 | Метаданные / формы | `meta-info`/`form-info` + примеры; правки через `meta-*`/`form-*`/`cfe-*` | `*-validate` + `diagnostics file` на затронутый BSL |
-| CFE из repository | Захват `repo-workflow` | Гейты `repo-workflow` |
+| CFE с хранилищем | Захват `repo-workflow` | Гейты `repo-workflow` |
 | Live данные | `live_*` ninja | — |
-| Список расширений ИБ | `live_extensions_list` (после `cfe_load` NinjaLive) | не `extensions_list` / Предприятие |
+| Список расширений ИБ | `live_extensions_list` (после загрузки NinjaLive) | не Предприятие |
 | Docs/rules без фактов 1С | Чтение файлов | Структурные проверки |
 | BSL в EPF/ERF | Если объект в индексе bsl-analyzer — как Quick-fix BSL | `diagnostics file`; иначе ninja + `epf-validate` |
 
@@ -64,7 +64,7 @@ alwaysApply: false
 1. Найти объект: `meta-info` / `form-info` / `metadata`.
 2. Менять **только** скиллами: `meta-edit`/`meta-compile`, `form-edit`/`form-compile`, `cfe-borrow`/`cfe-patch-method`, `skd-*`, `role-*`, …
 3. `*-validate` того же типа.
-4. Load: vrunner / `repo.ps1` — см. `1c-development-process`. **Запрещены** Designer load и `1c-metadata-manage`.
+4. Load: скиллы контура (`db-load-xml` / `repo-workflow`) — см. `1c-development-process`. **Запрещены** ручные вызовы Конфигуратора и `1c-metadata-manage`.
 
 ## Integrations
 

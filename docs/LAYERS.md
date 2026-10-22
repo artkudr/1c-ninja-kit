@@ -8,10 +8,10 @@ Machine  →  Profile (~/.cursor)  →  Project  →  Adapter (Cursor / …)
 
 | Слой | Что | Кто ставит |
 |------|-----|------------|
-| **Machine** | OVM, vrunner, bsl-analyzer, Apache tools, Toolkit EPF | человек + `kit doctor` (v0.2: install) |
+| **Machine** | OVM/OneScript, bsl-analyzer, Apache tools, Toolkit EPF, cc-1c-skills | человек + `kit doctor` |
 | **Profile** | skills / rules / agents | `kit apply --profile 1c-ninja-kit` |
-| **Project** | autumn, repository, mcp, NinjaLive, OpenSpec, hardlink rules | `1c-env-setup` / `kit init-project` |
-| **Adapter** | как Cursor (или другой харнесс) читает skills/MCP | `adapters/<name>/` |
+| **Project** | `.v8-project.json`, mcp, NinjaLive, OpenSpec | `1c-env-setup` / `kit init-project` |
+| **Adapter** | как харнесс (OpenCode) читает skills/MCP | `adapters/<name>/` |
 
 ## Пара Ninja
 

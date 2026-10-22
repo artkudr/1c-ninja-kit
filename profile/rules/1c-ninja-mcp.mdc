@@ -23,10 +23,10 @@ alwaysApply: true
 | Синтаксис BSL без выполнения | `live_check_syntax` |
 | Список / структура метаданных ИБ | `live_metadata_list`, `live_metadata_structure` |
 | Журнал регистрации | `live_event_log` |
-| Список расширений ИБ (**главный способ**) | `live_extensions_list` (не `vrunner infobase extensions list` / MCP `extensions_list` — запуск Предприятия; не `extensions_dump_list` для обзора) |
+| Список расширений ИБ (**главный способ**) | `live_extensions_list` (не Предприятие) |
 | Выполнить код / выражение | `live_execute`, `live_eval` (осторожно; роль `NinjaLive_ВыполнениеКода`) |
 
-**Главный способ списка CFE в ИБ:** `live_extensions_list` после `src/cfe/NinjaLive` → `cfe_load` → публикация. Setup: скилл `1c-env-setup`. **Не** запускать Предприятие ради списка.
+**Главный способ списка CFE в ИБ:** `live_extensions_list` после загрузки `src/cfe/NinjaLive` → публикация. Setup: скилл `1c-env-setup`. **Не** запускать Предприятие ради списка.
 
 **1c-mcp-toolkit** — только если live ninja недоступен: нет публикации `/hs/ninja-live`, расширение `NinjaLive` нельзя подключить, или `live_*` стабильно падает. Toolkit: `MCP_Toolkit.epf` на `:6003`.
 
@@ -36,4 +36,4 @@ alwaysApply: true
 
 `bsl_search`, `xml_search`, `config_list`, `read_module`, `syntax_help_search` — `path` = абсолютный путь **этого** проекта. Grep/Read — точечно или если MCP недоступен.
 
-Загрузка / хранилище / syntax-check — **vrunner** (`1c-development-process`). Разбор EPF/ERF — **1c-ninja-mcp** `epf_decompile` (не голый vrunner). Скиллы: `1c-ninja-mcp`, `1c-mcp-toolkit`.
+Загрузка / хранилище / синтакс-контроль — скиллы контура (`db-*`, `repo-workflow`, `1c-syntax-check`) по `1c-development-process`. Разбор EPF/ERF — скиллы `epf-dump` / `erf-dump`. Скиллы: `1c-ninja-mcp`, `1c-mcp-toolkit`.

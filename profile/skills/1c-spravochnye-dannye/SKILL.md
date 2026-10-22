@@ -63,7 +63,7 @@ XML руками не править.
 6. `subsystem-edit` — показать в интерфейсе.
 7. Фреш: заимствовать `ExchangePlan.МиграцияПриложений`, включить справочник, авторегистрация запрещена, признак изменения при подключении.
 8. `1c-versioning` — поднять версию CFE.
-9. `meta-validate` + `cfe-validate` + `validate_syntax-check` (MCP vrunner) + загрузка расширения.
+9. `meta-validate` + `cfe-validate` + `db-cfe-admin check` + загрузка расширения (`db-load-xml -Extension`).
 
 Детали макета, обработчика и JSON-заготовки: [reference.md](reference.md).
 

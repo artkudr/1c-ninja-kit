@@ -32,7 +32,7 @@ alwaysApply: false
 | **1c-error-fixer** | Синтаксис / runtime без архитектуры | Нужен редизайн |
 | **1c-code-reviewer** | **Только** явная просьба review | Автопосле правок — запрещено |
 | **1c-doc-writer** | Пользовательские гайды | Inline-комментарии кода |
-| **1c-tester** | Stub: `repo-workflow` + `web-test` + vrunner tests | Не звать deploy/ibcmd из upstream |
+| **1c-tester** | Stub: `repo-workflow` + `web-test` | Не звать deploy/ibcmd из upstream |
 | **1c-metadata-manager** | **Stub** — не использовать; вместо него скиллы `meta-*`/`form-*`/`cfe-*` | — |
 
-Стек агентов: vrunner only, ninja live, bsl-analyzer, профильные XML-скиллы. Наследуют triage/`CONFUSION` из `1c-orchestrator`.
+Стек агентов: скиллы контура (`db-*`, `repo-workflow`), ninja live, bsl-analyzer, профильные XML-скиллы. Наследуют triage/`CONFUSION` из `1c-orchestrator`.

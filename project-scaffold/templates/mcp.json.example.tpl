@@ -1,15 +1,12 @@
 {
 	"mcpServers": {
-		"vrunner": {
-			"command": "{{VRUNNER_MCP_BAT}}"
-		},
 		"1c-mcp-toolkit": {
 			"url": "http://127.0.0.1:6003/mcp",
 			"type": "streamable-http"
 		},
 		"1c-ninja-mcp": {
 			"command": "oscript",
-			"args": ["{{AUTUMN_MAIN}}"],
+			"args": ["{{NINJA_MAIN}}"],
 			"env": {
 				"SHCNTX_HELP_DB": "{{SHCNTX_HELP_DB}}",
 				"NINJA_URL": "http://localhost:{{WEB_PORT}}/{{APP_NAME}}/hs/ninja-live",
@@ -34,7 +31,9 @@
 				"--profile",
 				"workspace",
 				"--source-dir",
-				"{{PROJECT_ROOT}}"
+				"{{PROJECT_ROOT}}",
+				"--cache-dir",
+				"{{PROJECT_ROOT}}\\.build"
 			]
 		},
 		"v8std": {

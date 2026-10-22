@@ -67,7 +67,7 @@ powershell -NoProfile -File .\install\kit.ps1 apply
 Проверь:
 
 - появились skills/rules/agents в `%USERPROFILE%\.cursor\`
-- user `mcp.json` **без** имён: `vrunner`, `1c-ninja-mcp`, `1c-mcp-toolkit`, `bsl-analyzer-*`  
+- user-конфиг **без** имён: `1c-ninja-mcp`, `1c-mcp-toolkit`, `bsl-analyzer-*`  
   Если серверы есть — вычисти или сделай backup и оставь `mcpServers: {}`.
 
 ### Шаг 3 — новый проект (НЕ ecoladev)
@@ -94,13 +94,13 @@ powershell -NoProfile -File C:\1C\projects\1c-ninja-kit\install\kit.ps1 init-pro
 
 Если ИБ есть:
 
-1. Загрузи CFE `NinjaLive` через vrunner MCP `cfe_load` (или CLI vrunner) из `src/cfe/NinjaLive`.
+1. Загрузи CFE `NinjaLive`: `db-load-xml -ConfigDir "src\cfe\NinjaLive" -Mode Full -Extension "NinjaLive"`.
 2. Опубликуй web на порту **8083** (для 8.3), appName как в init.
 3. В Cursor подключи project MCP из `ninja-kit-e2e\.cursor\mcp.json`.
 4. Вызови `live_version`, затем `live_extensions_list`.
 5. Результат (без секретов) — в лог.
 
-**Не** используй `vrunner infobase extensions list` / MCP `extensions_list` как канон.
+**Не** запускай Предприятие ради списка расширений.
 
 ### Шаг 5 — финальный лог
 

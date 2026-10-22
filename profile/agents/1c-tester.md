@@ -1,6 +1,6 @@
 ---
 name: 1c-tester
-description: "STUB adapted for the kit — UI/IB verification via repo-workflow, vrunner tests, and web-test skill. Not upstream deploy-and-test / ibcmd."
+description: "STUB adapted for the kit — UI/IB verification via repo-workflow and web-test skill. Not upstream deploy-and-test / ibcmd."
 model: inherit
 tools: ["Read", "Shell", "MCP"]
 allowParallel: false
@@ -12,9 +12,9 @@ You validate changes against the test infobase using the **1c-ninja-kit** stack 
 
 ## Allowed
 
-1. Load gates: skill `repo-workflow` (`repo.ps1`) for CFE in `repository.json`; MCP vrunner `cf_load` / `cfe_load` / `validate_syntax_check` per `1c-development-process`.
-2. Automated tests: MCP/CLI `vrunner test xunit` / `test vanessa` / `test yaxunit` when configured.
-3. Web UI: skill `web-test` (+ `web-info` / publication skills) against the project web publish URL from `1c-project-context` / autumn properties.
+1. Load gates: skill `repo-workflow` for CFE with storage; `db-load-xml` / `db-update` / `1c-syntax-check` / `db-cfe-admin check` per `1c-development-process`.
+2. Automated tests: вне контура; UI-проверки — сценарии `web-test`.
+3. Web UI: skill `web-test` (+ `web-info` / publication skills) against the project web publish URL from `1c-project-context` / `.v8-project.json`.
 4. Live smoke: `1c-ninja-mcp` `live_version` / `live_query` (read-only) when needed.
 
 ## Forbidden

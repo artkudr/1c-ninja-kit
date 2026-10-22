@@ -4,7 +4,7 @@ description: >-
   Семантика BSL через MCP bsl-analyzer workspace: graph (callers/callees),
   symbol_info, diagnostics file, metadata, search; модель cf+cfe+epf/erf
   (externals, ≥0.2.86). Перед правкой метода/CFE/внешних — влияние вызовов и
-  точечные диагностики; не путать с ninja live_* и vrunner syntax-check.
+  точечные диагностики; не путать с ninja live_* и `1c-syntax-check`.
   Используй при анализе влияния, переименовании, ревью BSL, «кто вызывает»,
   недостижимый код / типы.
 ---
@@ -25,13 +25,23 @@ Rust MCP **workspace** (itrous/bsl-analyzer, **≥0.2.86**): модель исх
 | Project MCP | `<репозиторий>\{{PROJECT_MCP}}` → `bsl-analyzer-workspace` и `bsl-analyzer-reference` |
 | User MCP | **без** `bsl-analyzer-*` (иначе дубли с проектом) |
 | Конфиг диагностик | `<репозиторий>\bsl-analyzer.toml` |
-| Кеш | `<репозиторий>\.build` (gitignore) |
+| Кеш | `<репозиторий>\.build` (`--cache-dir` в project MCP; gitignore) |
 
 ### Установка на новой машине
 
 См. `docs/MACHINE-BOOTSTRAP.md` §2. Кратко: скачать launcher с GitHub Releases → переименовать/скопировать в `%LOCALAPPDATA%\bsl-analyzer\bsl-analyzer.exe` → при необходимости `--launcher-update`.
 
 Прогрев: `metadata`/`graph` `action=status` → `ready` (на больших конфигурациях graph cold ~5 мин). Пока `loading` — повтори, не трактуй как «пусто».
+
+### Кеш и повторные запуски
+
+Кеш всегда в **проекте**: `bsl-analyzer-workspace` в project MCP запускается с `--cache-dir "<проект>\.build"` (каталог в `.gitignore`). Внутри — `workspaces\v1\<digest>\` с `bsl-search.db` и `bsl-graph.db`; сам `.build` из обхода и индексации исключён.
+
+- Повторный запуск не пересобирает: граф публикуется с диска (обход файлов + открытие), это секунды, а не минуты.
+- Правка тела метода — перепроецируется только изменённый модуль; смена сигнатуры — модуль и вызывающие; новый/удалённый `.bsl` или правка `.xml` — полная пересборка.
+- Digest кеша зависит от состава источников (`root`, `extensions`, `scope`, `depends_on`, `exclude`, `exclude_globs`). Поменял список расширений в `bsl-analyzer.toml` — новый каталог и одна холодная сборка.
+- Смена `--cache-dir` = новый пустой кеш (одна холодная сборка). Абсолютный путь обязателен: относительный считается от cwd процесса.
+- Кеш машинно-локальный: после переноса папки проекта или на другой машине будет холодная сборка.
 
 ## Модель исходников и EPF/ERF
 
@@ -72,8 +82,34 @@ externals = [
 | Поиск по смыслу/имени в коде | `search` `action=search_code` (без embeddings — лексика) |
 | Текстовый grep по выгрузке (и EPF вне индекса) | **1c-ninja-mcp** `bsl_search` / `xml_search` / `read_module` |
 | Данные / запрос / метаданные **живой** ИБ | ninja `live_*` (project URL) |
-| Компиляция платформой / сборка EPF | **vrunner** `validate_syntax-check` / `epf_compile` |
+| Компиляция платформой / сборка EPF | `1c-syntax-check` / `epf-build` |
 | Полный analyze всей конфигурации | CLI; **не** в обычном цикле правок |
+
+## Поиск по проекту
+
+Порядок и запреты — всегда-он правило `mcp-first-search`. Здесь маршруты и грабли.
+
+| Что ищем | Инструмент | Вызов |
+|---|---|---|
+| Имя или текст в BSL: метод, переменная, строка запроса | `search` | `action: "search_code"`, `query` |
+| Структура объекта: реквизиты, табличные части, формы | `metadata` | `action: "object"`, `object_type`, `object_name` |
+| Форма: элементы, реквизиты, команды | `metadata` | `action: "form"` |
+| Кто вызывает, влияние правки, usages | `graph` | `resolve` → `callers` / `callees` / `neighbors` |
+| Текст в XML-выгрузке: имена объектов и реквизитов, тексты ролей | **1c-ninja-mcp** | `xml_search`, `path` — корень выгрузки (`src/cf`) |
+| BSL вне индекса: EPF/ERF | **1c-ninja-mcp** | `bsl_search`, `read_module` |
+| Живая ИБ | **1c-ninja-mcp** | `live_query`, `live_metadata_structure`, `live_extensions_list` |
+
+`search_code` индексирует **только BSL**. XML — `xml_search` (текст) и `metadata` (структура).
+Без `EMBEDDING_URL` поиск лексический — для точных имён этого достаточно.
+
+Грабли:
+
+- `search_code` ищет по BSL, а не по XML: запрос по имени формы вернёт только модули, где это имя
+  упоминается в коде.
+- `xml_search` читает файлы выгрузки и падает на занятом файле (`IOException` — антивирус, параллельная
+  сборка). Тогда — `grep` по конкретному файлу, а не по всему `src/cf`.
+- `graph` `resolve` — не замена `search_code`, когда нужно просто найти, где встречается имя.
+- `bsl-analyzer-reference` — про платформу. Код конфигурации им не ищется.
 
 ## Базовый workflow перед правкой метода
 
@@ -82,7 +118,7 @@ externals = [
 3. Из ответа возьми `usages.graph_id` (или `graph` `action=resolve` → id).
 4. `graph` `action=callers` (и при необходимости `callees`) по `id`.
 5. `diagnostics` `action=file`, `path` = относительный или абсолютный путь к `.bsl`, `min_severity` = `warning`.
-6. Правишь код → снова `diagnostics file` на затронутые модули → при необходимости vrunner syntax-check по правилам проекта.
+6. Правишь код → снова `diagnostics file` на затронутые модули → при необходимости `1c-syntax-check` по правилам проекта.
 
 Пример (CFE):  
 `ЦИС_СкидкиНаценкиЗаполнениеСервер.НазначитьРучнуюСкидку` → callers из форм Заказа/Реализации → diagnostics файла модуля.
@@ -103,7 +139,7 @@ externals = [
 ## Правила использования
 
 - Предпочитай точечные вызовы (`file`, `callers` по одному id), не полный `analyze` / `diagnostics workspace`.
-- Не подменяй vrunner syntax-check диагностиками анализатора.
+- Не подменяй `1c-syntax-check` диагностиками анализатора.
 - Не путай project ninja (с URL ИБ) и user ninja (без URL — fail-closed).
 - Имена/пути — только открытый проект; `path` для static ninja — абсолютный корень этого репозитория.
 - Шумные правила глушатся в `bsl-analyzer.toml`; новые ложные срабатывания на типовой — не чинить весь cf, смотреть CFE/свои модули.

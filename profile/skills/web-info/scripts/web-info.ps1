@@ -5,10 +5,10 @@
     Статус Apache и публикаций 1С
 
 .PARAMETER ApachePath
-    Корень Apache; иначе профиль по v8version проекта (apache-83 / apache-85)
+    Корень Apache; иначе профиль по платформе из .v8-project.json (apache-83 / apache-85)
 
 .PARAMETER V8Version
-    Маска платформы для выбора профиля, если не из autumn
+    Маска платформы для выбора профиля (иначе — из .v8-project.json)
 #>
 
 [CmdletBinding()]

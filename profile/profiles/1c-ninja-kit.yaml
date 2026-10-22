@@ -4,7 +4,6 @@ version: 0.1.0
 description: Full OpenCode profile pack (skills + rules + agents) for 1C agent toolchain
 packs:
   - core
-  - xml-edit
   - web
   - fresh
   - openspec

@@ -8,7 +8,7 @@
     Имя публикации (обязательный, если не указан -All)
 
 .PARAMETER ApachePath
-    Корень Apache; иначе профиль по v8version
+    Корень Apache; иначе профиль по платформе из .v8-project.json
 
 .PARAMETER V8Version
     Маска платформы для выбора профиля

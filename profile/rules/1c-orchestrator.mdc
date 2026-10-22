@@ -11,7 +11,7 @@ alwaysApply: true
 
 Канон правил — `{{RULES_ROOT}}`. Правь SoT кита (`profile/rules/*.mdc`) и запускай `kit.ps1 apply` — этот слой перезаписывается при apply.
 
-Контекст проекта: скилл `1c-project-context`, `autumn-properties.json` / `env.json` (не `.dev.env` из upstream).
+Контекст проекта: скилл `1c-project-context`, `.v8-project.json` (не `.dev.env` из upstream).
 
 ## Triage
 
@@ -62,13 +62,13 @@ Workspace: `openspec/`. Правило: `sdd-integrations` (on-demand / globs). 
 |--------|------|
 | Семантика / graph / diagnostics | `bsl-analyzer` → `bsl-analyzer-workspace` |
 | Live ИБ / static выгрузка | `1c-ninja-mcp` |
-| Список расширений ИБ | `1c-ninja-mcp` `live_extensions_list` (**главный способ**; не vrunner `extensions_list` / Предприятие) |
-| Load / syntax-check / repo | `1c-development-process` + vrunner / `repo-workflow` |
+| Список расширений ИБ | `1c-ninja-mcp` `live_extensions_list` (**главный способ**; не Предприятие) |
+| Load / dump / update / проверки / repo | скиллы контура: `db-*`, `repo-workflow`, `1c-syntax-check` (`1c-development-process`) |
 | Стандарты ITS/v8 | `v8std`; reference `bsl-analyzer-reference` |
 | AI-проверка кода | `1c-code-check-mcp` / Напарник (если поднят; иначе не блокируй на нём) |
 | Fallback live | `1c-mcp-toolkit` только если ninja live недоступен |
 
-Перед `Grep`/`Glob` по исходникам 1С — `mcp-first-search`. После BSL — `diagnostics file`; бюджет повторов валидаторов — в `verification-checklist`.
+Поиск по исходникам 1С — всегда-он правило `mcp-first-search` (шлюз: индекс → grep с обоснованием; детали — скилл `1c-bsl-analyzer`). После BSL — `diagnostics file`; бюджет повторов валидаторов — в `verification-checklist`.
 
 ## Память
 
@@ -89,7 +89,7 @@ Workspace: `openspec/`. Правило: `sdd-integrations` (on-demand / globs). 
 3. Профильная валидация + гейты `1c-development-process` / `repo-workflow`.
 4. Не объявляй «готово», пока гейты слоя не пройдены.
 
-**Запрещено:** Designer / `1cv8` / сырой `ibcmd` / Platform Tools MCP в обход vrunner; `install.ps1` из ai_rules; `1c-metadata-manage` upstream.
+**Запрещено:** Platform Tools MCP / реестр PT; `install.ps1` из ai_rules; `1c-metadata-manage` upstream; ручные вызовы Конфигуратора/`1cv8` в обход скиллов контура; ручная правка XML.
 
 ## Агенты (`{{AGENTS_ROOT}}`)
 

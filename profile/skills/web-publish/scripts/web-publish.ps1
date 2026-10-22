@@ -7,16 +7,16 @@
 .DESCRIPTION
     Генерирует default.vrd и настраивает httpd.conf.
     Apache — профильный (не в проекте):
-      %USERPROFILE%\tools\apache-83  порт 8083  (v8version 8.3*)
-      %USERPROFILE%\tools\apache-85  порт 8085  (v8version 8.5*)
-    Платформа: -V8Path или autumn vrunner.v8version → bin с wsap24.dll.
-    AppName: -AppName / autumn.web.appName / smoke webUrl / имя папки проекта.
+      %USERPROFILE%\tools\apache-83  порт 8083  (платформа 8.3*)
+      %USERPROFILE%\tools\apache-85  порт 8085  (платформа 8.5*)
+    Платформа: -V8Path или v8path из .v8-project.json → bin с wsap24.dll.
+    AppName: -AppName / web.appName из .v8-project.json / smoke webUrl / имя папки проекта.
 
 .PARAMETER ApachePath
-    Корень Apache; иначе autumn.web.apachePath или профиль apache-83/85
+    Корень Apache; иначе web.apachePath из .v8-project.json или профиль apache-83/85
 
 .PARAMETER Port
-    Порт; иначе autumn.web.port / smoke / 8083|8085 по версии
+    Порт; иначе web.port из .v8-project.json / smoke / 8083|8085 по версии
 #>
 
 [CmdletBinding()]
@@ -106,7 +106,7 @@ $Port = $targets.Port
 
 Write-Host "Apache profile: apache-$($targets.ApacheLabel) -> $ApachePath (port $Port)" -ForegroundColor Yellow
 
-# --- Resolve V8Path (autumn / CLI) ---
+# --- Resolve V8Path (registry / CLI) ---
 if (-not $V8Path) {
     if ($V8Version) {
         $found = Find-PlatformBinByVersion $V8Version
@@ -114,11 +114,11 @@ if (-not $V8Path) {
             $V8Path = $found.Bin
             Write-Host "Platform by v8version=$V8Version -> $($found.Ver): $V8Path" -ForegroundColor Yellow
         } else {
-            Write-Host "Error: платформа под v8version=$V8Version не найдена (нужен bin с wsap24.dll). Укажите -V8Path или поправьте v8version в autumn-properties.json" -ForegroundColor Red
+            Write-Host "Error: платформа под v8version=$V8Version не найдена (нужен bin с wsap24.dll). Укажите -V8Path или поправьте v8path в .v8-project.json" -ForegroundColor Red
             exit 1
         }
     } else {
-        Write-Host "Error: не заданы -V8Path и vrunner.v8version в autumn-properties.json" -ForegroundColor Red
+        Write-Host "Error: не заданы -V8Path и v8path в .v8-project.json" -ForegroundColor Red
         exit 1
     }
 } elseif (Test-Path $V8Path -PathType Leaf) {
@@ -228,7 +228,7 @@ if (-not (Test-Path $httpdExe)) {
 
 # --- AppName already resolved via Resolve-1cWebTargets ---
 if (-not $AppName) {
-    Write-Host "Error: не удалось определить имя публикации. Задайте -AppName или autumn-properties web.appName / tools/web-test/smoke.config.json webUrl" -ForegroundColor Red
+    Write-Host "Error: не удалось определить имя публикации. Задайте -AppName или web.appName в .v8-project.json / tools/web-test/smoke.config.json webUrl" -ForegroundColor Red
     exit 1
 }
 

@@ -2,29 +2,27 @@
 name: 1c-ninja-mcp
 description: >-
   MCP 1c-ninja-mcp: static-поиск по выгрузке (bsl/xml, read_module, syntax_help),
-  live-доступ к ИБ (live_*), список расширений ИБ — live_extensions_list (главный способ, не Предприятие),
-  gated CF/EPF: cf_dump_xml, cf_load_git, extensions_dump_list, epf_decompile / epf_compile.
+  live-доступ к ИБ (live_*), список расширений ИБ — live_extensions_list (главный способ, не Предприятие).
+  Операции с ИБ (load/dump/update/EPF/хранилище) — скиллы контура db-*/epf-*/repo-workflow.
   Live URL — только из project MCP-конфига. В user-конфиге ninja не дублировать.
   toolkit — fallback.
 ---
 
-# 1c-ninja-mcp (static + live + gated)
+# 1c-ninja-mcp (static + live)
 
-Исходники сервера: `C:\1C\projects\1c-ninja-kit\components\1c-ninja-mcp` (компонент кита; отдельного checkout `1c-ninja-mcp` больше нет). Namespace Cursor: **1c-ninja-mcp**.  
-Ранее: `mcp-1c-autumn` / скилл `1c-mcp-autumn`.
+Исходники сервера: `C:\1C\projects\1c-ninja-kit\components\1c-ninja-mcp` (компонент кита; отдельного checkout `1c-ninja-mcp` больше нет). Namespace: **1c-ninja-mcp**.
 
-## Матрица владения (vrunner ↔ ninja)
+## Матрица владения
 
 | Контур | Владелец | Tools / операции |
 |--------|----------|------------------|
-| Load/unload CF·CFE (полный цикл), syntax-check, ИБ, repo | **vrunner** | `cf_load`, `cfe_load`, `validate_syntax_check`, `infobase_*`; repo — CLI `repo.ps1` / `repo-workflow` |
-| Dump XML из ИБ / git→частичная загрузка | **1c-ninja-mcp** | `cf_dump_xml`, `cf_load_git` (gate `ibconnection`; не путать с прямым vrunner `cf_*`) |
+| Load/unload CF·CFE, update БД, синтакс-контроль, хранилище | **скиллы контура** | `db-load-xml`, `db-dump-xml`, `db-update`, `db-repo`, `repo-workflow`, `1c-syntax-check`, `db-cfe-admin` |
+| Разбор / сборка EPF·ERF | **скиллы контура** | `epf-dump` / `epf-build`, `erf-dump` / `erf-build` |
 | Static-поиск по выгрузке, offline-справка | **1c-ninja-mcp** | `bsl_search`, `xml_search`, `config_list`, `read_module`, `syntax_help_search` |
 | Живые данные ИБ | **1c-ninja-mcp** | `live_*` (приоритет); toolkit — fallback |
-| Разбор / сборка EPF·ERF | **1c-ninja-mcp** | `epf_decompile`, `epf_compile` (gate `ibconnection`; compile = pre-check + vrunner) |
-| Список расширений ИБ (**главный способ**) | **1c-ninja-mcp** | `live_extensions_list` (HTTP `/hs/ninja-live`; CFE `NinjaLive` в ИБ). **Не** vrunner `extensions_list` / Предприятие. `extensions_dump_list` — Designer dump, не обзор состава |
+| Список расширений ИБ (**главный способ**) | **1c-ninja-mcp** | `live_extensions_list` (HTTP `/hs/ninja-live`; CFE `NinjaLive` в ИБ). **Не** Предприятие |
 
-**Агенту:** не вызывай напрямую `epf_decompile` / `epf_compile` / `erf` dump|build и не обходи gate через голый vrunner EPF. CF dump / git-partial load — через ninja (`cf_dump_xml`, `cf_load_git`), не сырой Designer. **ИБ обязательна** (`ibconnection` из `autumn-properties` / env / аргумент); пустая temp-ИБ запрещена.
+**Агенту:** операции с ИБ — только скиллы контура (`db-*`, `repo-workflow`); ninja — live-данные и static-поиск. EPF/ERF — `epf-dump`/`epf-build` (ИБ обязательна для dump).
 
 ## Scope MCP (важно)
 
@@ -36,7 +34,7 @@ description: >-
 
 Клиент читает user **и** project. Одно имя сервера в обоих файлах = два MCP у агента. **Не** копировать user-конфиг в проект и **не** класть live-URL проекта (или любой другой базы) в глобальный конфиг.
 
-Если `live_*` отвечает «не задан URL» — в этом workspace нет project `mcp.json` с `NINJA_URL`: возьми эталон скилла / `mcp.json.example` → `mcp.json` и заполни публикацию **этой** базы (`…/hs/ninja-live`). Либо передай явный параметр `url` на тул (не подставляй URL другого проекта «по памяти»).
+Если `live_*` отвечает «не задан URL» — в этом workspace нет project `opencode.jsonc` с `NINJA_URL`: возьми эталон скилла / `opencode.jsonc.example` → `opencode.jsonc` и заполни публикацию **этой** базы (`…/hs/ninja-live`). Либо передай явный параметр `url` на тул (не подставляй URL другого проекта «по памяти»).
 
 ## Контуры (не смешивать)
 
@@ -46,9 +44,9 @@ description: >-
 | Запросы / метаданные / журнал / код в **живой** ИБ | **1c-ninja-mcp** `live_*` (**приоритет**, URL = этот workspace) |
 | То же, если NinjaLive / публикация недоступны | **1c-mcp-toolkit** (fallback; нужен EPF на `:6003`) |
 | Семантика кода: граф, symbol_info, diagnostics по файлам | **bsl-analyzer** workspace — скилл `1c-bsl-analyzer` |
-| Полная загрузка XML, хранилище, syntax-check | **vrunner** |
-| Dump XML / git→частичная загрузка | **1c-ninja-mcp** `cf_dump_xml` / `cf_load_git` |
-| Разбор / сборка EPF/ERF | **1c-ninja-mcp** `epf_decompile` / `epf_compile` |
+| Полная загрузка XML, хранилище, синтакс-контроль | **скиллы контура** (`db-*`, `repo-workflow`, `1c-syntax-check`) |
+| Dump XML / git→частичная загрузка | **скиллы** `db-dump-xml` / `db-load-git` |
+| Разбор / сборка EPF/ERF | **скиллы** `epf-dump`/`epf-build`, `erf-dump`/`erf-build` |
 
 Перед правкой метода с неочевидными вызовами — сначала `1c-bsl-analyzer` (`symbol_info` + `graph callers`), не только `bsl_search`.
 
@@ -66,7 +64,7 @@ description: >-
 | `live_metadata_structure` | POST `/metadata-structure` | `meta_type` + `name` |
 | `live_event_log` | POST `/event-log` | Журнал; HTTP-логин — `auth_user` |
 | `live_execute` / `live_eval` | POST `/execute`, `/eval` | Код / выражение (осторожно; роль `NinjaLive_ВыполнениеКода`) |
-| `live_extensions_list` | POST `/extensions-list` | **Главный способ** списка расширений ИБ; опц. `name_mask`. Не Предприятие, не MCP `extensions_list` |
+| `live_extensions_list` | POST `/extensions-list` | **Главный способ** списка расширений ИБ; опц. `name_mask`. Не Предприятие |
 
 **Workflow запроса:** при необходимости `live_metadata_*` → текст запроса (`composing-1c-queries`) → `live_validate_query` → `live_query`.
 
@@ -86,14 +84,3 @@ description: >-
 
 Путь к выгрузке — **абсолютный** корень **открытого** проекта (`…\src\cf` и т.п.), не чужого репозитория. Схемы — `GetDynamicTools` / вызов — `CallDynamicTool`.
 
-## Gated (все: `ibconnection`)
-
-Общий gate: параметр / env `IBCONNECTION`|`VRUNNER_IBCONNECTION` / `autumn-properties.json` (`vrunner.ibconnection`). Без ИБ — отказ.
-
-| Tool | Суть |
-|------|------|
-| `cf_dump_xml` | `out` + `mode` Full/Changes(по умолч.)/Partial/UpdateInfo; опц. `objects`, `extension`. Full без extension → `vrunner cf decompile`; иначе Designer `DumpConfigToFiles`. **Канон выгрузки расширения из ИБ** (нативная схема 2.21; vrunner `cfe_decompile` без `cfe-file` пишет 2.20 — только запасной путь). При ошибке Designer лог платформы удаляется вместе с temp-каталогом — причина видна пустым выводом; при коде 0 в `/Out` может быть «Соединение с хранилищем конфигурации не установлено» — это не сбой, результат проверяй по файлам |
-| `cf_load_git` | `SRC` (git-каталог XML) → list → load. `source` All/Staged/Unstaged/Commit (+ `commit_range`); `dry_run`; опц. `extension` → Designer. CF без extension → `vrunner cf load --list` |
-| `extensions_dump_list` | Designer `/DumpDBCfgList -AllExtensions`; опц. `name`. **Не** для обзора состава ИБ (канон — `live_extensions_list`) |
-| `epf_decompile` | `SRC` обязателен; под капотом `vrunner epf decompile` |
-| `epf_compile` | pre-check (`checks`: по умолч. `modules,handlers`; `off` — пропуск; stub+/CheckConfig) → `vrunner epf compile`. Temp-ИБ для сборки не создаётся |

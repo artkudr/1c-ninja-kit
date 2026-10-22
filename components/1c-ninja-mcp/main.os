@@ -1,4 +1,4 @@
-// 1c-ninja-mcp: MCP-сервер контура 1С (autumn-mcp): static + live + gated epf_decompile / epf_compile / cf_dump_xml.
+// 1c-ninja-mcp: MCP-сервер контура 1С (autumn-mcp): static + live.
 // Запуск: oscript main.os (stdio). Тест: python port_test.py.
 
 #Использовать autumn

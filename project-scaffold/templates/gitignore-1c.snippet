@@ -1,4 +1,4 @@
-# Vanessa / OPM (локальные зависимости не используем — vrunner 3 глобально)
+# OPM / сборка (локальные зависимости не используем)
 /oscript_modules/
 /packagedef
 /build/
@@ -7,10 +7,18 @@ env.local.json
 env.json.v26.bak
 lastUploadedCommit.txt
 
-# Secrets (kit v0.2 policy)
-autumn-properties.json
-# repository.json may contain usernames/paths — prefer local-only; uncomment if needed:
-# repository.json
+# Внешние зависимости и артефакты сборки
+/vendor/
+*.zip
+*.log
+
+# Поиск по коду (ripgrep): .ignore дублирует .gitignore, потому что вне git-репозитория
+# rg .gitignore не применяет. Файл в git — это конфигурация поиска, а не мусор.
+!.ignore
+
+# Secrets (kit policy)
+.v8-project.json
+.v8-xsd/
 .env
 .dev.env
 

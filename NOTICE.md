@@ -30,7 +30,7 @@
 ## Что намеренно НЕ входит
 
 - Кэши: `.build`, browser-session, `__pycache__`, agent stores
-- Секреты: `autumn-properties.json`, `.cursor/mcp.json` с паролями, `NINJA_PASSWORD`
+- Секреты: `.v8-project.json`, project `opencode.jsonc` с паролями, `NINJA_PASSWORD`
 - Бинарники платформы 1С, полные дистрибутивы Apache, бинарник bsl-analyzer
 - Выгрузка конфигурации ecoladev / product OpenSpec changes
 

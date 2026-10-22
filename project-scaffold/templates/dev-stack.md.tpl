@@ -2,19 +2,18 @@
 
 | Компонент | Где | Версия / заметка |
 |-----------|-----|------------------|
-| OneScript | OVM `%LOCALAPPDATA%\ovm\current` | ≥ 2.2.0 |
-| vanessa-runner | глобально `opm install vanessa-runner@3.0.2` | 3.0.2 |
-| Skills / rules | `%USERPROFILE%\.cursor\skills\`, `%USERPROFILE%\.cursor\rules\` | канон в профиле; в проекте обычная папка `.cursor/rules` + hardlink (`mklink /H`) каждого `.mdc` (не folder junction, gitignore) |
-| MCP (user) | `%USERPROFILE%\.cursor\mcp.json` | **без** 1С-серверов (`mcpServers: {}`); иначе дубли с проектом |
-| MCP (project) | `.cursor/mcp.json` (gitignore; пример `mcp.json.example`) | полный эталон скилла: vrunner, toolkit, autumn live **этой** ИБ, bsl-analyzer reference+workspace, v8std |
-| Настройки ИБ | `autumn-properties.json` в корне проекта | vrunner 3 |
-| Хранилища CFE | `repository.json` в корне проекта | карта расширений → `repo-workflow` |
+| OneScript | OVM `%LOCALAPPDATA%\ovm\current` | ≥ 2.2.0 (движок MCP-серверов kit) |
+| Skills (kit) | `~/.config/opencode/skills/` | профиль kit: `1c-*`, `web-*`, `repo-workflow`, `handoff`; ставится `kit.ps1 apply -Adapter opencode` |
+| Skills (cc-1c-skills) | `~/.config/opencode/skills/` | `db-*`, `meta-*`, `form-*`, `cfe-*`, `epf-*`, …; ставится `install/cc-skills.ps1` (обновление — `-Update`) |
+| MCP (user) | `~/.config/opencode/opencode.json(c)` | **без** 1С-серверов (`mcp.servers`); иначе дубли с проектом |
+| MCP (project) | `opencode.jsonc` (gitignore; пример `opencode.jsonc.example`) | ninja live **этой** ИБ, bsl-analyzer reference+workspace, v8std, toolkit (fallback) |
+| Настройки ИБ | `.v8-project.json` в корне проекта | реестр баз контура скиллов (`db-*`, `web-*`) |
+| Хранилища CFE | `.v8-project.json` → `extensions[].repository` | карта расширений → `repo-workflow` |
 | 1c-ninja-mcp live | project env `NINJA_URL` / `NINJA_USER` / `NINJA_PASSWORD` | приоритет для запросов/метаданных ИБ; CFE `NinjaLive` + Apache `/hs/ninja-live`. Список CFE в ИБ: `live_extensions_list` (не Предприятие) |
 | bsl-analyzer | лаунчер `%LOCALAPPDATA%\bsl-analyzer` ([itrous/bsl-analyzer releases](https://github.com/itrous/bsl-analyzer/releases)); кеш `<проект>\.build` | MCP workspace (project) |
 | 1c-mcp-toolkit | `http://127.0.0.1:6003/mcp` | fallback; EPF с [ROCTUP/1c-mcp-toolkit releases](https://github.com/ROCTUP/1c-mcp-toolkit/releases) → `%USERPROFILE%\tools\1c-mcp-toolkit\MCP_Toolkit.epf` |
-| OpenCode (если адаптер `opencode`) | `~/.config/opencode/{skills,agents,kit-rules}` + `~/.config/opencode/AGENTS.md`; project `opencode.jsonc` (gitignore) + `opencode.jsonc.example` | `kit.ps1 apply -Adapter opencode`; always-on правила инлайнятся в глобальный `AGENTS.md`, on-demand → `kit-rules/`; project MCP — в `mcp.servers` |
 | web-test | `tools/web-test/smoke.config.json` | UI smoke после `repo-workflow` load |
-| OpenSpec | `openspec/` + `.cursor/commands/opsx-*.md` | крупные full-cycle фичи: propose → apply → archive; slash `/opsx-propose`, `/opsx-apply`, `/opsx-archive`, `/opsx-explore` |
+| OpenSpec | `openspec/` + `.opencode/commands/opsx-*.md` | крупные full-cycle фичи: propose → apply → archive; slash `/opsx-propose`, `/opsx-apply`, `/opsx-archive`, `/opsx-explore` |
 
 ИБ и исходники — **только** в корне открытого проекта.
 

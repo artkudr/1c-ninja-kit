@@ -9,11 +9,6 @@
       "startup": 120000
     },
     "servers": {
-      "vrunner": {
-        "type": "local",
-        "command": ["{{VRUNNER_MCP}}"]
-      },
-
       "1c-ninja-mcp": {
         "type": "local",
         "command": ["oscript", "{{NINJA_MAIN}}"],
@@ -32,7 +27,7 @@
 
       "bsl-analyzer-workspace": {
         "type": "local",
-        "command": ["{{BSL_ANALYZER_EXE}}", "mcp", "serve", "--profile", "workspace", "--source-dir", "{{PROJECT_ROOT}}"]
+        "command": ["{{BSL_ANALYZER_EXE}}", "mcp", "serve", "--profile", "workspace", "--source-dir", "{{PROJECT_ROOT}}", "--cache-dir", "{{PROJECT_ROOT}}\\.build"]
       },
 
       // Стандарты ITS/v8. streamable-http без OAuth -> oauth: false обязателен.

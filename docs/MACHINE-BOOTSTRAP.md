@@ -9,20 +9,18 @@
 Get-ChildItem "C:\Program Files\1cv8\*" -ErrorAction SilentlyContinue | Select-Object -First 5 Name
 ```
 
-## 1. OneScript / OVM + vanessa-runner
+## 1. OneScript / OVM
 
 1. [OneScript / OVM](https://oscript.io/) → `%LOCALAPPDATA%\ovm\current`
-2. `opm install vanessa-runner@3.0.2`
-3. `vrunner --version` → **3.0.2**
-4. Рядом должен быть `vrunner-mcp.bat`
+2. Пакеты контура (`autumn`, `autumn-mcp` и зависимости MCP-серверов) — в `lib`.
 
-Проверено на машине: OneScript **2.2.0**, vanessa-runner 3.0.2, opm 1.6.5.
+Проверено на машине: OneScript **2.2.0**, opm 1.6.5.
 
 Если CLI `ovm` нет (на этой машине нет) — движок обновляется слотами, а не перезаписью:
 скопировать текущий слот в `%LOCALAPPDATA%\ovm\<версия>`, наложить `bin\*` из архива
 релиза, затем переключить junction `current` (`cmd /c mklink /J`).
-Папку `lib` не трогать: в ней opm, vanessa-runner и локальные патчи.
-Подробности и откат — `%USERPROFILE%\.cursor\docs\ovm-slot-switch-2.2.0.md`.
+Папку `lib` не трогать: в ней opm и пакеты, которыми живут MCP-серверы.
+Подробности и откат — `%USERPROFILE%\.config\opencode\docs\ovm-slot-switch-2.2.0.md`.
 
 ## 2. bsl-analyzer (обязателен для семантики MCP)
 
@@ -62,7 +60,25 @@ Copy-Item "$env:USERPROFILE\Downloads\bsl-analyzer-windows-amd64.exe" `
 
 Если 8.5 нет — doctor даст WARN; для 8.3 достаточно.
 
-## 4. MCP Toolkit (optional fallback live)
+## 4. Ripgrep (поиск по коду из shell)
+
+Рядом с Apache, в той же куче: `%USERPROFILE%\tools\ripgrep`. Нужен, чтобы поиск по исходникам из
+shell был быстрым — иначе PowerShell `Select-String` на типовой выгрузке идёт минутами.
+
+**Upstream:** https://github.com/BurntSushi/ripgrep/releases → `ripgrep-15.2.0-x86_64-pc-windows-msvc.zip`
+
+```powershell
+$dir = Join-Path $env:USERPROFILE 'tools\ripgrep'
+New-Item -ItemType Directory -Force -Path $dir | Out-Null
+# распаковать asset в $dir (rg.exe кладётся в корень $dir)
+[Environment]::SetEnvironmentVariable('Path',
+  ([Environment]::GetEnvironmentVariable('Path','User') + ";$dir").TrimEnd(';'), 'User')
+```
+
+Проверка: `rg --version`. В PATH нужно до запуска новых сессий — текущий процесс opencode
+видит старый PATH.
+
+## 5. MCP Toolkit (optional fallback live)
 
 **Не обязателен**, если работает NinjaLive (`live_*`).  
 **Upstream:** https://github.com/ROCTUP/1c-mcp-toolkit/releases  
@@ -85,11 +101,11 @@ New-Item -ItemType Directory -Force -Path $dir | Out-Null
 
 Скилл: `profile/skills/1c-mcp-toolkit`.
 
-## 5. Node / Playwright (optional, web-test)
+## 6. Node / Playwright (optional, web-test)
 
 Только для UI smoke. Для `live_extensions_list` не нужен.
 
-## 6. Clone kit + doctor
+## 7. Clone kit + doctor
 
 ```powershell
 git clone https://github.com/artkudr/1c-ninja-kit.git C:\1C\projects\1c-ninja-kit
@@ -97,16 +113,12 @@ cd C:\1C\projects\1c-ninja-kit
 powershell -NoProfile -File .\install\kit.ps1 doctor
 ```
 
-Required FAIL → не идите в apply, пока не закроете пробелы (oscript/vrunner/bsl-analyzer).  
+Required FAIL → не идите в apply, пока не закроете пробелы (oscript/платформа/bsl-analyzer).  
 Toolkit missing → WARN (ок для ninja-only).
 
-## 7. Дальше по харнессу
+## 8. Дальше по харнессу
 
-- Cursor: `adapters/cursor/` + `docs/ADAPTATION.md`
-
-## Локальные патчи vrunner (optional)
-
-См. `profile/docs-patches/vrunner-local-patches.md`.
+- OpenCode: `adapters/opencode/` + `docs/ADAPTATION.md`
 
 ## Сводка «откуда брать»
 
@@ -119,5 +131,6 @@ Toolkit missing → WARN (ок для ninja-only).
 | MCP Toolkit EPF | https://github.com/ROCTUP/1c-mcp-toolkit/releases → `MCP_Toolkit.epf` |
 | 1c-ninja-mcp + NinjaLive | **внутри этого kit** (`components/`, `project-scaffold/cfe/`) |
 | Apache | ваша поставка / раскладка в `%USERPROFILE%\tools\apache-8x` |
+| Ripgrep | https://github.com/BurntSushi/ripgrep/releases → `%USERPROFILE%\tools\ripgrep` + PATH |
 
 Машиночитаемые pins: `companions/pins.json`.

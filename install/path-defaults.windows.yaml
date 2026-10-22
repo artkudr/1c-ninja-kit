@@ -5,8 +5,6 @@
 ovm:
   root: "%LOCALAPPDATA%\\ovm\\current"
   oscript: "%LOCALAPPDATA%\\ovm\\current\\bin\\oscript.exe"
-  vrunner: "%LOCALAPPDATA%\\ovm\\current\\bin\\vrunner.bat"
-  vrunnerMcp: "%LOCALAPPDATA%\\ovm\\current\\bin\\vrunner-mcp.bat"
   site: "https://oscript.io/"
 
 bslAnalyzer:
@@ -27,6 +25,18 @@ apache:
   notes:
     - "Do not commit Apache into git."
     - "webUrl smoke always with /ru_RU/ suffix."
+
+ripgrep:
+  upstream: "https://github.com/BurntSushi/ripgrep"
+  releases: "https://github.com/BurntSushi/ripgrep/releases"
+  windowsAsset: "ripgrep-<version>-x86_64-pc-windows-msvc.zip"
+  toolsDir: "%USERPROFILE%\\tools\\ripgrep"
+  exe: "%USERPROFILE%\\tools\\ripgrep\\rg.exe"
+  pathEntry: "%USERPROFILE%\\tools\\ripgrep"
+  notes:
+    - "Рядом с apache-83/85 в %USERPROFILE%\\tools — одна куча внешних бинарей."
+    - "Нужен в PATH: без него поиск по коду из shell идёт через PowerShell Select-String (минуты на типовой выгрузке)."
+    - "Не путать с %USERPROFILE%\\.cache\\opencode\\bin\\rg.exe — это встроенный rg opencode, его кеш можно снести."
 
 toolkit:
   upstream: "https://github.com/ROCTUP/1c-mcp-toolkit"
@@ -54,12 +64,11 @@ projectsLayout:
   kitRoot: "C:\\1C\\projects\\1c-ninja-kit"
 
 mcpPolicy:
-  userMcp: "%USERPROFILE%\\.cursor\\mcp.json"
+  userMcp: "%USERPROFILE%\\.config\\opencode\\opencode.json(c)"
   userMustNotContain:
-    - vrunner
     - 1c-ninja-mcp
     - 1c-mcp-toolkit
     - bsl-analyzer-reference
     - bsl-analyzer-workspace
-  projectMcp: "<project>\\.cursor\\mcp.json"
-  projectMcpExample: "<project>\\.cursor\\mcp.json.example"
+  projectMcp: "<project>\\opencode.jsonc"
+  projectMcpExample: "<project>\\opencode.jsonc.example"

@@ -9,8 +9,8 @@ This project uses **1c-ninja-kit** for agentic 1C development.
 - Web smoke URLs include `/ru_RU/`
 - 1C MCP servers belong in **project/session** config only (never in a global user profile holding another base's secrets)
 - Ninja pair: kit `components/1c-ninja-mcp` + project `src/cfe/NinjaLive` (`/hs/ninja-live`)
-- CFE list in IB: MCP `live_extensions_list` (not Enterprise / not vrunner extensions list as canon)
-- Do not use Designer / raw `1cv8` / Platform Tools instead of vrunner
+- CFE list in IB: MCP `live_extensions_list` (not Enterprise)
+- Platform operations (load/dump/update/checks/repo) go through contour skills (`db-*`, `repo-workflow`, `1c-syntax-check`); do not run Designer/`1cv8` manually; no Platform Tools MCP
 - Do not directory-junction `.cursor/rules`
 
 ## Triage
@@ -27,13 +27,13 @@ This project uses **1c-ninja-kit** for agentic 1C development.
 |------|---------|
 | BSL semantics / graph / diagnostics | bsl-analyzer-workspace |
 | Live IB query/metadata/CFE list | 1c-ninja-mcp `live_*` |
-| Load / syntax-check / repo | vrunner |
+| Load / dump / update / checks / repo | contour skills (`db-*`, `repo-workflow`, `1c-syntax-check`) |
 | ITS/v8 standards | v8std (`https://ai.v8std.ru/mcp`) |
 | Live fallback | 1c-mcp-toolkit |
 
 ## Skills
 
-Install kit profile skills into the harness skill root, then use `1c-env-setup`, `repo-workflow`, `meta-*`, `form-*`, `cfe-*`, `1c-ninja-mcp`, `1c-bsl-analyzer`, `vrunner-mcp` as needed.
+Install kit profile skills into the harness skill root and the cc-1c-skills set via `install/cc-skills.ps1`, then use `1c-env-setup`, `repo-workflow`, `meta-*`, `form-*`, `cfe-*`, `1c-ninja-mcp`, `1c-bsl-analyzer` as needed.
 
 ## Kit CLI
 
@@ -48,4 +48,4 @@ Forbidden: init-project on ecoladev product tree unless explicitly intended.
 
 ## Secrets
 
-Never commit `autumn-properties.json`, project MCP config with passwords, or `NINJA_PASSWORD`.
+Never commit `.v8-project.json`, project MCP config with passwords, or `NINJA_PASSWORD`.

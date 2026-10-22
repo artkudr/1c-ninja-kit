@@ -1,6 +1,6 @@
 # Project Context ({{PROJECT_NAME}})
 
-Снимок для агентов OpenSpec. Источник операционных параметров: `autumn-properties.json` / `env.json` (не `.dev.env`). Обновляй при смене версии конфигурации или CompatibilityMode.
+Снимок для агентов OpenSpec. Источник операционных параметров: `.v8-project.json` (не `.dev.env`). Обновляй при смене версии конфигурации или CompatibilityMode.
 
 ## Configuration
 
@@ -18,7 +18,7 @@
 
 ## Notes for AI Agents
 
-- Операционка: `autumn-properties.json` (ibconnection, v8version, web.appName). Не угадывать URL чужой ИБ.
-- CFE из `repository.json` → цикл `repo-workflow`; прочие CFE → `cfe_load`.
+- Операционка: `.v8-project.json` (запись базы, v8path, web.appName). Не угадывать URL чужой ИБ.
+- CFE с хранилищем → цикл `repo-workflow`; прочие CFE → `db-load-xml -Extension` + `db-update`.
 - Новые объекты в расширениях — с префиксом и `ObjectBelonging>Native` (см. `cfe-*`, `1c-versioning`).
 - Если значение в этом файле устарело — проверить `src/cf/Configuration.xml` / MCP `metadata`, не выдумывать.

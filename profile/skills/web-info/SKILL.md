@@ -10,7 +10,7 @@ allowed-tools:
 
 # /web-info — Статус профильного Apache
 
-По `v8version` проекта: `%USERPROFILE%\tools\apache-83` (8083) или `apache-85` (8085).
+По платформе из `.v8-project.json` (`v8path`): `%USERPROFILE%\tools\apache-83` (8083) или `apache-85` (8085).
 
 ```powershell
 powershell.exe -NoProfile -File "${CLAUDE_SKILL_DIR}/scripts/web-info.ps1"

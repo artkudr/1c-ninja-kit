@@ -1,47 +1,46 @@
 ---
 name: 1c-project-context
 description: >-
-  Контекст открытого 1С-проекта: autumn-properties.json, env.json, repository.json, src/.
-  Используй в начале задачи по конфигурации, расширениям, хранилищу или загрузке в ИБ.
+  Контекст открытого 1С-проекта: .v8-project.json, src/. Используй в начале задачи
+  по конфигурации, расширениям, хранилищу или загрузке в ИБ.
 ---
 
 # Контекст 1С-проекта
 
-Все проекты на этой машине — 1С. Общие rules и skills — в профиле Cursor.
+Все проекты на этой машине — 1С. Общие rules и skills — в профиле OpenCode.
 
 ## Что прочитать из корня открытого проекта
 
-1. `autumn-properties.json` — приоритетно (vrunner 3). Иначе `env.json`.
-2. `repository.json` — если есть: CFE из хранилища (`repo-workflow`). Нет файла — CFE через `cfe_load`.
-3. `src/cf`, `src/cfe` — состав конфигурации и расширений.
-4. `docs/dev-stack.md` — если есть.
-5. `bsl-analyzer.toml` — если есть: семантика MCP workspace / диагностики.
-6. `tools/web-test/smoke.config.json` — UI smoke после `repo-workflow` load; сценарии в `tools/web-test/scenarios/after-load/` и `manual/`.
+1. `.v8-project.json` — реестр баз: `v8path`, запись базы (`default`), `extensions[]` (+ `repository`), `web`.
+2. `src/cf`, `src/cfe` — состав конфигурации и расширений.
+3. `docs/dev-stack.md` — если есть.
+4. `bsl-analyzer.toml` — если есть: семантика MCP workspace / диагностики.
+5. `tools/web-test/smoke.config.json` — UI smoke; сценарии в `tools/web-test/scenarios/after-load/` и `manual/`.
 
-Реестр PT не используем. Контекст — autumn / vrunner.
+Реестр PT не используем.
 
 ## Активный маршрут (короткий список)
 
 | Задача | Куда |
 |--------|------|
-| Load / dump / compile EPF / syntax-check / ИБ / repo_* | **только** `vrunner-mcp` (MCP `vrunner` из project `{{PROJECT_MCP}}`) |
-| Designer / enterprise | Shell: `vrunner run …` (тот же скилл) |
+| Load / dump / update / синтакс-контроль / сборка EPF / хранилище | скиллы контура: `db-*`, `epf-build`/`erf-build`, `repo-workflow`, `1c-syntax-check` |
+| Запуск Предприятия | скилл `db-run` |
 | Правка XML (meta/form/skd/…) | профильные `*-edit` / `*-compile` — файлы, не платформа |
-| CFE из хранилища | `repo-workflow` |
+| CFE с хранилищем | `repo-workflow` |
 | Семантика BSL | `1c-bsl-analyzer` |
 | Данные живой ИБ | `1c-ninja-mcp` `live_*` |
-| Список расширений ИБ | `1c-ninja-mcp` `live_extensions_list` (**главный способ**; не `extensions_list` / Предприятие) |
+| Список расширений ИБ | `1c-ninja-mcp` `live_extensions_list` (**главный способ**; не Предприятие) |
 | Live, если ninja недоступен | `1c-mcp-toolkit` |
-| Apache / публикация / web-smoke | Профильный Apache: `%USERPROFILE%\tools\apache-83` (порт **8083**) или `apache-85` (**8085**) по `v8version`. В проекте — `web.appName` + smoke `webUrl` с **`/ru_RU/`**. Не копировать Apache в проект. |
+| Apache / публикация / web-smoke | Профильный Apache: `%USERPROFILE%\tools\apache-83` (порт **8083**) или `apache-85` (**8085**) по платформе из `.v8-project.json` (`v8path`). Публикация — `web.appName`; smoke `webUrl` с **`/ru_RU/`**. Не копировать Apache в проект. |
 
 ## Жёстко
 
 - ИБ и исходники — **только** корень открытого проекта.
-- Skills: `{{SKILLS_ROOT}}\`.
+- Skills: `{{SKILLS_ROOT}}\`. Набор cc-1c-skills — `install/cc-skills.ps1`; kit-скиллы — `kit.ps1 apply -Adapter opencode`.
 - Rules: канон `{{RULES_ROOT}}\` — править SoT кита (`profile/rules/*.mdc`) и запускать `kit.ps1 apply`.
-- MCP: все 1С-серверы **только** в `<репозиторий>\{{PROJECT_MCP}}` (эталон — скилл `1c-env-setup`). User `{{USER_MCP}}` — без `vrunner` / `1c-ninja-mcp` / `1c-mcp-toolkit` / `bsl-analyzer-*` / `v8std` (иначе дубли).
-- Платформенные операции **без фаллбека на другой скилл/CLI**: vrunner недоступен → стоп, сообщить.
-- Локальные патчи ovm: скилл `cursor-local-patches` → `%USERPROFILE%\.cursor\docs\`.
+- MCP: все 1С-серверы **только** в `<репозиторий>\{{PROJECT_MCP}}` (эталон — скилл `1c-env-setup`). User-конфиг `{{USER_MCP}}` — без `1c-ninja-mcp` / `1c-mcp-toolkit` / `bsl-analyzer-*` / `v8std` (иначе дубли).
+- Платформенные операции **без фаллбека на другой скилл/CLI**: скиллы контура недоступны → стоп, сообщить.
+- Локальные патчи вне репозитория: скилл `cursor-local-patches` → `%USERPROFILE%\.config\opencode\docs\`.
 
 ## Сборка EPF / ERF (куда класть артефакты)
 
@@ -51,7 +50,7 @@ description: >-
 | Внешние отчёты | `src/erf/<Имя>/` (nested) | **`build/out/erf/*.erf`** |
 | Расширения (бинарник при выгрузке) | `src/cfe/` | `build/out/cfe/` |
 
-- MCP `epf_compile`: `out=./build/out/epf` или `out=./build/out/erf` — **не** в корень `build/`.
+- `epf-build` / `erf-build`: выход в `build/out/epf` / `build/out/erf` — **не** в корень `build/`.
 - Не оставляй `.epf`/`.erf` в `build/` рядом с `out/`, `tmp/`, `cache.json`.
 
 ## Контуры MCP (не смешивать)
@@ -59,8 +58,8 @@ description: >-
 | Задача | Куда |
 |--------|------|
 | Граф вызовов, symbol_info, diagnostics файла | **bsl-analyzer** workspace → скилл `1c-bsl-analyzer` |
-| Grep/чтение модулей выгрузки | autumn static |
+| Поиск по выгрузке (static) | ninja `bsl_search` / `xml_search` / `read_module` (или Grep точечно) |
 | Запросы / метаданные / журнал / список CFE живой ИБ | ninja `live_*` (project); список — `live_extensions_list` |
 | Fallback live | toolkit |
-| Загрузка / хранилище / syntax-check | **только** vrunner |
+| Загрузка / хранилище / синтакс-контроль | скиллы `db-*` / `repo-workflow` / `1c-syntax-check` |
 | Стандарты ITS/v8 | `v8std` (`https://ai.v8std.ru/mcp`) |

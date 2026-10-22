@@ -41,7 +41,7 @@ powershell -NoProfile -File C:\1C\projects\1c-ninja-kit\install\kit.ps1 init-pro
 
 | Файл | Назначение |
 |------|------------|
-| `opencode.jsonc` | `mcp.servers` (vrunner, 1c-ninja-mcp, bsl-analyzer reference+workspace, v8std, toolkit выключен) — **секреты здесь, файл в gitignore** |
+| `opencode.jsonc` | `mcp.servers` (1c-ninja-mcp, bsl-analyzer reference+workspace, v8std, toolkit выключен) — **секреты здесь, файл в gitignore** |
 | `opencode.jsonc.example` | тот же конфиг с `<user>` / `<password>` — коммитится |
 | `AGENTS.md` | project context из `adapters/shared/AGENTS.md.tpl` |
 | `.opencode/commands/opsx-*.md` | OpenSpec slash-команды |

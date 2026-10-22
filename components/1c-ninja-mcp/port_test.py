@@ -16,7 +16,7 @@ SMALL_BSL_DIR = os.path.join(CF, "AccountingRegisters", "Управленчес�
 SMALL_BSL = os.path.join(SMALL_BSL_DIR, "Ext", "ManagerModule.bsl")
 XML_DIR = os.path.join(CF, "AccountingRegisters")
 
-EXPECTED_MIN_TOOLS = 17  # 5 static + 10 live + epf_decompile + cf_dump_xml
+EXPECTED_MIN_TOOLS = 15  # 5 static + 10 live
 
 
 def txt(r):

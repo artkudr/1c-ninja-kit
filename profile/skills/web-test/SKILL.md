@@ -43,8 +43,8 @@ Requires Node.js 18+. `npm install` downloads Playwright and Chromium.
 ## URL resolution
 
 Read `tools/web-test/smoke.config.json` (`webUrl`) from project root (`1c-project-context`).
-Платформа и URL — только через autumn / smoke / vrunner.
-If `webUrl` is missing, ask the user or run `/web-publish` first (IB params from `autumn-properties.json`).
+Платформа и URL — только через `.v8-project.json` / smoke.
+If `webUrl` is missing, ask the user or run `/web-publish` first (IB params from `.v8-project.json`).
 Use `/web-publish` first if the database is not published.
 
 **Locale.** Canonical web-client URL ends with `/ru_RU/` (e.g. `http://localhost:8083/<appName>/ru_RU/`).

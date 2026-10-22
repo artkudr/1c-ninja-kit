@@ -41,15 +41,6 @@ param(
     [string]$AppName,
 
     [Parameter(Mandatory = $false)]
-    [string]$RepoRoot,
-
-    [Parameter(Mandatory = $false)]
-    [string]$RepoUser,
-
-    [Parameter(Mandatory = $false)]
-    [string]$RepoAdmin = "Администратор",
-
-    [Parameter(Mandatory = $false)]
     [ValidateSet("opencode")]
     [string]$Adapter = "opencode",
 
@@ -262,8 +253,7 @@ function Find-SiblingSource {
         Get-ChildItem -LiteralPath $parent -Directory -ErrorAction SilentlyContinue |
             Where-Object { $_.FullName -ne $ProjectRoot } |
             Where-Object {
-                (Test-Path -LiteralPath (Join-Path $_.FullName "autumn-properties.json")) -and
-                (Test-Path -LiteralPath (Join-Path $_.FullName "repository.json"))
+                (Test-Path -LiteralPath (Join-Path $_.FullName ".v8-project.json"))
             } |
             Sort-Object Name
     )
@@ -282,6 +272,34 @@ function Get-DetectedV8Version {
     return "8.3"
 }
 
+function Get-V8PathForVersion([string]$Version) {
+    $installed = Get-ChildItem 'C:\Program Files\1cv8\*\bin\1cv8.exe' -ErrorAction SilentlyContinue |
+        ForEach-Object { $_.Directory.Parent.Name } | Sort-Object -Unique
+    if ($Version) {
+        $m = $installed | Where-Object { $_ -like "$Version*" } |
+            Sort-Object { try { [version]$_ } catch { [version]'0.0' } } -Descending | Select-Object -First 1
+        if ($m) { return (Join-Path "C:\Program Files\1cv8\$m" 'bin') }
+    }
+    $best = $installed | Sort-Object { try { [version]$_ } catch { [version]'0.0' } } -Descending | Select-Object -First 1
+    if ($best) { return (Join-Path "C:\Program Files\1cv8\$best" 'bin') }
+    return ''
+}
+
+function ConvertFrom-IbConnectionToDbRecord([string]$Conn) {
+    # /F"path" | /Fpath | /S"server\ref" | /Sserver\ref | /server/ref
+    $c = $Conn.Trim()
+    if ($c -match '^/F\s*"?([^"]+)"?$') {
+        return [ordered]@{ type = 'file'; path = $Matches[1].TrimEnd('"') }
+    }
+    if ($c -match '^/S\s*"?([^"\\/]+)[\\/]([^"]+)"?$') {
+        return [ordered]@{ type = 'server'; server = $Matches[1]; ref = $Matches[2].TrimEnd('"') }
+    }
+    if ($c -match '^/?([^/\\]+)[\\/](.+)$') {
+        return [ordered]@{ type = 'server'; server = $Matches[1]; ref = $Matches[2] }
+    }
+    throw "Cannot parse ibconnection: $Conn"
+}
+
 function Merge-Gitignore {
     $snippetPath = Join-Path $templatesDir "gitignore-1c.snippet"
     $snippet = Get-Content -LiteralPath $snippetPath -Raw -Encoding UTF8
@@ -291,7 +309,7 @@ function Merge-Gitignore {
         return
     }
     $existing = Get-Content -LiteralPath $gi -Raw -Encoding UTF8
-    $needed = @(".build/", ".cursor/mcp.json", "!.cursor/mcp.json.example", "/build/")
+    $needed = @(".build/", "/build/", ".v8-project.json")
     $toAdd = @()
     foreach ($line in $needed) {
         if ($existing -notmatch [regex]::Escape($line)) {
@@ -645,31 +663,33 @@ function Sync-ProjectRulesFromProfile {
     Add-Report ".cursor/rules" $usedMode "$synced mdc from profile (no folder junction)"
 }
 
-function Write-AutumnProperties {
-    $path = Join-Path $ProjectRoot "autumn-properties.json"
+function Write-V8Project {
+    $path = Join-Path $ProjectRoot ".v8-project.json"
     if ((Test-Path -LiteralPath $path) -and -not $Force -and $Mode -eq "Refresh") {
-        Add-Report "autumn-properties.json" "skip" "Refresh without -Force"
+        Add-Report ".v8-project.json" "skip" "Refresh without -Force"
         return
     }
     if ((Test-Path -LiteralPath $path) -and -not $Force -and -not $IbConnection) {
-        Add-Report "autumn-properties.json" "skip" "exists"
+        Add-Report ".v8-project.json" "skip" "exists"
         return
     }
 
     # Prefer copy from source then patch
-    if ($SourceProject -and (Test-Path -LiteralPath (Join-Path $SourceProject "autumn-properties.json")) -and -not $IbConnection) {
-        [void](Copy-FromSource "autumn-properties.json")
+    if ($SourceProject -and (Test-Path -LiteralPath (Join-Path $SourceProject ".v8-project.json")) -and -not $IbConnection) {
+        [void](Copy-FromSource ".v8-project.json")
         return
     }
 
     $v8 = $V8Version
     if (-not $v8 -and $SourceProject) {
-        $sp = Join-Path $SourceProject "autumn-properties.json"
+        $sp = Join-Path $SourceProject ".v8-project.json"
         if (Test-Path -LiteralPath $sp) {
             try {
                 $sj = Get-Content -LiteralPath $sp -Raw -Encoding UTF8 | ConvertFrom-Json
-                if ($sj.vrunner.v8version) { $v8 = [string]$sj.vrunner.v8version }
-                if (-not $DbUser -and $sj.vrunner.'db-user') { $script:DbUser = [string]$sj.vrunner.'db-user' }
+                if ($sj.v8path -and $sj.v8path -match '([0-9]+(\.[0-9]+){2,})') { $v8 = $Matches[1] }
+                if (-not $DbUser -and $sj.databases -and @($sj.databases).Count -gt 0 -and $sj.databases[0].user) {
+                    $script:DbUser = [string]$sj.databases[0].user
+                }
             } catch {}
         }
     }
@@ -683,63 +703,54 @@ function Write-AutumnProperties {
     $app = if ($AppName) { $AppName } else { (Split-Path $ProjectRoot -Leaf).ToLowerInvariant() }
     $webPort = Resolve-WebPort
 
-    $tpl = Get-Template "autumn-properties.json.tpl"
-    # Values land in a JSON template: /F"path" and /S"server/base" contain quotes.
-    $content = $tpl.
-        Replace("{{IBCONNECTION}}", (ConvertTo-McpJsonString $conn)).
-        Replace("{{DB_USER}}", (ConvertTo-McpJsonString $user)).
-        Replace("{{DB_PWD}}", (ConvertTo-McpJsonString $pwd)).
-        Replace("{{V8VERSION}}", (ConvertTo-McpJsonString $v8)).
-        Replace("{{APP_NAME}}", (ConvertTo-McpJsonString $app)).
-        Replace("{{WEB_PORT}}", "$webPort")
-
-    [void](Write-FileSafe -Path $path -Content $content)
+    $dbRec = ConvertFrom-IbConnectionToDbRecord $conn
+    $dbRec.id = "main"
+    $dbRec.name = $app
+    $dbRec.user = $user
+    $dbRec.password = $pwd
+    $dbRec.configSrc = "src\cf"
+    $dbRec.extensions = @()
+    $obj = [ordered]@{
+        v8path    = (Get-V8PathForVersion $v8)
+        databases = @($dbRec)
+        default   = "main"
+        web       = [ordered]@{ appName = $app; port = $webPort }
+    }
+    [void](Write-FileSafe -Path $path -Content (($obj | ConvertTo-Json -Depth 6) + "`n"))
 }
 
-function Patch-AutumnCredentials {
-    $path = Join-Path $ProjectRoot "autumn-properties.json"
+function Patch-V8ProjectCredentials {
+    $path = Join-Path $ProjectRoot ".v8-project.json"
     if (-not (Test-Path -LiteralPath $path)) { return }
     if (-not $IbConnection -and -not $DbUser -and -not $DbPwdProvided -and -not $V8Version) { return }
     if ($dryRun) {
-        Add-Report "autumn-properties.json" "would-patch" "credentials/ibconnection"
+        Add-Report ".v8-project.json" "would-patch" "credentials/ibconnection"
         return
     }
     $j = Get-Content -LiteralPath $path -Raw -Encoding UTF8 | ConvertFrom-Json
-    if ($IbConnection) { $j.vrunner.ibconnection = $IbConnection }
-    if ($DbUser) { $j.vrunner.'db-user' = $DbUser }
-    if ($DbPwdProvided) { $j.vrunner.'db-pwd' = $DbPwd }
-    if ($V8Version) { $j.vrunner.v8version = $V8Version }
+    if (-not $j.databases -or @($j.databases).Count -eq 0) {
+        $j | Add-Member -NotePropertyName databases -NotePropertyValue @([ordered]@{
+            id = "main"; name = (Split-Path $ProjectRoot -Leaf).ToLowerInvariant(); type = "file"
+            user = ""; password = ""; configSrc = "src\cf"; extensions = @()
+        }) -Force
+    }
+    $db = $j.databases[0]
+    if ($IbConnection) {
+        $rec = ConvertFrom-IbConnectionToDbRecord $IbConnection
+        $db | Add-Member -NotePropertyName type -NotePropertyValue $rec.type -Force
+        if ($rec.Contains("path")) {
+            $db | Add-Member -NotePropertyName path -NotePropertyValue $rec.path -Force
+        } else {
+            $db | Add-Member -NotePropertyName server -NotePropertyValue $rec.server -Force
+            $db | Add-Member -NotePropertyName ref -NotePropertyValue $rec.ref -Force
+        }
+    }
+    if ($DbUser) { $db | Add-Member -NotePropertyName user -NotePropertyValue $DbUser -Force }
+    if ($DbPwdProvided) { $db | Add-Member -NotePropertyName password -NotePropertyValue $DbPwd -Force }
+    if ($V8Version) { $j | Add-Member -NotePropertyName v8path -NotePropertyValue (Get-V8PathForVersion $V8Version) -Force }
     $utf8 = New-Object System.Text.UTF8Encoding($false)
     [System.IO.File]::WriteAllText($path, ($j | ConvertTo-Json -Depth 20), $utf8)
-    Add-Report "autumn-properties.json" "patched" "credentials"
-}
-
-function Write-RepositoryJson {
-    $path = Join-Path $ProjectRoot "repository.json"
-    if ((Test-Path -LiteralPath $path) -and -not $Force) {
-        Add-Report "repository.json" "ok" "exists"
-        return
-    }
-    if ($SourceProject -and (Copy-FromSource "repository.json" -Required)) {
-        return
-    }
-    $root = if ($RepoRoot) { $RepoRoot } else { "Z:\\Хранилища" }
-    $user = if ($RepoUser) { $RepoUser } else { "User" }
-    $admin = if ($RepoAdmin) { $RepoAdmin } else { "Администратор" }
-    $tpl = Get-Template "repository.json.tpl"
-    $content = $tpl.
-        Replace("{{REPO_ROOT}}", ($root -replace '\\', '\\')).
-        Replace("{{REPO_USER}}", $user).
-        Replace("{{REPO_ADMIN}}", $admin)
-    # Fix double-escaping for JSON path: use ConvertTo-Json for values instead
-    $obj = [ordered]@{
-        root      = $root
-        user      = $user
-        adminUser = $admin
-        cfe       = [ordered]@{}
-    }
-    $content = ($obj | ConvertTo-Json -Depth 5) + "`n"
-    [void](Write-FileSafe -Path $path -Content $content)
+    Add-Report ".v8-project.json" "patched" "credentials"
 }
 
 function ConvertTo-McpJsonPath {
@@ -755,9 +766,9 @@ function ConvertTo-McpJsonString {
 }
 
 function Resolve-WebPort {
-    # Priority: -WebPort > autumn web.port > 8083/8085 by platform (kit rule).
+    # Priority: -WebPort > .v8-project.json web.port > 8083/8085 by platform (kit rule).
     if ($WebPort -gt 0) { return $WebPort }
-    $ap = Join-Path $ProjectRoot "autumn-properties.json"
+    $ap = Join-Path $ProjectRoot ".v8-project.json"
     if (Test-Path -LiteralPath $ap) {
         try {
             $aj = Get-Content -LiteralPath $ap -Raw -Encoding UTF8 | ConvertFrom-Json
@@ -769,22 +780,20 @@ function Resolve-WebPort {
 }
 
 function Get-McpMachinePaths {
-    # Ninja MCP main.os: env override, then the 1c-ninja-kit component
-    # (единственный источник — отдельного checkout 1c-ninja-mcp больше нет).
+    # Ninja MCP main.os: env override, then the 1c-ninja-kit component.
     $roots = @()
     if ($env:NINJA_MCP_ROOT) { $roots += $env:NINJA_MCP_ROOT }
     $roots += "C:\1C\projects\1c-ninja-kit\components\1c-ninja-mcp"
-    $autumnRoot = $null
+    $ninjaRoot = $null
     foreach ($r in $roots) {
-        if (Test-Path -LiteralPath (Join-Path $r "main.os")) { $autumnRoot = $r; break }
+        if (Test-Path -LiteralPath (Join-Path $r "main.os")) { $ninjaRoot = $r; break }
     }
-    if (-not $autumnRoot) { $autumnRoot = $roots[0] }
+    if (-not $ninjaRoot) { $ninjaRoot = $roots[0] }
     return [pscustomobject]@{
-        VrunnerMcpBat  = Join-Path $env:LOCALAPPDATA "ovm\current\bin\vrunner-mcp.bat"
         BslAnalyzerExe = Join-Path $env:LOCALAPPDATA "bsl-analyzer\bsl-analyzer.exe"
-        AutumnMain     = Join-Path $autumnRoot "main.os"
-        ShcntxHelpDb   = Join-Path $autumnRoot "src\data\shcntx_help.db"
-        AutumnRoot     = $autumnRoot
+        NinjaMain      = Join-Path $ninjaRoot "main.os"
+        ShcntxHelpDb   = Join-Path $ninjaRoot "src\data\shcntx_help.db"
+        NinjaRoot      = $ninjaRoot
     }
 }
 
@@ -799,8 +808,7 @@ function Get-McpJsonFromSkillTemplate {
     $paths = Get-McpMachinePaths
     $tpl = Get-Template "mcp.json.example.tpl"
     return $tpl.
-        Replace("{{VRUNNER_MCP_BAT}}", (ConvertTo-McpJsonPath $paths.VrunnerMcpBat)).
-        Replace("{{AUTUMN_MAIN}}", (ConvertTo-McpJsonPath $paths.AutumnMain)).
+        Replace("{{NINJA_MAIN}}", (ConvertTo-McpJsonPath $paths.NinjaMain)).
         Replace("{{SHCNTX_HELP_DB}}", (ConvertTo-McpJsonPath $paths.ShcntxHelpDb)).
         Replace("{{BSL_ANALYZER_EXE}}", (ConvertTo-McpJsonPath $paths.BslAnalyzerExe)).
         Replace("{{PROJECT_ROOT}}", (ConvertTo-McpJsonPath $ProjectRootPath)).
@@ -816,7 +824,6 @@ function Test-UserMcpOverlap {
         $userMcp = Join-Path $env:USERPROFILE ".config\opencode\opencode.json"
     }
     $canonNames = @(
-        "vrunner",
         "1c-mcp-toolkit",
         "1c-ninja-mcp",
         "bsl-analyzer-reference",
@@ -858,8 +865,7 @@ function Get-OpenCodeConfigFromTemplate {
     $paths = Get-McpMachinePaths
     $tpl = Get-Template "opencode.jsonc.tpl"
     return $tpl.
-        Replace("{{VRUNNER_MCP}}", (ConvertTo-McpJsonPath $paths.VrunnerMcpBat)).
-        Replace("{{NINJA_MAIN}}", (ConvertTo-McpJsonPath $paths.AutumnMain)).
+        Replace("{{NINJA_MAIN}}", (ConvertTo-McpJsonPath $paths.NinjaMain)).
         Replace("{{SHCNTX_HELP_DB}}", (ConvertTo-McpJsonPath $paths.ShcntxHelpDb)).
         Replace("{{BSL_ANALYZER_EXE}}", (ConvertTo-McpJsonPath $paths.BslAnalyzerExe)).
         Replace("{{PROJECT_ROOT}}", (ConvertTo-McpJsonPath $ProjectRootPath)).
@@ -953,19 +959,29 @@ function Write-BslAnalyzerToml {
 Write-Host "=== 1c-env-setup ($Mode, adapter=$Adapter) ===" -ForegroundColor Cyan
 Write-Host "Project: $ProjectRoot"
 
-# Sanity
-$vrunnerOk = $false
-try {
-    $vr = & vrunner --version 2>&1 | Out-String
-    if ($LASTEXITCODE -eq 0 -or $vr -match '3\.') {
-        $vrunnerOk = $true
-        Add-Report "vrunner" "ok" ($vr.Trim() -replace '\s+', ' ')
-    }
-} catch {}
-if (-not $vrunnerOk) {
-    Add-Report "vrunner" "fail" "not in PATH - machine stack not ready"
+# Sanity: платформа + скиллы контура
+$v8exe = Get-ChildItem @(
+    "C:\Program Files\1cv8\*\bin\1cv8.exe",
+    "C:\Program Files (x86)\1cv8\*\bin\1cv8.exe"
+) -ErrorAction SilentlyContinue | Select-Object -First 1
+if ($v8exe) {
+    Add-Report "1cv8" "ok" $v8exe.FullName
+} else {
+    Add-Report "1cv8" "fail" "not found - platform missing"
     if ($Mode -ne "Check") {
-        Write-Host "Error: vrunner not found. Install vanessa-runner 3 on this machine first." -ForegroundColor Red
+        Write-Host "Error: 1cv8 not found. Install the 1C platform on this machine first." -ForegroundColor Red
+        $report | Format-Table -AutoSize
+        exit 1
+    }
+}
+
+$ccSkillsRoot = if ($Adapter -eq "opencode") { Join-Path $env:USERPROFILE ".config\opencode\skills" } else { Join-Path $env:USERPROFILE ".cursor\skills" }
+if (Test-Path -LiteralPath (Join-Path $ccSkillsRoot "db-list\SKILL.md")) {
+    Add-Report "cc-1c-skills" "ok" "installed"
+} else {
+    Add-Report "cc-1c-skills" "fail" "missing - run install\cc-skills.ps1"
+    if ($Mode -ne "Check") {
+        Write-Host "Error: cc-1c-skills not installed. Run: C:\1C\projects\1c-ninja-kit\install\cc-skills.ps1" -ForegroundColor Red
         $report | Format-Table -AutoSize
         exit 1
     }
@@ -1034,14 +1050,13 @@ if (-not (Test-Path -LiteralPath $excludes)) {
     [void](Write-FileSafe -Path $excludes -Content "# syntax-check excludes`n" -OnlyIfMissing)
 }
 
-Write-AutumnProperties
+Write-V8Project
 if ($IbConnection -or $DbUser -or $PSBoundParameters.ContainsKey("DbPwd") -or $V8Version) {
-    if ((Test-Path -LiteralPath (Join-Path $ProjectRoot "autumn-properties.json")) -or $dryRun) {
-        Patch-AutumnCredentials
+    if ((Test-Path -LiteralPath (Join-Path $ProjectRoot ".v8-project.json")) -or $dryRun) {
+        Patch-V8ProjectCredentials
     }
 }
 
-Write-RepositoryJson
 Write-BslAnalyzerToml
 Write-McpFiles
 Test-UserMcpOverlap
@@ -1073,20 +1088,20 @@ if (-not (Test-Path -LiteralPath $defaultJs)) {
     [void](Write-FileSafe -Path $defaultJs -Content $js -OnlyIfMissing)
 }
 
-# repository.json MUST exist after Init
-$repoPath = Join-Path $ProjectRoot "repository.json"
+# .v8-project.json MUST exist after Init
+$repoPath = Join-Path $ProjectRoot ".v8-project.json"
 if (-not (Test-Path -LiteralPath $repoPath) -and -not $dryRun) {
-    Write-Host "Error: repository.json is required but missing" -ForegroundColor Red
+    Write-Host "Error: .v8-project.json is required but missing" -ForegroundColor Red
     exit 1
 }
 if (-not (Test-Path -LiteralPath $repoPath) -and $dryRun) {
-    Add-Report "repository.json" "fail" "required"
+    Add-Report ".v8-project.json" "fail" "required"
 }
 
 # Sync CFE (no Enterprise list; names from live_extensions_list or fallback repo+src)
 if (-not $SkipSyncCfe -and $Mode -ne "Check") {
     $syncScript = Join-Path $scriptDir "sync-cfe.ps1"
-    $syncArgs = @{ ProjectRoot = $ProjectRoot; SkipIb = $true }
+    $syncArgs = @{ ProjectRoot = $ProjectRoot }
     if ($ExtensionNames) { $syncArgs.ExtensionNames = $ExtensionNames }
     Write-Host ""
     Write-Host "=== sync-cfe ===" -ForegroundColor Cyan
@@ -1104,15 +1119,15 @@ Write-Host ""
 Write-Host "Manual next steps:" -ForegroundColor Yellow
 if ($Adapter -eq "opencode") {
     Write-Host "  1. Reload MCP in OpenCode (project opencode.jsonc is the only 1C MCP source)"
-    Write-Host "  2. cfe_load NinjaLive -> web-publish -> live_extensions_list -> sync-cfe -ExtensionNames (NOT vrunner extensions list)"
+    Write-Host "  2. Load NinjaLive: db-load-xml -Extension -> web-publish -> live_extensions_list -> sync-cfe -ExtensionNames"
     Write-Host "  3. Warm bsl-analyzer graph (metadata/graph status -> ready)"
     Write-Host "  4. toolkit :6003 only as fallback (server is disabled in opencode.jsonc by default)"
-    Write-Host "  5. Global %USERPROFILE%\.config\opencode\opencode.json(c) must NOT repeat vrunner/ninja/toolkit/bsl-analyzer-*"
+    Write-Host "  5. Global %USERPROFILE%\.config\opencode\opencode.json(c) must NOT repeat 1C MCP server names"
     Write-Host "  6. Always-on rules come from %USERPROFILE%\.config\opencode\AGENTS.md (kit.ps1 apply -Adapter opencode)"
 } else {
     Write-Host "  1. Reload MCP in Cursor (project .cursor/mcp.json is the only 1C MCP source)"
-    Write-Host "  2. cfe_load NinjaLive -> web-publish -> live_extensions_list -> sync-cfe -ExtensionNames (NOT vrunner extensions list)"
+    Write-Host "  2. Load NinjaLive: db-load-xml -Extension -> web-publish -> live_extensions_list -> sync-cfe -ExtensionNames"
     Write-Host "  3. Warm bsl-analyzer graph (metadata/graph status -> ready)"
     Write-Host "  4. toolkit :6003 only as fallback"
-    Write-Host "  5. User %USERPROFILE%\.cursor\mcp.json must NOT repeat vrunner/autumn/toolkit/bsl-analyzer-*"
+    Write-Host "  5. User %USERPROFILE%\.cursor\mcp.json must NOT repeat 1C MCP server names"
 }

@@ -16,7 +16,7 @@
       "NinjaLive: Значение контролируемого свойства ... не совпадает со значением в
        расширяемой конфигурации"
 
-    There is no vrunner / MCP command for this in the current stack, and the platform only
+    There is no MCP command for this in the current stack, and the platform only
     offers it interactively in Designer ("обновить свойства расширения"). This script does
     the same mechanically: it reads the values from the target configuration dump and
     rewrites ONLY those elements in the extension, leaving the rest of the XML byte-identical.

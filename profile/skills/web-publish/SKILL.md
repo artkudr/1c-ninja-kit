@@ -18,7 +18,7 @@ Apache **не в проекте**. Два профиля на машине:
 | `8.3*` | `%USERPROFILE%\tools\apache-83` | **8083** |
 | `8.5*` | `%USERPROFILE%\tools\apache-85` | **8085** |
 
-В воркспейсе — только `autumn-properties.json` (`v8version`, `web.appName`, опционально `web.port` / `web.apachePath`) и `smoke.config.json` → `webUrl`.
+В воркспейсе — только `.v8-project.json` (`v8path` → платформа, `web.appName`, опционально `web.port` / `web.apachePath`) и `smoke.config.json` → `webUrl`.
 
 Скрипт сам: резолвит bin платформы по `v8version`, пишет publish в профильный Apache, поднимает httpd.
 
@@ -26,9 +26,9 @@ Apache **не в проекте**. Два профиля на машине:
 
 ## Параметры из проекта
 
-1. `autumn-properties.json`: `ibconnection` → `-InfoBaseServer`/`-Ref` или `-InfoBasePath`, `db-user`, `db-pwd`, `v8version`.
+1. `.v8-project.json`: запись базы (`path` / `server`+`ref`, `user`, `password`) → `-InfoBasePath` / `-InfoBaseServer`+`-Ref`; платформа — `v8path`.
 2. Стабильный `web.appName` (и `webUrl` в smoke с тем же path, портом 8083/8085 и локалью **`/ru_RU/`**).
-3. Реестр PT не используем — только autumn / CLI.
+3. Реестр PT не используем.
 
 ```powershell
 powershell.exe -NoProfile -File "${CLAUDE_SKILL_DIR}/scripts/web-publish.ps1" `
@@ -38,17 +38,17 @@ powershell.exe -NoProfile -File "${CLAUDE_SKILL_DIR}/scripts/web-publish.ps1" `
 
 `-V8Path` / `-AppName` / `-Port` / `-ApachePath` — только оверрайды.
 
-### Фрагмент autumn
+### Фрагмент `.v8-project.json`
 
-```json
-"vrunner": { "v8version": "8.3", "...": "..." },
+```jsonc
+"v8path": "C:\\Program Files\\1cv8\\8.3.27.2130\\bin",
 "web": {
   "appName": "<appName>",
   "port": 8083
 }
 ```
 
-Для 8.5: `"v8version": "8.5"`, `"port": 8085`, smoke `http://localhost:8085/<appName>/ru_RU/`.
+Для 8.5: `"v8path": "C:\\Program Files\\1cv8\\8.5.1.1343\\bin"`, `"port": 8085`, smoke `http://localhost:8085/<appName>/ru_RU/`.
 
 ## Локаль веб-клиента
 

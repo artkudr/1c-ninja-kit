@@ -2,7 +2,7 @@
 # Source: https://github.com/Nikolay-Shirokov/cc-1c-skills
 <#
 .SYNOPSIS
-    Остановка Apache HTTP Server профиля (по v8version проекта)
+    Остановка Apache HTTP Server профиля (по платформе из .v8-project.json)
 
 .PARAMETER ApachePath
     Корень Apache; иначе профиль apache-83/85

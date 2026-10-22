@@ -1,15 +1,16 @@
-﻿# Inventory snapshot
+# Inventory snapshot
 
-- Date: 2026-09-18 13:54
-- Kit VERSION: 0.1.0
-- Skills: 81
-- Rules: 32
+- Date: 2026-10-14 22:42
+- Kit VERSION: 0.5.0
+- Skills (kit): 20
+- Skills (cc-1c-skills, внешний набор): 76 — ставится install/cc-skills.ps1 (web-* — kit-версии)
+- Rules: 33
 - Agents: 13
-- 1c-ninja-mcp: components/1c-ninja-mcp (in kit)
+- 1c-ninja-mcp: components/1c-ninja-mcp (in kit; static + live)
 - NinjaLive: project-scaffold/cfe/NinjaLive (full reference copy)
-- Excluded from copy: .build, __pycache__, .browser-session.json, *.bak, components mcp.json (may contain local paths)
+- Excluded from copy: .build, __pycache__, .browser-session.json, *.bak, node_modules
 
-## Skills
+## Skills (kit)
 - 1c-bsl-analyzer
 - 1c-env-setup
 - 1c-fresh-adaptation
@@ -17,80 +18,19 @@
 - 1c-fresh-epf-audit
 - 1c-mcp-toolkit
 - 1c-ninja-mcp
-- 1c-project-bootstrap
 - 1c-project-context
 - 1c-spravochnye-dannye
+- 1c-syntax-check
 - 1c-versioning
-- cfe-borrow
-- cfe-diff
-- cf-edit
-- cfe-init
-- cfe-list
-- cfe-patch-method
-- cfe-validate
-- cf-info
-- cf-init
-- cf-validate
 - composing-1c-queries
 - cursor-local-patches
-- epf-bsp-add-command
-- epf-bsp-init
-- epf-init
-- epf-validate
-- erf-init
-- erf-validate
-- form-add
-- form-compile
-- form-decompile
-- form-edit
-- form-info
-- form-patterns
-- form-remove
-- form-validate
 - handoff
-- help-add
-- img-grid
-- interface-edit
-- interface-validate
-- meta-compile
-- meta-decompile
-- meta-edit
-- meta-info
-- meta-remove
-- meta-validate
-- mxl-compile
-- mxl-decompile
-- mxl-info
-- mxl-validate
 - repo-workflow
-- role-compile
-- role-edit
-- role-info
-- role-validate
-- skd-compile
-- skd-decompile
-- skd-edit
-- skd-info
-- skd-validate
-- subsystem-compile
-- subsystem-edit
-- subsystem-info
-- subsystem-validate
-- support-edit
-- sync-cc-1c-skills
-- template-add
-- template-remove
-- vrunner-mcp
 - web-info
 - web-publish
 - web-stop
 - web-test
 - web-unpublish
-- xdto-compile
-- xdto-decompile
-- xdto-edit
-- xdto-info
-- xdto-validate
 
 ## Rules
 - 1c-architect.mdc
@@ -109,8 +49,8 @@
 - dev-standards-architecture.mdc
 - extension-patterns.mdc
 - form-reserved-names.mdc
-- forms.mdc
 - forms-events-add.mdc
+- forms.mdc
 - integrations-add.mdc
 - locks-and-transactions.mdc
 - logging-strategy.mdc
@@ -119,6 +59,7 @@
 - platform-solutions.mdc
 - refactor-add.mdc
 - registers-design.mdc
+- reply-style.mdc
 - sdd-integrations.mdc
 - subagent-pipeline.mdc
 - subagents.mdc
@@ -128,8 +69,8 @@
 
 ## Agents
 - 1c-analytic.md
-- 1c-architect.md
 - 1c-arch-reviewer.md
+- 1c-architect.md
 - 1c-code-reviewer.md
 - 1c-developer.md
 - 1c-doc-writer.md
@@ -140,4 +81,3 @@
 - 1c-planner.md
 - 1c-refactoring.md
 - 1c-tester.md
-

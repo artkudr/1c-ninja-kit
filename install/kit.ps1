@@ -277,7 +277,7 @@ function New-OpenCodeGlobalAgentsBlock([string]$KitRoot) {
   [void]$sb.AppendLine('- 1С MCP — **только** в project `opencode.jsonc`. Глобальный `~/.config/opencode/opencode.json(c)` без 1С-серверов и секретов.')
   [void]$sb.AppendLine('- Ninja-пара: kit `components/1c-ninja-mcp` + project `src/cfe/NinjaLive` (`/hs/ninja-live`).')
   [void]$sb.AppendLine('- Список расширений в ИБ: MCP `live_extensions_list` (не Предприятие).')
-  [void]$sb.AppendLine('- Запрещено: Designer / `1cv8` / сырой `ibcmd` / Platform Tools MCP в обход vrunner.')
+  [void]$sb.AppendLine('- Запрещено: Platform Tools MCP / реестр PT; ручные вызовы Конфигуратора в обход скиллов контура; правка XML метаданных вручную.')
   [void]$sb.AppendLine('- Отвечать пользователю на **русском**; при неоднозначности — `CONFUSION` (варианты A/B → вопрос), не молчаливый выбор.')
   [void]$sb.AppendLine('')
   [void]$sb.AppendLine('## Triage')
@@ -295,7 +295,7 @@ function New-OpenCodeGlobalAgentsBlock([string]$KitRoot) {
   [void]$sb.AppendLine('| Семантика / graph / diagnostics | `bsl-analyzer-workspace` |')
   [void]$sb.AppendLine('| Live ИБ / static выгрузка | `1c-ninja-mcp` `live_*` |')
   [void]$sb.AppendLine('| Список расширений ИБ | `1c-ninja-mcp` `live_extensions_list` |')
-  [void]$sb.AppendLine('| Load / syntax-check / repo | `vrunner` (`cf_load`, `cfe_load`, `validate_syntax_check`) |')
+  [void]$sb.AppendLine('| Load / dump / update / проверки / repo | скиллы `db-*`, `repo-workflow`, `1c-syntax-check` |')
   [void]$sb.AppendLine('| Стандарты ITS/v8 | `v8std`; reference `bsl-analyzer-reference` |')
   [void]$sb.AppendLine('| Live fallback | `1c-mcp-toolkit` (выключен по умолчанию) |')
   [void]$sb.AppendLine('')
@@ -304,7 +304,7 @@ function New-OpenCodeGlobalAgentsBlock([string]$KitRoot) {
   [void]$sb.AppendLine('## Skills')
   [void]$sb.AppendLine('')
   [void]$sb.AppendLine('Скиллы kit лежат в `~/.config/opencode/skills/<id>/SKILL.md`; вызывай tool `skill` по точному id.')
-  [void]$sb.AppendLine('Частые: `1c-env-setup`, `1c-project-context`, `repo-workflow`, `1c-orchestrator`-роли, `meta-*`, `form-*`, `skd-*`, `cfe-*`, `epf-*`, `1c-ninja-mcp`, `1c-bsl-analyzer`, `vrunner-mcp`, `web-test`, `handoff`.')
+  [void]$sb.AppendLine('Частые: `1c-env-setup`, `1c-project-context`, `repo-workflow`, `1c-orchestrator`-роли, `meta-*`, `form-*`, `skd-*`, `cfe-*`, `epf-*`, `1c-ninja-mcp`, `1c-bsl-analyzer`, `web-test`, `handoff`.')
   [void]$sb.AppendLine('')
   [void]$sb.AppendLine('## Subagents')
   [void]$sb.AppendLine('')
@@ -419,7 +419,7 @@ function Invoke-ApplyOpenCode {
     $cfg = Join-Path $ocRoot $name
     if (Test-Path -LiteralPath $cfg) {
       $raw = Get-Content -LiteralPath $cfg -Raw -ErrorAction SilentlyContinue
-      $bad = @('1c-ninja-mcp', '1c-mcp-toolkit', 'vrunner', 'bsl-analyzer')
+      $bad = @('1c-ninja-mcp', '1c-mcp-toolkit', 'bsl-analyzer')
       $hits = @($bad | Where-Object { $raw -match [regex]::Escape($_) })
       if ($hits.Count -gt 0) {
         Write-Status 'WARN' ("global $name contains 1C MCP servers: " + ($hits -join ', ') + ' -> move to project opencode.jsonc')
@@ -439,8 +439,6 @@ function Invoke-Doctor {
 
   foreach ($c in @(
       @{ L = 'OVM oscript'; P = '%LOCALAPPDATA%\ovm\current\bin\oscript.exe' },
-      @{ L = 'vrunner'; P = '%LOCALAPPDATA%\ovm\current\bin\vrunner.bat' },
-      @{ L = 'vrunner-mcp'; P = '%LOCALAPPDATA%\ovm\current\bin\vrunner-mcp.bat' },
       @{ L = 'bsl-analyzer'; P = '%LOCALAPPDATA%\bsl-analyzer\bsl-analyzer.exe' }
     )) {
     if (-not (Test-SoftPath $c.L $c.P $true)) { $fail++ }
@@ -449,6 +447,7 @@ function Invoke-Doctor {
   foreach ($c in @(
       @{ L = 'Apache 8.3 tools'; P = '%USERPROFILE%\tools\apache-83' },
       @{ L = 'Apache 8.5 tools'; P = '%USERPROFILE%\tools\apache-85' },
+      @{ L = 'Ripgrep (fast code search)'; P = '%USERPROFILE%\tools\ripgrep\rg.exe' },
       @{ L = 'Toolkit EPF (recommended)'; P = '%USERPROFILE%\tools\1c-mcp-toolkit\MCP_Toolkit.epf' },
       @{ L = 'Toolkit EPF (legacy)'; P = 'C:\1C\soft\MCP_Toolkit.epf' }
     )) {
@@ -456,6 +455,7 @@ function Invoke-Doctor {
   }
   Write-Status 'INFO' 'If toolkit missing: https://github.com/ROCTUP/1c-mcp-toolkit/releases'
   Write-Status 'INFO' 'If bsl-analyzer missing: https://github.com/itrous/bsl-analyzer/releases (bsl-analyzer-windows-amd64.exe)'
+  Write-Status 'INFO' 'If ripgrep missing: https://github.com/BurntSushi/ripgrep/releases -> %USERPROFILE%\tools\ripgrep + PATH'
 
   $ninjaMain = Join-Path $KitRoot 'components\1c-ninja-mcp\main.os'
   if (Test-Path -LiteralPath $ninjaMain) { Write-Status 'OK' "1c-ninja-mcp -> $ninjaMain" }
@@ -465,21 +465,16 @@ function Invoke-Doctor {
   if (Test-Path -LiteralPath $nl) { Write-Status 'OK' "NinjaLive pair -> $nl" }
   else { Write-Status 'FAIL' "NinjaLive missing: $nl"; $fail++ }
 
-  try {
-    $vr = (& vrunner --version 2>&1 | Out-String).Trim()
-    if ($vr -match '^3\.') { Write-Status 'OK' "vrunner --version: $vr" }
-    else { Write-Status 'WARN' "vrunner version unexpected: $vr"; $warn++ }
-  } catch {
-    Write-Status 'FAIL' 'vrunner --version failed'
-    $fail++
-  }
+  $v8exe = Get-ChildItem 'C:\Program Files\1cv8\*\bin\1cv8.exe' -ErrorAction SilentlyContinue | Select-Object -First 1
+  if ($v8exe) { Write-Status 'OK' "1cv8: $($v8exe.FullName)" }
+  else { Write-Status 'FAIL' '1cv8 not found (C:\Program Files\1cv8\*\bin)'; $fail++ }
 
   $ocRoot = Get-OpenCodeRoot
   foreach ($name in @('opencode.json', 'opencode.jsonc')) {
     $cfg = Join-Path $ocRoot $name
     if (-not (Test-Path -LiteralPath $cfg)) { continue }
     $raw = Get-Content -LiteralPath $cfg -Raw -ErrorAction SilentlyContinue
-    $bad = @('1c-ninja-mcp', '1c-mcp-toolkit', 'vrunner', 'bsl-analyzer')
+    $bad = @('1c-ninja-mcp', '1c-mcp-toolkit', 'bsl-analyzer')
     $hits = @($bad | Where-Object { $raw -match [regex]::Escape($_) })
     if ($hits.Count -gt 0) {
       Write-Status 'WARN' ("global opencode $name contains 1C MCP servers: " + ($hits -join ', '))
@@ -493,6 +488,12 @@ function Invoke-Doctor {
     Write-Status 'INFO' "opencode profile installed: skills=$n (apply -Adapter opencode to refresh)"
   } else {
     Write-Status 'INFO' 'opencode profile absent (ok) - run: kit.ps1 apply -Adapter opencode'
+  }
+  if (Test-Path (Join-Path $ocRoot 'skills\db-list\SKILL.md')) {
+    Write-Status 'OK' 'cc-1c-skills installed (db-* present)'
+  } else {
+    Write-Status 'WARN' 'cc-1c-skills missing - run: install\cc-skills.ps1'
+    $warn++
   }
 
   Write-Host ("Summary: fail={0} warn={1}" -f $fail, $warn) -ForegroundColor Cyan
@@ -539,6 +540,34 @@ function Invoke-Apply {
 }
 
 
+function Get-V8PathForVersion([string]$Version) {
+  $installed = Get-ChildItem 'C:\Program Files\1cv8\*\bin\1cv8.exe' -ErrorAction SilentlyContinue |
+    ForEach-Object { $_.Directory.Parent.Name } | Sort-Object -Unique
+  if ($Version) {
+    $m = $installed | Where-Object { $_ -like "$Version*" } |
+      Sort-Object { try { [version]$_ } catch { [version]'0.0' } } -Descending | Select-Object -First 1
+    if ($m) { return (Join-Path "C:\Program Files\1cv8\$m" 'bin') }
+  }
+  $best = $installed | Sort-Object { try { [version]$_ } catch { [version]'0.0' } } -Descending | Select-Object -First 1
+  if ($best) { return (Join-Path "C:\Program Files\1cv8\$best" 'bin') }
+  return ''
+}
+
+function ConvertFrom-IbConnectionToDbRecord([string]$Conn) {
+  # /F"path" | /Fpath | /S"server\ref" | /Sserver\ref | /server/ref
+  $c = $Conn.Trim()
+  if ($c -match '^/F\s*"?([^"]+)"?$') {
+    return [ordered]@{ type = 'file'; path = $Matches[1].TrimEnd('"') }
+  }
+  if ($c -match '^/S\s*"?([^"\\/]+)[\\/]([^"]+)"?$') {
+    return [ordered]@{ type = 'server'; server = $Matches[1]; ref = $Matches[2].TrimEnd('"') }
+  }
+  if ($c -match '^/?([^/\\]+)[\\/](.+)$') {
+    return [ordered]@{ type = 'server'; server = $Matches[1]; ref = $Matches[2] }
+  }
+  throw "Cannot parse ibconnection: $Conn"
+}
+
 function Invoke-InitProject {
   Write-Host '=== kit init-project ===' -ForegroundColor Cyan
   if ([string]::IsNullOrWhiteSpace($ProjectPath)) {
@@ -581,35 +610,43 @@ function Invoke-InitProject {
   }
 
   $tplRoot = Join-Path $KitRoot 'project-scaffold\templates'
-  $vrunnerMcp = Expand-EnvPath '%LOCALAPPDATA%\ovm\current\bin\vrunner-mcp.bat'
   $bslExe = Expand-EnvPath '%LOCALAPPDATA%\bsl-analyzer\bsl-analyzer.exe'
-  $autumnMain = Join-Path $KitRoot 'components\1c-ninja-mcp\main.os'
+  $ninjaMain = Join-Path $KitRoot 'components\1c-ninja-mcp\main.os'
   $shcntx = Join-Path $KitRoot 'components\1c-ninja-mcp\src\data\shcntx_help.db'
 
   $ib = if ($IbConnection) { $IbConnection } else { '/S"SERVER/BASE_PLACEHOLDER"' }
   $user = if ($DbUser) { $DbUser } else { 'USER_PLACEHOLDER' }
   $pwd = if ($DbPwd) { $DbPwd } else { 'PWD_PLACEHOLDER' }
 
-  $autumnTpl = Get-Content (Join-Path $tplRoot 'autumn-properties.json.tpl') -Raw -Encoding UTF8
-  # Values go into a JSON template: escape them (/S"host/base" has quotes).
-  $autumn = $autumnTpl.Replace('{{IBCONNECTION}}', (ConvertTo-JsonLiteral $ib)).
-    Replace('{{DB_USER}}', (ConvertTo-JsonLiteral $user)).
-    Replace('{{DB_PWD}}', (ConvertTo-JsonLiteral $pwd)).
-    Replace('{{V8VERSION}}', (ConvertTo-JsonLiteral $V8Version)).
-    Replace('{{APP_NAME}}', (ConvertTo-JsonLiteral $AppName)).Replace('{{WEB_PORT}}', "$WebPort")
-  Set-FileContentUtf8 (Join-Path $proj 'autumn-properties.json') $autumn
-
-  $repoTpl = Get-Content (Join-Path $tplRoot 'repository.json.tpl') -Raw -Encoding UTF8
-  $repo = $repoTpl.Replace('{{REPO_ROOT}}', '\\\\SERVER\\repo-placeholder').
-    Replace('{{REPO_USER}}', 'repo-user-placeholder').
-    Replace('{{REPO_ADMIN}}', 'repo-admin-placeholder')
-  Set-FileContentUtf8 (Join-Path $proj 'repository.json') $repo
+  # .v8-project.json — реестр баз контура скиллов.
+  $v8path = Get-V8PathForVersion $V8Version
+  $dbRec = ConvertFrom-IbConnectionToDbRecord $ib
+  $dbRec.id = 'main'
+  $dbRec.name = $AppName
+  $dbRec.user = $user
+  $dbRec.password = $pwd
+  $dbRec.configSrc = 'src\cf'
+  $dbRec.extensions = @()
+  $project = [ordered]@{
+    v8path    = $v8path
+    databases = @($dbRec)
+    default   = 'main'
+    web       = [ordered]@{ appName = $AppName; port = $WebPort }
+  }
+  Set-FileContentUtf8 (Join-Path $proj '.v8-project.json') ($project | ConvertTo-Json -Depth 6)
 
   Copy-Item (Join-Path $tplRoot 'bsl-analyzer.toml.tpl') (Join-Path $proj 'bsl-analyzer.toml') -Force
 
   $giSnippet = Get-Content (Join-Path $tplRoot 'gitignore-1c.snippet') -Raw -Encoding UTF8
-  $giExtra = "`n# kit secrets`nautumn-properties.json`n.env`n.dev.env`n"
+  $giExtra = "`n# kit secrets`n.v8-project.json`n.env`n.dev.env`n"
   Set-FileContentUtf8 (Join-Path $proj '.gitignore') ($giSnippet + $giExtra)
+
+  # ripgrep: .ignore — конфигурация поиска по коду (работает и вне git-репозитория,
+  # где rg не применяет .gitignore). Создаётся всегда, перезаписывается безопасно.
+  $rgIgnoreTpl = Join-Path $tplRoot 'ignore-rg.snippet'
+  if (Test-Path $rgIgnoreTpl) {
+    Set-FileContentUtf8 (Join-Path $proj '.ignore') (Get-Content $rgIgnoreTpl -Raw -Encoding UTF8)
+  }
 
   Copy-Item (Join-Path $tplRoot 'openspec\*') (Join-Path $proj 'openspec') -Recurse -Force
   Copy-Item (Join-Path $tplRoot 'dev-stack.md.tpl') (Join-Path $proj 'docs\dev-stack.md') -Force
@@ -622,12 +659,10 @@ function Invoke-InitProject {
   Set-FileContentUtf8 (Join-Path $proj 'AGENTS.md') $agentsTpl
   $ocTpl = Get-Content (Join-Path $KitRoot 'adapters\opencode\opencode.jsonc.tpl') -Raw -Encoding UTF8
   $ocJson = $ocTpl.
-      Replace('{{VRUNNER_MCP}}', (ConvertTo-JsonLiteral $vrunnerMcp)).
-      Replace('{{NINJA_MAIN}}', (ConvertTo-JsonLiteral $autumnMain)).
+      Replace('{{NINJA_MAIN}}', (ConvertTo-JsonLiteral $ninjaMain)).
       Replace('{{SHCNTX_HELP_DB}}', (ConvertTo-JsonLiteral $shcntx)).
       Replace('{{BSL_ANALYZER_EXE}}', (ConvertTo-JsonLiteral $bslExe)).
       Replace('{{PROJECT_ROOT}}', (ConvertTo-JsonLiteral $proj)).
-      Replace('{{AUTUMN_PROPERTIES}}', (ConvertTo-JsonLiteral (Join-Path $proj 'autumn-properties.json'))).
       Replace('{{IB_USER}}', (ConvertTo-JsonLiteral $user)).
       Replace('{{IB_PASSWORD}}', (ConvertTo-JsonLiteral $pwd)).
       Replace('{{APP_NAME}}', (ConvertTo-JsonLiteral $AppName)).
@@ -652,12 +687,12 @@ function Invoke-InitProject {
     appName = $AppName
     webPort = $WebPort
     v8version = $V8Version
-    ninjaMcp = $autumnMain
+    ninjaMcp = $ninjaMain
     ninjaLive = (Join-Path $proj 'src\cfe\NinjaLive')
     needsHuman = $needsHuman
     next = @(
       'Fill IB credentials if placeholders',
-      'cfe_load NinjaLive via vrunner',
+      'Load NinjaLive: db-load-xml -Extension (contour skills)',
       'Publish Apache app + /hs/ninja-live',
       'MCP live_version + live_extensions_list'
     )

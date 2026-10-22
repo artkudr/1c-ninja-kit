@@ -2,7 +2,7 @@
 
 Spec-driven workspace для **крупных** фич и проектов. Мелочи (quick-fix / docs-fix) сюда не тащат.
 
-Формат совместим с [Fission-AI/OpenSpec](https://github.com/Fission-AI/OpenSpec) (OPSX). Адаптация под контур 1С: без `install.ps1`, без Designer/`ibcmd`, гейты через vrunner / `repo-workflow`, факты 1С — только из MCP.
+Формат совместим с [Fission-AI/OpenSpec](https://github.com/Fission-AI/OpenSpec) (OPSX). Адаптация под контур 1С: без `install.ps1`, без ручного Конфигуратора, гейты через скиллы контура (`db-*`, `repo-workflow`, `1c-syntax-check`), факты 1С — только из MCP.
 
 Правило агента: `sdd-integrations` (on-demand / globs на `openspec/**`). Triage — `1c-orchestrator`.
 
@@ -64,4 +64,4 @@ openspec --version
 - `sdd-integrations` — дисциплина спек, MCP-факты, фазы propose/apply
 - `1c-orchestrator` — triage «включать / нет»
 - `verification-checklist`, `1c-development-process`, `repo-workflow`
-- Skills: `meta-*`, `form-*`, `cfe-*`, `1c-bsl-analyzer`, `1c-ninja-mcp`, `vrunner-mcp`
+- Skills: `meta-*`, `form-*`, `cfe-*`, `db-*`, `1c-bsl-analyzer`, `1c-ninja-mcp`

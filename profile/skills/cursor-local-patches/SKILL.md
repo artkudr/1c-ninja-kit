@@ -1,18 +1,18 @@
 ---
 name: cursor-local-patches
 description: >-
-  Фиксация локальных доработок инструментов в профиле Cursor (не в git проекта):
-  патчи ovm/vanessa-runner/autumn-mcpify, правки глобальных skills/MCP вне репозитория.
-  Use when patching OVM packages, vanessa-runner, autumn-mcpify, vrunner-mcp.bat,
-  or any machine-local fix that would be lost after opm/ovm update; when user asks
-  to document local patches, гайд после обновления, локальные доработки.
+  Фиксация локальных доработок инструментов вне git проекта: патчи ovm/oscript-пакетов,
+  правки глобальных skills/MCP вне репозитория.
+  Use when patching OVM packages or any machine-local fix that would be lost after
+  opm/ovm update; when user asks to document local patches, гайд после обновления,
+  локальные доработки.
 ---
 
-# Локальные патчи → `%USERPROFILE%\.cursor\docs\`
+# Локальные патчи → `%USERPROFILE%\.config\opencode\docs\`
 
 ## Жёстко
 
-- Документируй **только** в профиле Cursor: `%USERPROFILE%\.cursor\docs\`.
+- Документируй **только** в профиле: `%USERPROFILE%\.config\opencode\docs\`.
 - **Не** пиши такие гайды в репозиторий проекта (`docs/`, README и т.п.).
 - Не коммить содержимое `%LOCALAPPDATA%\ovm\` и чужие пакеты в git проекта.
 
@@ -22,8 +22,8 @@ description: >-
 
 | Область | Примеры |
 |--------|---------|
-| OVM / vanessa-runner | `epf\*.bsl`, `oscript_modules\autumn-mcpify\`, `src\` runner |
-| MCP / bat | `vrunner-mcp.bat`, правки в `%USERPROFILE%\.cursor\mcp.json` с оговоркой |
+| OVM / oscript-пакеты | правки в `%LOCALAPPDATA%\ovm\current\lib\…` |
+| Глобальные конфиги | правки skills/MCP вне репозитория (с оговоркой) |
 | Прочие глобальные тулзы | то, что ставится через opm/ovm и затирается обновлением |
 
 Скиллы в `{{SKILLS_ROOT}}\` версионируются сами (профиль) — отдельный гайд «как повторить» нужен, только если правка **в пакете ovm**, а не в скилле.
@@ -32,10 +32,7 @@ description: >-
 
 | Ситуация | Файл |
 |----------|------|
-| Патчи vanessa-runner / autumn-mcpify / его EPF | `%USERPROFILE%\.cursor\docs\vrunner-local-patches.md` (дополнять секциями) |
-| Другой пакет / тема | новый `%USERPROFILE%\.cursor\docs\<тема>-local-patches.md` |
-
-Эталон структуры — существующий `vrunner-local-patches.md`.
+| Пакет / тема | новый `%USERPROFILE%\.config\opencode\docs\<тема>-local-patches.md` |
 
 ## Что обязательно в гайде
 
@@ -53,7 +50,7 @@ description: >-
 
 1. Сделай патч в ovm (или где нужно).
 2. Проверь, что работает.
-3. **Сразу** обнови или создай файл в `%USERPROFILE%\.cursor\docs\` по шаблону выше.
+3. **Сразу** обнови или создай файл в `%USERPROFILE%\.config\opencode\docs\` по шаблону выше.
 4. В ответе пользователю укажи путь к гайду одной строкой.
 5. При удалении/замене локальной доработки — поправь или вычеркни секцию в том же файле.
 
@@ -61,4 +58,4 @@ description: >-
 
 - PR/upstream «на автомате», если пользователь не просил.
 - Дублировать гайд в `docs/` проекта «для удобства».
-- Писать только «пофиксили» в чат без записи в `.cursor\docs\`.
+- Писать только «пофиксили» в чат без записи в `%USERPROFILE%\.config\opencode\docs\`.

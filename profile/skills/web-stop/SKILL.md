@@ -10,7 +10,7 @@ allowed-tools:
 
 # /web-stop — Остановка профильного Apache
 
-Останавливает httpd профиля (`apache-83` / `apache-85` по `v8version` проекта).
+Останавливает httpd профиля (`apache-83` / `apache-85` по платформе из `.v8-project.json`).
 
 ```powershell
 powershell.exe -NoProfile -File "${CLAUDE_SKILL_DIR}/scripts/web-stop.ps1"

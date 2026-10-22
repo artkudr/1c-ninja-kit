@@ -29,11 +29,11 @@ alwaysApply: false
 
 ### 5. Metadata / form validation
 
-Если трогали XML структуры: профильный `*-validate` (meta/form/skd/…). **Не** `1c-metadata-manage`. Для CFE из `repository.json` — гейты `repo-workflow`.
+Если трогали XML структуры: профильный `*-validate` (meta/form/skd/…). **Не** `1c-metadata-manage`. Для CFE с хранилищем — гейты `repo-workflow`.
 
 ### 6. Platform / load gates
 
-По `1c-development-process`: syntax-check vrunner (где применимо); load только через vrunner/`repo.ps1`; перед load — summary пользователю.
+По `1c-development-process`: синтакс-контроль (`1c-syntax-check` для `src/cf`, `db-cfe-admin check` для расширений); load только скиллами контура (`db-load-xml` / `repo-workflow`); перед load — summary пользователю.
 
 ## Soft gates
 

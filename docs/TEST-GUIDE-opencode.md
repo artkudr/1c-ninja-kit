@@ -67,7 +67,7 @@ powershell -NoProfile -File .\install\kit.ps1 init-project `
 opencode mcp list
 ```
 
-Ожидается `vrunner`, `1c-ninja-mcp`, `bsl-analyzer-reference`, `bsl-analyzer-workspace`, `v8std` — `connected`.
+Ожидается `1c-ninja-mcp`, `bsl-analyzer-reference`, `bsl-analyzer-workspace`, `v8std` — `connected`.
 `1c-mcp-toolkit` — `disabled` по умолчанию (EPF не всегда поднята).
 
 В TUI: `/mcps` — те же статусы. В глобальном конфиге 1С-серверов быть не должно (doctor это проверяет).
@@ -85,7 +85,7 @@ opencode mcp list
 
 ### 6. Live (optional)
 
-Заполнить реквизиты ИБ в `autumn-properties.json` + `opencode.jsonc` → `cfe_load NinjaLive` → publish Apache → `live_version`, `live_extensions_list`.
+Заполнить реквизиты ИБ в `.v8-project.json` + `opencode.jsonc` → `db-load-xml -Extension "NinjaLive"` → publish Apache → `live_version`, `live_extensions_list`.
 Без ИБ вердикт `partial`.
 
 ## Шаблон лога

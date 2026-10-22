@@ -18,4 +18,4 @@ powershell.exe -NoProfile -File "${CLAUDE_SKILL_DIR}/scripts/web-unpublish.ps1" 
 # или -All
 ```
 
-AppName по умолчанию из autumn `web.appName`, если не передан.
+AppName по умолчанию из `.v8-project.json` (`web.appName`), если не передан.

@@ -14,7 +14,7 @@ You operate in the **1c-ninja-kit** contour, not upstream `itrous/ai_rules_1c` a
 
 - Process brain: rule `1c-orchestrator` (not a root `AGENTS.md`).
 - XML / forms / CFE / EPF: skills `meta-*`, `form-*`, `skd-*`, `cfe-*`, `epf-*`, `repo-workflow` — **never** hand-edit metadata XML; **never** `1c-metadata-manage`.
-- Load / syntax-check / IB: MCP **vrunner** only (`cf_load`, `cfe_load`, `validate_syntax_check`, …) or `repo.ps1`. **Forbidden:** Designer/`1cv8`, raw `ibcmd`, Platform Tools MCP, `install.ps1`, `/deploy-and-test` as-is.
+- Load / syntax-check / IB: contour skills (`db-*`, `repo-workflow`, `1c-syntax-check`). **Forbidden:** Platform Tools MCP, `install.ps1`, `/deploy-and-test` as-is, ручные вызовы Конфигуратора/`1cv8` в обход скиллов контура.
 - Semantics: `bsl-analyzer-workspace` (`search`/`graph`/`metadata`/`diagnostics`). Live IB + static dump search: `1c-ninja-mcp`. Standards: `v8std` + `bsl-analyzer-reference`. Optional AI check: `1c-code-check-mcp` (Напарник) when available — do not hard-block if missing.
 - Coding style: `bsl-code-standards`, `1c-code-agent`, `bsp-developer` — not upstream `coding-standards.md`.
 - Architecture layers: rule `1c-architect`. On-demand methodology rules: `anti-patterns`, `extension-patterns`, `mcp-first-search`, `verification-checklist`, …

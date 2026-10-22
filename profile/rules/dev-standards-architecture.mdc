@@ -14,4 +14,4 @@ alwaysApply: false
 5. **Module regions** — `module-structure`.
 6. **Style / naming / BSP** — `bsl-code-standards`, `1c-code-agent`, `bsp-developer` (не тяни upstream `coding-standards.md`).
 
-XML структуры — только через `1c-development-process` skills. Load — только vrunner / `repo-workflow`.
+XML структуры — только через `1c-development-process` skills. Load — только скиллы контура / `repo-workflow`.

@@ -1,8 +1,8 @@
 # 1c-ninja-kit
 
-Агентная обвязка разработки 1С: skills, rules, MCP (**1c-ninja-mcp** + CFE **NinjaLive**), vrunner, bsl-analyzer, харнесс **OpenCode**.
+Агентная обвязка разработки 1С: skills (kit + cc-1c-skills), rules, MCP (**1c-ninja-mcp** + CFE **NinjaLive**), bsl-analyzer, харнесс **OpenCode**.
 
-**VERSION:** 0.4.1
+**VERSION:** 0.5.0
 
 ## Quick start
 

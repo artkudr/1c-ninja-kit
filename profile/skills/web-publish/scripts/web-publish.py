@@ -4,8 +4,8 @@
 
 """
 Публикация информационной базы 1С через Apache HTTP Server.
-Платформа: V8Path или autumn vrunner.v8version → bin (как vrunner).
-AppName: CLI → autumn.web.appName → smoke.config webUrl → имя папки проекта.
+Платформа: V8Path или v8path из .v8-project.json → bin.
+AppName: CLI → web.appName из .v8-project.json → smoke.config webUrl → имя папки проекта.
 """
 
 import argparse
@@ -28,9 +28,7 @@ import psutil
 def _find_project_root():
     d = os.getcwd()
     while True:
-        if os.path.isfile(os.path.join(d, "autumn-properties.json")) or os.path.isfile(
-            os.path.join(d, "env.json")
-        ):
+        if os.path.isfile(os.path.join(d, ".v8-project.json")):
             return d
         parent = os.path.dirname(d)
         if parent == d:
@@ -46,6 +44,23 @@ def _read_json(path):
             return json.load(f)
     except Exception:
         return None
+
+
+def _v8_version_from_path(v8path):
+    if not v8path:
+        return None
+    m = re.search(r"(\d+\.\d+(\.\d+){0,2})", str(v8path))
+    return m.group(1) if m else None
+
+
+def _detected_v8_version_mask():
+    candidates = glob.glob(r"C:\Program Files\1cv8\*\bin\1cv8.exe") + glob.glob(
+        r"C:\Program Files (x86)\1cv8\*\bin\1cv8.exe"
+    )
+    if not candidates:
+        return None
+    best = max(candidates, key=lambda p: _version_key(os.path.basename(os.path.dirname(os.path.dirname(p)))))
+    return os.path.basename(os.path.dirname(os.path.dirname(best)))
 
 
 def _version_key(ver_name):
@@ -156,34 +171,35 @@ def main():
     sys.stderr.reconfigure(encoding="utf-8")
     parser = argparse.ArgumentParser(description='Publish 1C infobase via Apache', allow_abbrev=False)
     parser.add_argument('-V8Path', type=str, default='', help='Path to 1C platform bin directory (for wsap24.dll)')
-    parser.add_argument('-V8Version', type=str, default='', help='Platform version mask (autumn vrunner.v8version)')
+    parser.add_argument('-V8Version', type=str, default='', help='Platform version mask (from .v8-project.json v8path)')
     parser.add_argument('-InfoBasePath', type=str, default='', help='Path to file infobase')
     parser.add_argument('-InfoBaseServer', type=str, default='', help='1C server (for server infobase)')
     parser.add_argument('-InfoBaseRef', type=str, default='', help='Infobase name on server')
     parser.add_argument('-UserName', type=str, default='', help='1C user name')
     parser.add_argument('-Password', type=str, default='', help='1C password')
-    parser.add_argument('-AppName', type=str, default='', help='Publication name (autumn.web.appName / smoke webUrl)')
+    parser.add_argument('-AppName', type=str, default='', help='Publication name (web.appName / smoke webUrl)')
     parser.add_argument('-ApachePath', type=str, default='', help='Apache root (default: %%USERPROFILE%%\\tools\\apache-83|85)')
     parser.add_argument('-Port', type=int, default=None, help='Port (default 8083|8085 by v8version)')
     parser.add_argument('-Manual', action='store_true', help='Do not download Apache — only check and give instructions')
     args = parser.parse_args()
 
     project_root = _find_project_root()
-    autumn = _read_json(os.path.join(project_root, "autumn-properties.json")) or _read_json(
-        os.path.join(project_root, "env.json")
-    )
+    registry = _read_json(os.path.join(project_root, ".v8-project.json"))
     smoke = _read_json(os.path.join(project_root, "tools", "web-test", "smoke.config.json"))
 
     cfg_v8version = None
     cfg_app_name = None
     cfg_port = None
     cfg_apache = None
-    if autumn and isinstance(autumn.get("vrunner"), dict):
-        cfg_v8version = autumn["vrunner"].get("v8version")
-    if autumn and isinstance(autumn.get("web"), dict):
-        cfg_app_name = autumn["web"].get("appName")
-        cfg_port = autumn["web"].get("port")
-        cfg_apache = autumn["web"].get("apachePath")
+    if registry:
+        cfg_v8version = _v8_version_from_path(registry.get("v8path"))
+        web = registry.get("web")
+        if isinstance(web, dict):
+            cfg_app_name = web.get("appName")
+            cfg_port = web.get("port")
+            cfg_apache = web.get("apachePath")
+    if not cfg_v8version:
+        cfg_v8version = _detected_v8_version_mask()
     if smoke and smoke.get("webUrl"):
         if not cfg_app_name:
             cfg_app_name = _app_name_from_web_url(smoke["webUrl"])
@@ -203,13 +219,13 @@ def main():
             else:
                 print(
                     f'Error: платформа под v8version={v8_version} не найдена (нужен bin с wsap24.dll). '
-                    f'Укажите -V8Path или поправьте v8version в autumn-properties.json',
+                    f'Укажите -V8Path или поправьте v8path в .v8-project.json',
                     file=sys.stderr,
                 )
                 sys.exit(1)
         else:
             print(
-                'Error: не заданы -V8Path и vrunner.v8version в autumn-properties.json',
+                'Error: не заданы -V8Path и v8path в .v8-project.json',
                 file=sys.stderr,
             )
             sys.exit(1)
@@ -359,14 +375,14 @@ def main():
             app_name = leaf.lower()
             print(
                 f"AppName from project folder: {app_name} "
-                f"(задайте web.appName в autumn-properties или webUrl в smoke.config)"
+                f"(задайте web.appName в .v8-project.json или webUrl в smoke.config)"
             )
     app_name = app_name.lower()
 
     if not app_name:
         print(
             "Error: не удалось определить имя публикации. "
-            "Задайте -AppName или autumn-properties web.appName / smoke.config webUrl",
+            "Задайте -AppName или web.appName в .v8-project.json / smoke.config webUrl",
             file=sys.stderr,
         )
         sys.exit(1)

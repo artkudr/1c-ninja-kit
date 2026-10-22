@@ -125,7 +125,7 @@ Using change: <name>.
 
 Если blockers пусто — сразу код. Mid-loop вопросы — только live-state конфликт с артефактом или явный re-open пользователя. Иначе — дефект propose.
 
-Операционка: `autumn-properties.json` / `env.json` (не `.dev.env`). Не спрашивать advisory-пустышки «придумай PREFIX» без нужды артефакта.
+Операционка: `.v8-project.json` (не `.dev.env`). Не спрашивать advisory-пустышки «придумай PREFIX» без нужды артефакта.
 
 Реализация: skills `meta-*` / `form-*` / `cfe-*` / … — **не** руками XML; **не** Designer. Stub `1c-metadata-manager` не звать.
 
