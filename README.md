@@ -2,7 +2,7 @@
 
 Агентная обвязка разработки 1С: skills (kit + cc-1c-skills), rules, MCP (**1c-ninja-mcp** + CFE **NinjaLive**), bsl-analyzer, харнесс **OpenCode**.
 
-**VERSION:** 0.5.0
+**VERSION:** 0.6.0
 
 ## Quick start
 

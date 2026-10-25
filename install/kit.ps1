@@ -371,6 +371,48 @@ function Write-OpenCodeGlobalAgents([string]$KitRoot) {
   return $path
 }
 
+function Install-LeaseCleanTask {
+  # Машинная задача: снимает мёртвые writer.lease bsl-analyzer (ничего не запускает).
+  # Нужна из-за Windows-дефекта лаунчера: убитый backend оставляет аренду и граф отвечает
+  # "graph busy ... used by another live process". Скрипт лежит в скилле 1c-env-setup.
+  param([string]$SkillsDst)
+
+  $script = Join-Path $SkillsDst '1c-env-setup\scripts\bsl-analyzer-lease-clean.ps1'
+  if (-not (Test-Path -LiteralPath $script)) {
+    Write-Status 'WARN' 'lease-clean: скрипт не найден в скиллах, задача не ставится'
+    return
+  }
+  $pwsh = (Get-Command pwsh -ErrorAction SilentlyContinue).Source
+  if (-not $pwsh) {
+    Write-Status 'WARN' 'lease-clean: pwsh не найден, задача не ставится'
+    return
+  }
+
+  $taskName = 'bsl-analyzer lease clean'
+  if ($DryRun) {
+    Write-Status 'INFO' "would register scheduled task '$taskName' (logon + every 5 min)"
+    return
+  }
+
+  try {
+    $action = New-ScheduledTaskAction -Execute $pwsh `
+      -Argument ("-NoProfile -NonInteractive -File `"$script`"")
+    $tLogon = New-ScheduledTaskTrigger -AtLogOn -User "$env:USERDOMAIN\$env:USERNAME"
+    $tRepeat = New-ScheduledTaskTrigger -Once -At ((Get-Date).AddMinutes(1)) `
+      -RepetitionInterval (New-TimeSpan -Minutes 5)
+    $settings = New-ScheduledTaskSettingsSet -StartWhenAvailable -MultipleInstances IgnoreNew `
+      -ExecutionTimeLimit (New-TimeSpan -Minutes 5) -AllowStartIfOnBatteries -DontStopIfGoingOnBatteries
+    $principal = New-ScheduledTaskPrincipal -UserId "$env:USERDOMAIN\$env:USERNAME" `
+      -LogonType Interactive -RunLevel Limited
+    Register-ScheduledTask -TaskName $taskName -Action $action -Trigger @($tLogon, $tRepeat) `
+      -Settings $settings -Principal $principal -Force `
+      -Description 'Снимает мёртвые writer.lease bsl-analyzer (ничего не запускает).' | Out-Null
+    Write-Status 'OK' "scheduled task '$taskName' registered (logon + every 5 min)"
+  } catch {
+    Write-Status 'WARN' "lease-clean: задача не зарегистрирована: $($_.Exception.Message)"
+  }
+}
+
 function Invoke-ApplyOpenCode {
   $ocRoot = Get-OpenCodeRoot
   Write-Status 'INFO' "OpenCode root: $ocRoot"
@@ -383,6 +425,7 @@ function Invoke-ApplyOpenCode {
     $skN = Resolve-SkillPlaceholders $skillsDst 'opencode'
     if ($skN) { Write-Status 'INFO' "resolve skill placeholders -> opencode ($skN files)" }
   }
+  Install-LeaseCleanTask -SkillsDst $skillsDst
 
   $agentsDst = Join-Path $ocRoot 'agents'
   New-Item -ItemType Directory -Force -Path $agentsDst | Out-Null

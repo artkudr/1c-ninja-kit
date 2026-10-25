@@ -8,7 +8,7 @@
 |---|----------|-----|-----|
 | 1.1 | OVM / oscript | `kit.ps1 doctor` | auto |
 | 1.2 | Платформа 1cv8 (8.3/8.5) | doctor: `C:\Program Files\1cv8\*\bin` | auto |
-| 1.3 | bsl-analyzer.exe | doctor; install from [itrous/bsl-analyzer releases](https://github.com/itrous/bsl-analyzer/releases) → `bsl-analyzer-windows-amd64.exe` as `%LOCALAPPDATA%\bsl-analyzer\bsl-analyzer.exe` | auto / needs-human |
+| 1.3 | bsl-analyzer.exe | doctor; install from [itrous/bsl-analyzer releases](https://github.com/itrous/bsl-analyzer/releases) → `bsl-analyzer-windows-amd64.exe` as `%LOCALAPPDATA%\bsl-analyzer\bsl-analyzer.exe`; workspace MCP запускается из `%USERPROFILE%\.bsl-analyzer\bin\bsl-analyzer-app.exe` (кладёт лаунчер, min 0.4.0) | auto / needs-human |
 | 1.4 | Apache tools 83/85 | `%USERPROFILE%\tools\apache-83` / `apache-85` | auto / needs-human если нет |
 | 1.5 | Toolkit EPF (optional) | [ROCTUP/1c-mcp-toolkit releases](https://github.com/ROCTUP/1c-mcp-toolkit/releases) → `%USERPROFILE%\tools\1c-mcp-toolkit\MCP_Toolkit.epf` | needs-human |
 

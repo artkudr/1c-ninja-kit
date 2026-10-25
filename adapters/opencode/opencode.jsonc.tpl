@@ -27,7 +27,17 @@
 
       "bsl-analyzer-workspace": {
         "type": "local",
-        "command": ["{{BSL_ANALYZER_EXE}}", "mcp", "serve", "--profile", "workspace", "--source-dir", "{{PROJECT_ROOT}}", "--cache-dir", "{{PROJECT_ROOT}}\\.build"]
+        // Общий backend (broker) без ручного запуска. Запускаем bsl-analyzer-app.exe, а не лаунчер:
+        // лаунчер держит потомка в Windows Job с kill-on-close и убивает backend вместе с прокси
+        // (upstream itrous/bsl-analyzer#345), после чего остаётся мёртвый writer.lease и граф
+        // отвечает "graph busy". Без лаунчера backend переживает закрытие клиента.
+        // TTL — сутки простоя вместо штатных 300 с; мёртвые аренды снимает задача
+        // "bsl-analyzer lease clean" (см. скилл 1c-env-setup, scripts/bsl-analyzer-lease-clean.ps1).
+        "environment": {
+          "BSL_MCP_IDLE_TTL_SECS": "86400",
+          "BSL_MCP_ORPHAN_GRACE_SECS": "86400"
+        },
+        "command": ["{{BSL_ANALYZER_APP_EXE}}", "mcp", "serve", "--profile", "workspace", "--mode", "broker", "--source-dir", "{{PROJECT_ROOT}}", "--cache-dir", "{{PROJECT_ROOT}}\\.build"]
       },
 
       // Стандарты ITS/v8. streamable-http без OAuth -> oauth: false обязателен.

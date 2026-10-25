@@ -790,10 +790,11 @@ function Get-McpMachinePaths {
     }
     if (-not $ninjaRoot) { $ninjaRoot = $roots[0] }
     return [pscustomobject]@{
-        BslAnalyzerExe = Join-Path $env:LOCALAPPDATA "bsl-analyzer\bsl-analyzer.exe"
-        NinjaMain      = Join-Path $ninjaRoot "main.os"
-        ShcntxHelpDb   = Join-Path $ninjaRoot "src\data\shcntx_help.db"
-        NinjaRoot      = $ninjaRoot
+        BslAnalyzerExe    = Join-Path $env:LOCALAPPDATA "bsl-analyzer\bsl-analyzer.exe"
+        BslAnalyzerAppExe = Join-Path $env:USERPROFILE ".bsl-analyzer\bin\bsl-analyzer-app.exe"
+        NinjaMain         = Join-Path $ninjaRoot "main.os"
+        ShcntxHelpDb      = Join-Path $ninjaRoot "src\data\shcntx_help.db"
+        NinjaRoot         = $ninjaRoot
     }
 }
 
@@ -811,6 +812,7 @@ function Get-McpJsonFromSkillTemplate {
         Replace("{{NINJA_MAIN}}", (ConvertTo-McpJsonPath $paths.NinjaMain)).
         Replace("{{SHCNTX_HELP_DB}}", (ConvertTo-McpJsonPath $paths.ShcntxHelpDb)).
         Replace("{{BSL_ANALYZER_EXE}}", (ConvertTo-McpJsonPath $paths.BslAnalyzerExe)).
+        Replace("{{BSL_ANALYZER_APP_EXE}}", (ConvertTo-McpJsonPath $paths.BslAnalyzerAppExe)).
         Replace("{{PROJECT_ROOT}}", (ConvertTo-McpJsonPath $ProjectRootPath)).
         Replace("{{WEB_PORT}}", "$WebPort").
         Replace("{{APP_NAME}}", $AppName).
@@ -868,6 +870,7 @@ function Get-OpenCodeConfigFromTemplate {
         Replace("{{NINJA_MAIN}}", (ConvertTo-McpJsonPath $paths.NinjaMain)).
         Replace("{{SHCNTX_HELP_DB}}", (ConvertTo-McpJsonPath $paths.ShcntxHelpDb)).
         Replace("{{BSL_ANALYZER_EXE}}", (ConvertTo-McpJsonPath $paths.BslAnalyzerExe)).
+        Replace("{{BSL_ANALYZER_APP_EXE}}", (ConvertTo-McpJsonPath $paths.BslAnalyzerAppExe)).
         Replace("{{PROJECT_ROOT}}", (ConvertTo-McpJsonPath $ProjectRootPath)).
         Replace("{{WEB_PORT}}", "$WebPort").
         Replace("{{APP_NAME}}", $AppName).

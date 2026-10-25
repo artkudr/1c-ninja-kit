@@ -24,17 +24,23 @@
 			]
 		},
 		"bsl-analyzer-workspace": {
-			"command": "{{BSL_ANALYZER_EXE}}",
+			"command": "{{BSL_ANALYZER_APP_EXE}}",
 			"args": [
 				"mcp",
 				"serve",
 				"--profile",
 				"workspace",
+				"--mode",
+				"broker",
 				"--source-dir",
 				"{{PROJECT_ROOT}}",
 				"--cache-dir",
 				"{{PROJECT_ROOT}}\\.build"
-			]
+			],
+			"env": {
+				"BSL_MCP_IDLE_TTL_SECS": "86400",
+				"BSL_MCP_ORPHAN_GRACE_SECS": "86400"
+			}
 		},
 		"v8std": {
 			"url": "https://ai.v8std.ru/mcp",

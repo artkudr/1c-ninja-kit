@@ -58,11 +58,13 @@ argument-hint: "[-SourceProject path] [-Mode Init|Refresh|Check] [-Force]"
 - **Не** копируй и **не** мержи `%USERPROFILE%\.cursor\mcp.json` в проект. Эталон JSON — шаблон скилла (`scripts/templates/mcp.json.example.tpl`) → `{{PROJECT_MCP}}`.
 - **Не** клади 1С-серверы (`1c-ninja-mcp`, `1c-mcp-toolkit`, `bsl-analyzer-*`, `v8std`) в user-конфиг: одинаковые имена дают дубли с проектом. Live-URL только в project MCP **этой** ИБ.
 - `bsl-analyzer-workspace` в project MCP **всегда** с `--cache-dir "<корень>\.build"`: кеш живёт в проекте (`.build` в `.gitignore`), а не в профиле пользователя. Без этого флага анализатор пишет в `%LOCALAPPDATA%`.
+- `bsl-analyzer-workspace` запускается **не лаунчером**, а `%USERPROFILE%\.bsl-analyzer\bin\bsl-analyzer-app.exe` с `--mode broker` и `BSL_MCP_IDLE_TTL_SECS` / `BSL_MCP_ORPHAN_GRACE_SECS` = 86400. Лаунчер держит потомка в Windows Job с kill-on-close и убивает broker-backend вместе с прокси (upstream `itrous/bsl-analyzer#345`); после этого остаётся мёртвый `writer.lease`, и граф отвечает `graph busy ... used by another live process`. `bsl-analyzer-reference` остаётся на лаунчере — ему backend не нужен.
 - Список расширений ИБ — **главный способ**: MCP `1c-ninja-mcp` `live_extensions_list` (HTTP `/hs/ninja-live`). Порядок: `src/cfe/NinjaLive` → `db-load-xml -Extension` → публикация → `live_extensions_list`. **Не** запускать Предприятие ради списка.
 - Список пользователей ИБ **не** запрашиваем.
 
 ## История скилла
 
+- 2026-10-25: `bsl-analyzer-workspace` переведён на **общий backend без лаунчера**: в шаблонах MCP запускается `bsl-analyzer-app.exe` (`{{BSL_ANALYZER_APP_EXE}}`) с `--mode broker` и env `BSL_MCP_IDLE_TTL_SECS` / `BSL_MCP_ORPHAN_GRACE_SECS` = 86400. Причина: с 0.4.0 профиль workspace по умолчанию идёт в broker, а лаунчер на Windows убивает backend вместе с прокси (Job, #345) и оставляет мёртвый `writer.lease` → `graph busy`. Добавлены `scripts/bsl-analyzer-lease-clean.ps1` и машинная задача `bsl-analyzer lease clean` (ставится `kit.ps1 apply -Adapter opencode`); миграция существующих проектов — `install/migrate-bsl-analyzer-broker.ps1`.
 - 2026-10-20: Кеш bsl-analyzer — в проекте: `bsl-analyzer-workspace` в шаблонах MCP запускается с `--cache-dir "<корень>\.build"`. Причина: кеш переживает перезапуски (тёплый старт — обход файлов, правки — инкремент), но не должен занимать профиль пользователя (~4 ГБ на крупной конфигурации).
 - 2026-10-14: Контур скиллов: реестр баз `.v8-project.json`; bootstrap NinjaLive — `db-load-xml -Extension` + `db-cfe-admin set-properties`; cc-1c-skills ставится `install/cc-skills.ps1`.
 - 2026-10-02: `-Adapter opencode`: project MCP в `opencode.jsonc` (`mcp.servers`, V2-схема); команды в `.opencode/commands`; `.cursor/rules` не создаются (глобальный `AGENTS.md` + `kit-rules`). Добавлен `-WebPort`. `main.os` ищется в `NINJA_MCP_ROOT` → `1c-ninja-kit\components\1c-ninja-mcp` → `1c-ninja-mcp`.
@@ -125,7 +127,9 @@ powershell.exe -NoProfile -File "$env:USERPROFILE\.config\opencode\skills\1c-env
 
 Скрипт создаёт каталоги, `.v8-project.json`, mcp example + `opencode.jsonc` **из шаблона скилла** (не из user settings), bsl-analyzer.toml, gitignore, docs, smoke.config; **копирует** `src/cfe/NinjaLive` с эталона (SourceProject или `C:\1C\projects\my-project\src\cfe\NinjaLive`); **разворачивает** OpenSpec scaffold (`.opencode/commands/opsx-*.md`, `openspec/templates/`, README, `config.yaml`/`project.md` из tpl); вызывает `sync-cfe.ps1` **без** опроса ИБ через Предприятие (пусто или `-ExtensionNames`, если агент уже снял список). Warn, если user-конфиг содержит те же имена серверов.
 
-В `opencode.jsonc` (и в `.example`) `bsl-analyzer-workspace` пишется с `--source-dir "<корень>"` **и** `--cache-dir "<корень>\.build"` — кеш графа и поиска остаётся в проекте, а не в `%LOCALAPPDATA%`. Каталог `.build` уже в gitignore-сниппете; шаблоны обновлены вместе со скиллом, отдельного флага в `env-setup.ps1` нет.
+В `opencode.jsonc` (и в `.example`) `bsl-analyzer-workspace` пишется с `--source-dir "<корень>"`, `--cache-dir "<корень>\.build"` и `--mode broker`, а запускается из `bsl-analyzer-app.exe` (не лаунчера) — кеш графа и поиска остаётся в проекте, backend переживает закрытие клиента. Каталог `.build` уже в gitignore-сниппете. Отдельного флага в `env-setup.ps1` нет: путь app-бинарника берётся из `Get-McpMachinePaths` (`%USERPROFILE%\.bsl-analyzer\bin\bsl-analyzer-app.exe`).
+
+Машинная часть (один раз на машину, делает `kit.ps1 apply -Adapter opencode`): задача планировщика `bsl-analyzer lease clean` — при входе и каждые 5 минут снимает мёртвые `writer.lease` в кешах всех проектов и в общем кеше профиля. Ничего не запускает; лог только при изменениях — `%LOCALAPPDATA%\bsl-analyzer\lease-clean.log`. Существующие проекты переводятся на новую схему `install\migrate-bsl-analyzer-broker.ps1` (идемпотентно, `-DryRun`).
 
 Режимы:
 

@@ -43,7 +43,18 @@ Copy-Item "$env:USERPROFILE\Downloads\bsl-analyzer-windows-amd64.exe" `
 # & "$env:LOCALAPPDATA\bsl-analyzer\bsl-analyzer.exe" --launcher-update
 ```
 
-3. В project MCP: `bsl-analyzer-workspace` / `bsl-analyzer-reference` (см. шаблоны kit).  
+3. В project MCP: `bsl-analyzer-reference` (лаунчер) и `bsl-analyzer-workspace` (app-бинарник
+   `%USERPROFILE%\.bsl-analyzer\bin\bsl-analyzer-app.exe`, `--mode broker`, см. шаблоны kit).
+
+   Почему workspace не через лаунчер: с 0.4.0 профиль workspace по умолчанию идёт в общий backend
+   (broker), а лаунчер на Windows держит потомка в Job с kill-on-close — backend умирает вместе с
+   прокси и оставляет мёртвый `writer.lease`, после чего граф отвечает
+   `graph busy ... used by another live process`. App-бинарник кладёт сам лаунчер при
+   `--launcher-update`, путь стабилен.
+
+   `kit.ps1 apply -Adapter opencode` дополнительно ставит задачу планировщика
+   `bsl-analyzer lease clean` (при входе и каждые 5 минут): снимает мёртвые `writer.lease`
+   во всех проектах и в общем кеше профиля, ничего не запускает.
 4. Версия app: **≥ 0.2.86** (релиз v0.2.86 от 2026-10-07).
 
 Документация MCP: репозиторий itrous/bsl-analyzer → docs/mcp.  

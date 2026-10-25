@@ -43,6 +43,30 @@ Rust MCP **workspace** (itrous/bsl-analyzer, **≥0.2.86**): модель исх
 - Смена `--cache-dir` = новый пустой кеш (одна холодная сборка). Абсолютный путь обязателен: относительный считается от cwd процесса.
 - Кеш машинно-локальный: после переноса папки проекта или на другой машине будет холодная сборка.
 
+### Общий backend (broker) и «graph busy»
+
+С 0.4.0 профиль workspace по умолчанию работает через общий backend (broker): клиент запускает прокси,
+тот — один тяжёлый процесс на проект и каталог кеша. В project MCP поэтому запускается
+`%USERPROFILE%\.bsl-analyzer\bin\bsl-analyzer-app.exe` с `--mode broker`, а **не** лаунчер:
+лаунчер держит потомка в Windows Job с kill-on-close и убивает backend вместе с прокси
+(upstream `itrous/bsl-analyzer#345`). Без лаунчера backend переживает закрытие клиента и
+переиспользуется следующими сессиями.
+
+Симптом дефекта: `graph` → `state: failed`, ошибка
+`graph busy: ... is used by another live process (pid <мёртвый>)`, при этом `initialize`/`outline`
+работают. Причина — `writer.lease` в `<кеш>\workspaces\v1\<digest>` остался от убитого процесса,
+а версия не забирает каталог у «живого» (на Windows проверка через именованный канал даёт
+`ACCESS_DENIED`). Лечение:
+
+1. `%LOCALAPPDATA%\bsl-analyzer\lease-clean.log` и скрипт скилла `1c-env-setup`
+   `scripts\bsl-analyzer-lease-clean.ps1` — снимает аренду, если PID мёртв (задача
+   `bsl-analyzer lease clean` делает это каждые 5 минут).
+2. Либо вручную: остановить процессы проекта и убрать `writer.lease` (базы `bsl-graph.db` /
+   `bsl-search.db` не трогать), затем дать клиенту подключиться заново.
+
+`BSL_MCP_IDLE_TTL_SECS` по умолчанию 300 с, `BSL_MCP_ORPHAN_GRACE_SECS` — 30 с; в project MCP
+оба подняты до суток, иначе backend уходит между сессиями.
+
 ## Модель исходников и EPF/ERF
 
 | Слой | Как попадает в анализ |

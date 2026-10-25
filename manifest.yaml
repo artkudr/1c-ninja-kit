@@ -1,6 +1,6 @@
-﻿# 1c-ninja-kit manifest
+# 1c-ninja-kit manifest
 name: 1c-ninja-kit
-version: 0.5.0
+version: 0.6.0
 platform: windows
 primaryAdapter: opencode
 assumesMachineSoft: false

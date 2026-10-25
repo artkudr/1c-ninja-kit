@@ -76,7 +76,7 @@
 
 1. `1c-ninja-mcp` — `NINJA_URL` / `NINJA_USER` / `NINJA_PASSWORD` **этой** ИБ (`…/hs/ninja-live`, CFE `NinjaLive`)
 2. `bsl-analyzer-reference` — справка платформы (без `--source-dir`)
-3. `bsl-analyzer-workspace` — `--source-dir` = абсолютный путь **этой** папки, `--cache-dir` = `<эта папка>\.build` (кеш графа и поиска в проекте, `.build` в gitignore)
+3. `bsl-analyzer-workspace` — `--source-dir` = абсолютный путь **этой** папки, `--cache-dir` = `<эта папка>\.build` (кеш графа и поиска в проекте, `.build` в gitignore), `--mode broker`, запуск из `%USERPROFILE%\.bsl-analyzer\bin\bsl-analyzer-app.exe` (не из лаунчера: его Windows Job убивает backend вместе с прокси, #345), env `BSL_MCP_IDLE_TTL_SECS` / `BSL_MCP_ORPHAN_GRACE_SECS` = 86400
 4. `v8std` — `https://ai.v8std.ru/mcp` (стандарты ITS/v8, streamable-http)
 5. `1c-mcp-toolkit` — `http://127.0.0.1:6003/mcp` (fallback live, по умолчанию disabled)
 

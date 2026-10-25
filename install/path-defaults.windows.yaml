@@ -12,8 +12,12 @@ bslAnalyzer:
   releases: "https://github.com/itrous/bsl-analyzer/releases"
   windowsLauncherAsset: "bsl-analyzer-windows-amd64.exe"
   exe: "%LOCALAPPDATA%\\bsl-analyzer\\bsl-analyzer.exe"
+  # Рабочий бинарь текущей версии, который кладёт лаунчер. Для workspace MCP запускать его, а не
+  # лаунчер: лаунчер держит потомка в Windows Job (kill-on-close) и убивает broker-backend вместе
+  # с прокси — остаётся мёртвый writer.lease и граф отвечает "graph busy" (itrous/bsl-analyzer#345).
+  appExe: "%USERPROFILE%\\.bsl-analyzer\\bin\\bsl-analyzer-app.exe"
   projectCache: "<project>\\.build"
-  minAppVersion: "0.2.77"
+  minAppVersion: "0.4.0"
 
 apache:
   "8.3":
