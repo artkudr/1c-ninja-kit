@@ -103,7 +103,7 @@ function Update-Block {
 $summary = @()
 
 foreach ($project in $Projects) {
-    foreach ($name in @('opencode.jsonc', 'opencode.jsonc.example')) {
+    foreach ($name in @('opencode.jsonc')) {
         $file = Join-Path $project $name
         if (-not (Test-Path -LiteralPath $file)) { continue }
 

@@ -1,7 +1,7 @@
 # Слои 1c-ninja-kit
 
 ```text
-Machine  →  Profile (~/.cursor)  →  Project  →  Adapter (Cursor / …)
+Machine  →  Profile  →  Project
                 ↑
          SoT = этот репозиторий
 ```
@@ -9,9 +9,11 @@ Machine  →  Profile (~/.cursor)  →  Project  →  Adapter (Cursor / …)
 | Слой | Что | Кто ставит |
 |------|-----|------------|
 | **Machine** | OVM/OneScript, bsl-analyzer, Apache tools, Toolkit EPF, cc-1c-skills | человек + `kit doctor` |
-| **Profile** | skills / rules / agents | `kit apply --profile 1c-ninja-kit` |
-| **Project** | `.v8-project.json`, mcp, NinjaLive, OpenSpec | `1c-env-setup` / `kit init-project` |
-| **Adapter** | как харнесс (OpenCode) читает skills/MCP | `adapters/<name>/` |
+| **Profile** | skills / rules / agents | `kit apply` |
+| **Project** | `.v8-project.json`, mcp, NinjaLive, OpenSpec, `AGENTS.md` | скилл `skill-env-setup` |
+
+Харнесс один — **OpenCode V2**. Куда именно раскладываются skills/rules/agents и как
+собирается `AGENTS.md`, описано в `docs/opencode.md`; контракт имён — `docs/NAMING.md`.
 
 ## Пара Ninja
 

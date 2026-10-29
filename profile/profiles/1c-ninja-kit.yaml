@@ -1,13 +1,7 @@
 # Aggregate profile — default apply target
 name: 1c-ninja-kit
-version: 0.1.0
-description: Full OpenCode profile pack (skills + rules + agents) for 1C agent toolchain
-packs:
-  - core
-  - web
-  - fresh
-  - openspec
-  - extras-mcp
+version: 0.9.0
+description: OpenCode profile (skills + rules + agents) for the 1C agent toolchain
 includes:
   skills: profile/skills
   rules: profile/rules

@@ -52,13 +52,15 @@ Copy-Item "$env:USERPROFILE\Downloads\bsl-analyzer-windows-amd64.exe" `
    `graph busy ... used by another live process`. App-бинарник кладёт сам лаунчер при
    `--launcher-update`, путь стабилен.
 
-   `kit.ps1 apply -Adapter opencode` дополнительно ставит задачу планировщика
+   `kit.ps1 apply` дополнительно ставит задачу планировщика
    `bsl-analyzer lease clean` (при входе и каждые 5 минут): снимает мёртвые `writer.lease`
-   во всех проектах и в общем кеше профиля, ничего не запускает.
+   во всех проектах и в общем кеше профиля, ничего не запускает. Задача стартует через
+   `wscript.exe` и тонкий `.vbs`-лаунчер из `skill-env-setup`, поэтому консольное окно
+   не появляется; прямой вызов `pwsh` в интерактивной сессии окно показывает.
 4. Версия app: **≥ 0.2.86** (релиз v0.2.86 от 2026-10-07).
 
 Документация MCP: репозиторий itrous/bsl-analyzer → docs/mcp.  
-Скилл в kit: `profile/skills/1c-bsl-analyzer`.
+Скилл в kit: `profile/skills/skill-bsl-analyzer`.
 
 ## 3. Apache tools (web / ninja-live)
 
@@ -110,9 +112,9 @@ New-Item -ItemType Directory -Force -Path $dir | Out-Null
 3. В 1С: Файл → Открыть → EPF → режим **«Встроенный сервер»** → порт **6003**.  
 4. MCP URL: `http://127.0.0.1:6003/mcp`
 
-Скилл: `profile/skills/1c-mcp-toolkit`.
+Скилл: `profile/skills/skill-mcp-toolkit`.
 
-## 6. Node / Playwright (optional, web-test)
+## 6. Node / Playwright (optional, skill-web-test)
 
 Только для UI smoke. Для `live_extensions_list` не нужен.
 
@@ -129,7 +131,7 @@ Toolkit missing → WARN (ок для ninja-only).
 
 ## 8. Дальше по харнессу
 
-- OpenCode: `adapters/opencode/` + `docs/ADAPTATION.md`
+- OpenCode: `docs/opencode.md` + `docs/ADAPTATION.md`
 
 ## Сводка «откуда брать»
 

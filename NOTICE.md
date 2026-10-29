@@ -6,9 +6,9 @@
 
 | Компонент | Где в kit | Примечание |
 |-----------|-----------|------------|
-| Rules / orchestration (ecoladev-форк) | `profile/rules/` | Процессный мозг: `1c-orchestrator` и спутники |
+| Rules / orchestration (ecoladev-форк) | `profile/rules/` | Процессный мозг: `rule-orchestrator` и спутники |
 | Skills (профиль) | `profile/skills/` | В т.ч. meta/form/cfe и orchestration |
-| Agents `1c-*` | `profile/agents/` | Cursor agent prompts |
+| Agents `agent-*` | `profile/agents/` | OpenCode agent prompts |
 | **1c-ninja-mcp** | `components/1c-ninja-mcp/` | MCP-сервер (часть kit) |
 | **NinjaLive** | `project-scaffold/cfe/NinjaLive/` | CFE-пара к MCP live (`/hs/ninja-live`) |
 | Stack defaults / install | `docs/`, `install/` | Порты Apache, MCP layout, doctor |
@@ -23,7 +23,7 @@
 | Apache HTTP Server | Apache License 2.0 | только layout paths `apache-83` / `apache-85` |
 | MCP Toolkit EPF | [ROCTUP/1c-mcp-toolkit](https://github.com/ROCTUP/1c-mcp-toolkit) | скачать `MCP_Toolkit.epf` с Releases; рекомендуемый path `%USERPROFILE%\tools\1c-mcp-toolkit\` |
 | v8std MCP | `https://ai.v8std.ru/mcp` | эталон project MCP (`streamable-http`); не в user mcp |
-| cc-1c-skills lineage | исходный upstream Nikolay-Shirokov / port-cursor | skills в `profile/skills/` (meta/form/…); см. `sync-cc-1c-skills` |
+| cc-1c-skills lineage | исходный upstream Nikolay-Shirokov | skills в `profile/skills/` (meta/form/…); установка — `install/cc-skills.ps1` |
 | OpenSpec (Fission-AI) | MIT (upstream CLI опционален) | шаблоны scaffold; CLI не обязателен |
 | itrous/ai_rules_1c | upstream reference | **не** тащить второй always-on оркестратор; канон — ecoladev-форк |
 

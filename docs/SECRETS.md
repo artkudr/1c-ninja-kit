@@ -9,7 +9,7 @@
 
 ## В git — только шаблоны
 
-- `*.example`, `*.tpl`, `opencode.jsonc.example`
+- `*.example`, `*.tpl`
 - Placeholders: `{{BSL_USER}}`, `{{BSL_PASSWORD}}`, `<пароль>` и т.п.
 
 ## Политика MCP

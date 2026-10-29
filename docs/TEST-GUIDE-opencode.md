@@ -1,14 +1,14 @@
-# TEST GUIDE — OpenCode V2 (1c-ninja-kit v0.4)
+# TEST GUIDE — OpenCode V2 (1c-ninja-kit v0.9)
 
-Проверка доставки kit под **OpenCode**: глобальный профиль (`skills/`, `agents/`, `kit-rules/`, `AGENTS.md`) + project `opencode.jsonc`.
+Проверка доставки kit под **OpenCode**: глобальный профиль (`skills/kit/`, `agents/`, `AGENTS.md`) + project `opencode.jsonc`.
 
 ## Цель
 
-Убедиться, что агент в OpenCode: видит always-on процессный мозг, умеет вызвать скилл по id, запускает `1c-*` субагентов и ходит в 1С MCP этого проекта.
+Убедиться, что агент в OpenCode: видит always-on процессный мозг, умеет вызвать скилл по id, запускает `agent-*` субагентов и ходит в 1С MCP этого проекта.
 
 ## Запреты
 
-- Не коммитить `opencode.jsonc` (пароль ИБ) — в git идёт `opencode.jsonc.example`
+- Не коммитить `opencode.jsonc` (пароль ИБ) — он в `.gitignore`
 - В глобальном `~/.config/opencode/opencode.json(c)` не должно быть 1С MCP
 - В логе маскировать секреты
 
@@ -35,31 +35,36 @@ powershell -NoProfile -File .\install\kit.ps1 verify
 ### 2. Apply
 
 ```powershell
-powershell -NoProfile -File .\install\kit.ps1 apply -Adapter opencode -DryRun
-powershell -NoProfile -File .\install\kit.ps1 apply -Adapter opencode
+powershell -NoProfile -File .\install\kit.ps1 apply -DryRun
+powershell -NoProfile -File .\install\kit.ps1 apply
 ```
 
 Проверь руками:
 
 | Путь | Ожидание |
 |------|----------|
-| `~/.config/opencode/skills/` | столько же каталогов, сколько в `profile/skills` |
-| `~/.config/opencode/agents/*.md` | фронтматтер `mode: subagent` + `description`; **нет** `tools` / `allowParallel` / `model: inherit` |
-| `~/.config/opencode/kit-rules/*.md` | по файлу на каждый `profile/rules/*.mdc`, без фронтматтера |
-| `~/.config/opencode/AGENTS.md` | есть маркеры `<!-- 1c-ninja-kit:begin -->` / `<!-- 1c-ninja-kit:end -->`, внутри 4 always-on правила + индекс on-demand |
+| `~/.config/opencode/skills/kit/skills/` | столько же каталогов, сколько в `profile/skills` |
+| `~/.config/opencode/skills/kit/rules/` | on-demand правила `rule-*` |
+| `~/.config/opencode/agents/agent-*.md` | фронтматтер `mode: subagent` + `description`; **нет** `tools` / `allowParallel` / `model: inherit` |
+| `~/.config/opencode/skills\kit\rules/*.md` | по файлу на каждый `profile/rules/`, без фронтматтера |
+| `~/.config/opencode/AGENTS.md` | есть маркеры `<!-- 1c-ninja-kit:begin -->` / `<!-- 1c-ninja-kit:end -->`, внутри always-on `rule-*`; индекса on-demand нет |
 
 ### 3. Init project
 
+Новый проект создаёт скилл `skill-env-setup`.
+
 ```powershell
 New-Item -ItemType Directory -Force -Path C:\1C\projects\ninja-kit-opencode-e2e | Out-Null
-powershell -NoProfile -File .\install\kit.ps1 init-project `
-  -ProjectPath C:\1C\projects\ninja-kit-opencode-e2e `
-  -Adapter opencode `
+powershell -NoProfile -File "$env:USERPROFILE\.config\opencode\skills\kit\skills\skill-env-setup\scripts\env-setup.ps1" `
+  -Mode Init `
+  -ProjectRoot C:\1C\projects\ninja-kit-opencode-e2e `
   -AppName ninja-kit-opencode `
-  -V8Version 8.3
+  -V8Version 8.3 `
+  -WebPort 8083 `
+  -SkipSyncCfe
 ```
 
-Проверь: `AGENTS.md`, `opencode.jsonc`, `opencode.jsonc.example` (без секретов), `.opencode/commands/opsx-*.md`, `src/cfe/NinjaLive`, `kit-init-report.json`.
+Проверь: `AGENTS.md`, `opencode.jsonc`, `.opencode/commands/opsx-*.md`, `src/cfe/NinjaLive`, `.ignore`, `build/out/cfe`, `docs/dev-stack.md`.
 
 ### 4. MCP
 
@@ -76,12 +81,12 @@ opencode mcp list
 
 В сессии попроси агента:
 
-1. «вызови скилл `1c-env-setup`» → tool `skill` с id `1c-env-setup`
-2. «вызови скилл `repo-workflow`»
-3. «запусти субагента `1c-explorer`» → tool `subagent`
-4. «запусти субагента `1c-architect`»
+1. «вызови скилл `skill-env-setup`» → tool `skill` с id `skill-env-setup`
+2. «вызови скилл `skill-repo-workflow`»
+3. «запусти субагента `agent-explorer`» → tool `subagent`
+4. «запусти субагента `rule-architect`»
 
-Негативные проверки: `1c-metadata-manager` и `1c-code-reviewer` не зовутся без явной просьбы.
+Негативная проверка: `agent-code-reviewer` не зовётся без явной просьбы.
 
 ### 6. Live (optional)
 
@@ -103,28 +108,29 @@ opencode mcp list
 - fail/warn:
 - notes:
 
-## apply -Adapter opencode
+## apply
 - skills count:
 - agents count / frontmatter clean: yes/no
-- kit-rules count:
+- skills\kit\rules count:
 - AGENTS.md markers present: yes/no
 - always-on rules inlined (4): yes/no
 
-## init-project
+## env-setup
 - path:
 - opencode.jsonc + example present:
 - .opencode/commands:
-- report status:
+- AGENTS.md / .ignore / build/out/cfe:
+- NinjaLive source:
 
 ## MCP
 - opencode mcp list:
 - global opencode.json(c) clean: yes/no
 
 ## skills / subagents
-- skill 1c-env-setup: ok/fail
-- skill repo-workflow: ok/fail
-- subagent 1c-explorer: ok/fail
-- subagent 1c-architect: ok/fail
+- skill skill-env-setup: ok/fail
+- skill skill-repo-workflow: ok/fail
+- subagent agent-explorer: ok/fail
+- subagent agent-architect: ok/fail
 
 ## live
 - skipped / results:

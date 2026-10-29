@@ -75,4 +75,3 @@ mcpPolicy:
     - bsl-analyzer-reference
     - bsl-analyzer-workspace
   projectMcp: "<project>\\opencode.jsonc"
-  projectMcpExample: "<project>\\opencode.jsonc.example"

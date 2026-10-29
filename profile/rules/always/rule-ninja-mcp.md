@@ -1,0 +1,34 @@
+# 1c-ninja-mcp: static + live
+
+## Scope
+
+- **Project** `<репозиторий>\{{PROJECT_MCP}}` (gitignore) — полный MCP этой ИБ, в т.ч. ninja с `NINJA_URL` / `NINJA_USER` / `NINJA_PASSWORD`. Эталон: скилл `skill-env-setup` (там шаблон project-конфига для этого адаптера).
+- **User** `{{USER_MCP}}` — **без** `1c-ninja-mcp` и прочих 1С-серверов (иначе дубли с проектом). Live-URL в user не класть.
+- Не подставляй URL другой базы «по умолчанию». Нет project env → явный `url` у тула или отказ, не угадывание.
+
+## Живые данные ИБ (приоритет)
+
+Нужны **реальные данные / запрос / метаданные ИБ / журнал / eval** — сначала **1c-ninja-mcp** `live_*` (публикация Apache + расширение `NinjaLive` в ИБ, RootURL `ninja-live`).
+
+| Задача | Tool |
+|--------|------|
+| Smoke / версия сервиса | `live_version` |
+| Запрос SELECT | `live_query` |
+| Проверка текста запроса | `live_validate_query` |
+| Синтаксис BSL без выполнения | `live_check_syntax` |
+| Список / структура метаданных ИБ | `live_metadata_list`, `live_metadata_structure` |
+| Журнал регистрации | `live_event_log` |
+| Список расширений ИБ (**главный способ**) | `live_extensions_list` (не Предприятие) |
+| Выполнить код / выражение | `live_execute`, `live_eval` (осторожно; роль `NinjaLive_ВыполнениеКода`) |
+
+**Главный способ списка CFE в ИБ:** `live_extensions_list` после загрузки `src/cfe/NinjaLive` → публикация. Setup: скилл `skill-env-setup`. **Не** запускать Предприятие ради списка.
+
+**1c-mcp-toolkit** — только если live ninja недоступен: нет публикации `/hs/ninja-live`, расширение `NinjaLive` нельзя подключить, или `live_*` стабильно падает. Toolkit: `MCP_Toolkit.epf` на `:6003`.
+
+Граф вызовов / `symbol_info` / диагностики по файлам — правило `rule-bsl-analyzer`, не ninja live и не grep.
+
+## Поиск по выгрузке (static)
+
+`bsl_search`, `xml_search`, `config_list`, `read_module`, `syntax_help_search` — `path` = абсолютный путь **этого** проекта. Grep/Read — точечно или если MCP недоступен.
+
+Загрузка / хранилище / синтакс-контроль — скиллы контура (`db-*`, `skill-repo-workflow`, `skill-syntax-check`) по `rule-development-process`. Разбор EPF/ERF — скиллы `epf-dump` / `erf-dump`. Скиллы: `skill-ninja-mcp`, `skill-mcp-toolkit`.

@@ -1,8 +1,8 @@
 # 1c-ninja-kit manifest
 name: 1c-ninja-kit
-version: 0.6.0
+version: 0.9.0
 platform: windows
-primaryAdapter: opencode
+harness: opencode
 assumesMachineSoft: false
 license: see NOTICE.md
 
@@ -10,12 +10,10 @@ layers:
   - machine
   - profile
   - project
-  - adapter
 
 profile:
   default: 1c-ninja-kit
-  targetByAdapter:
-    opencode: "%USERPROFILE%\\.config\\opencode (skills/ agents/ kit-rules/ AGENTS.md)"
+  target: "%USERPROFILE%\\.config\\opencode (skills/kit/ agents/ AGENTS.md)"
 
 components:
   1c-ninja-mcp:
@@ -35,16 +33,17 @@ stackDefaults:
     "8.3": { port: 8083, toolsDir: "%USERPROFILE%\\tools\\apache-83" }
     "8.5": { port: 8085, toolsDir: "%USERPROFILE%\\tools\\apache-85" }
 
+naming:
+  skills: skill-
+  rules: rule-
+  agents: agent-
+  externalSkills: unchanged
+
 cli:
   entry: install/kit.ps1
-  commands: [doctor, verify, apply, init-project]
-  adapters: [opencode]
-  forbidInitOn: [ecoladev]
-
-adapters:
-  opencode: { status: implemented, path: adapters/opencode, bridge: mcp+skills+agents+AGENTS.md }
+  commands: [doctor, verify, apply]
 
 tests:
   opencode: docs/TEST-GUIDE-opencode.md
   machineBootstrap: docs/MACHINE-BOOTSTRAP.md
-  bridge: adapters/BRIDGE-CONTRACT.md
+  harness: docs/opencode.md

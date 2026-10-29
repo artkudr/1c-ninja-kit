@@ -2,7 +2,7 @@
 
 Агентная обвязка разработки 1С: skills (kit + cc-1c-skills), rules, MCP (**1c-ninja-mcp** + CFE **NinjaLive**), bsl-analyzer, харнесс **OpenCode**.
 
-**VERSION:** 0.6.0
+**VERSION:** 0.9.0
 
 ## Quick start
 
@@ -12,16 +12,13 @@ cd 1c-ninja-kit
 # If the machine has only the 1C platform installed:
 # read docs/MACHINE-BOOTSTRAP.md first
 powershell -NoProfile -File .\install\kit.ps1 doctor
-powershell -NoProfile -File .\install\kit.ps1 apply -Adapter opencode
+powershell -NoProfile -File .\install\kit.ps1 apply
 ```
 
-## Adapters
+## Harness
 
-| Harness | Guide |
-|---------|--------|
-| OpenCode (V2) | `adapters/opencode/` + **`docs/TEST-GUIDE-opencode.md`** |
-
-Bridge contract: `adapters/BRIDGE-CONTRACT.md`.
+Харнесс один — **OpenCode V2**. Отображение профиля, MCP и `AGENTS.md`:
+`docs/opencode.md`. Проверка доставки: `docs/TEST-GUIDE-opencode.md`.
 
 ## What is inside
 
@@ -30,7 +27,9 @@ Bridge contract: `adapters/BRIDGE-CONTRACT.md`.
 | `profile/` | skills / rules / agents |
 | `components/1c-ninja-mcp/` | MCP server (part of kit) |
 | `project-scaffold/cfe/NinjaLive/` | Live CFE pair |
-| `install/kit.ps1` | doctor / apply / init-project |
+| `install/kit.ps1` | doctor / verify / apply |
+| `docs/opencode.md` | единственный харнесс: пути, MCP, `AGENTS.md`, ограничения |
+| `docs/NAMING.md` | контракт имён `skill-` / `rule-` / `agent-` |
 | `docs/MACHINE-BOOTSTRAP.md` | bare PC: откуда скачать OVM, bsl-analyzer, toolkit |
 | `companions/pins.json` | upstream GitHub URLs для companion-бинарников |
 

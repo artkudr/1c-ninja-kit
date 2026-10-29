@@ -8,7 +8,7 @@ MCP-сервер для 1С на [autumn-mcp](https://github.com/autumn-library/
 
 ## Подключение
 
-В project `opencode.jsonc` (не в user-конфиг). Образец — шаблон скилла `1c-env-setup`:
+В project `opencode.jsonc` (не в user-конфиг). Образец — шаблон скилла `skill-env-setup`:
 
 ```json
 "1c-ninja-mcp": {

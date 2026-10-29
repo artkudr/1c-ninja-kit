@@ -1,83 +1,89 @@
 # Inventory snapshot
 
-- Date: 2026-10-14 22:42
-- Kit VERSION: 0.5.0
-- Skills (kit): 20
-- Skills (cc-1c-skills, внешний набор): 76 — ставится install/cc-skills.ps1 (web-* — kit-версии)
-- Rules: 33
-- Agents: 13
-- 1c-ninja-mcp: components/1c-ninja-mcp (in kit; static + live)
-- NinjaLive: project-scaffold/cfe/NinjaLive (full reference copy)
-- Excluded from copy: .build, __pycache__, .browser-session.json, *.bak, node_modules
+- Date: 2026-10-28
+- Kit VERSION: 0.9.0
+- Skills (kit): 19
+- Skills (cc-1c-skills, внешний набор): 76 — ставится `install/cc-skills.ps1`; `skill-web-*` — kit-версии
+- Rules: 33 (6 always + 27 on-demand)
+- Agents: 12
+- 1c-ninja-mcp: `components/1c-ninja-mcp` (in kit; static + live)
+- NinjaLive: `project-scaffold/cfe/NinjaLive` (full reference copy)
+- Excluded from copy: `.build`, `__pycache__`, `.browser-session.json`, `*.bak`, `node_modules`
 
 ## Skills (kit)
-- 1c-bsl-analyzer
-- 1c-env-setup
-- 1c-fresh-adaptation
-- 1c-fresh-cfe-audit
-- 1c-fresh-epf-audit
-- 1c-mcp-toolkit
-- 1c-ninja-mcp
-- 1c-project-context
-- 1c-spravochnye-dannye
-- 1c-syntax-check
-- 1c-versioning
-- composing-1c-queries
-- cursor-local-patches
-- handoff
-- repo-workflow
-- web-info
-- web-publish
-- web-stop
-- web-test
-- web-unpublish
+
+- skill-bsl-analyzer
+- skill-env-setup
+- skill-fresh-adaptation
+- skill-fresh-cfe-audit
+- skill-fresh-epf-audit
+- skill-handoff
+- skill-mcp-toolkit
+- skill-ninja-mcp
+- skill-project-context
+- skill-query-composition
+- skill-reference-data
+- skill-repo-workflow
+- skill-syntax-check
+- skill-versioning
+- skill-web-info
+- skill-web-publish
+- skill-web-stop
+- skill-web-test
+- skill-web-unpublish
 
 ## Rules
-- 1c-architect.mdc
-- 1c-code-agent.mdc
-- 1c-development-process.mdc
-- 1c-fresh.mdc
-- 1c-ninja-mcp.mdc
-- 1c-orchestrator.mdc
-- anti-patterns.mdc
-- async-methods.mdc
-- bsl-analyzer.mdc
-- bsl-code-standards.mdc
-- bsl-senior-developer.mdc
-- bsp-developer.mdc
-- dcs-design.mdc
-- dev-standards-architecture.mdc
-- extension-patterns.mdc
-- form-reserved-names.mdc
-- forms-events-add.mdc
-- forms.mdc
-- integrations-add.mdc
-- locks-and-transactions.mdc
-- logging-strategy.mdc
-- mcp-first-search.mdc
-- module-structure.mdc
-- platform-solutions.mdc
-- refactor-add.mdc
-- registers-design.mdc
-- reply-style.mdc
-- sdd-integrations.mdc
-- subagent-pipeline.mdc
-- subagents.mdc
-- systematic-debugging.mdc
-- tooling-playbooks.mdc
-- verification-checklist.mdc
+
+### Always-on (`profile/rules/always`)
+
+- rule-development-process
+- rule-ninja-mcp
+- rule-orchestrator
+- rule-bsl-analyzer
+- rule-mcp-first-search
+- rule-reply-style
+
+### On-demand (`profile/rules/on-demand`)
+
+- rule-anti-patterns
+- rule-architect
+- rule-async-methods
+- rule-bsl-code-standards
+- rule-bsl-senior-developer
+- rule-bsp-developer
+- rule-code-agent
+- rule-dcs-design
+- rule-dev-standards-architecture
+- rule-extension-patterns
+- rule-form-reserved-names
+- rule-forms
+- rule-forms-events-add
+- rule-fresh
+- rule-integrations-add
+- rule-locks-and-transactions
+- rule-logging-strategy
+- rule-module-structure
+- rule-platform-solutions
+- rule-refactor-add
+- rule-registers-design
+- rule-sdd-integrations
+- rule-subagent-pipeline
+- rule-subagents
+- rule-systematic-debugging
+- rule-tooling-playbooks
+- rule-verification-checklist
 
 ## Agents
-- 1c-analytic.md
-- 1c-arch-reviewer.md
-- 1c-architect.md
-- 1c-code-reviewer.md
-- 1c-developer.md
-- 1c-doc-writer.md
-- 1c-error-fixer.md
-- 1c-explorer.md
-- 1c-metadata-manager.md
-- 1c-performance-optimizer.md
-- 1c-planner.md
-- 1c-refactoring.md
-- 1c-tester.md
+
+- agent-analyst.md
+- agent-arch-reviewer.md
+- agent-architect.md
+- agent-code-reviewer.md
+- agent-developer.md
+- agent-doc-writer.md
+- agent-error-fixer.md
+- agent-explorer.md
+- agent-performance-optimizer.md
+- agent-planner.md
+- agent-refactoring.md
+- agent-tester.md

@@ -1,0 +1,26 @@
+# OPM / сборка (локальные зависимости не используем)
+/oscript_modules/
+/packagedef
+/build/
+.build/
+env.local.json
+env.json.v26.bak
+lastUploadedCommit.txt
+
+# Бинарники 1С
+*.cf
+*.cfe
+*.epf
+*.erf
+*.dt
+
+# OpenCode: проектный opencode.jsonc хранит пароль ИБ -> gitignore
+opencode.jsonc
+opencode.json
+!.opencode/commands/
+
+# Secrets
+.v8-project.json
+.v8-xsd/
+.env
+.dev.env

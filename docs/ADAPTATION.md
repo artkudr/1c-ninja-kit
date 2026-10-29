@@ -26,7 +26,7 @@ v0.1: soft **assumed** — doctor только предупреждает.
 
 | # | Действие | Примечание |
 |---|----------|------------|
-| 3.1 | Apply профиля `1c-ninja-kit` | OpenCode: `adapters/opencode/README.md` |
+| 3.1 | Apply профиля `1c-ninja-kit` | OpenCode: `docs/opencode.md` |
 | 3.2 | User mcp **без** 1С-серверов | иначе дубли |
 | 3.3 | cc-1c-skills установлен | `install/cc-skills.ps1` (`db-list` в skills root) |
 
@@ -46,7 +46,7 @@ v0.1: soft **assumed** — doctor только предупреждает.
 2. `db-load-xml -ConfigDir "src\cfe\NinjaLive" -Mode Full -Extension "NinjaLive" -UpdateDB`
 3. Опубликовать `/hs/ninja-live`
 4. Проверить `live_version` / `live_extensions_list`
-5. Правила: глобальный `AGENTS.md` + `kit-rules` (`kit.ps1 apply -Adapter opencode`)
+5. Правила: глобальный `AGENTS.md` + `skills/kit/rules` (`kit.ps1 apply`)
 
 ## 5. Не копировать из ecoladev
 

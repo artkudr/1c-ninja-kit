@@ -19,13 +19,12 @@
 |-----|---------|
 | User `~/.config/opencode/opencode.json(c)` | **без** 1С-серверов (ninja, toolkit, bsl-analyzer-*) |
 | Project `opencode.jsonc` | полный набор **этой** ИБ (gitignore) |
-| Example | `opencode.jsonc.example` в git |
 
 Путь к ninja MCP → **`{kit}/components/1c-ninja-mcp/main.os`** (не отдельный sibling).
 
 ## Rules
 
-- Always-on — глобальный `~/.config/opencode/AGENTS.md`, on-demand — `~/.config/opencode/kit-rules/` (`kit.ps1 apply -Adapter opencode`). В проекте rules не создаются.
+- Always-on — глобальный `~/.config/opencode/AGENTS.md`, on-demand — `~/.config/opencode/skills/kit/rules/` (`kit.ps1 apply`). В проекте rules не создаются.
 
 ## Live CFE list
 

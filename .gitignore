@@ -33,6 +33,5 @@ desktop.ini
 
 # build artifacts
 /build/
-kit-init-report.json
 repository.json
 
