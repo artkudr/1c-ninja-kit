@@ -13,7 +13,6 @@
 | bsl-analyzer | workspace — `%USERPROFILE%\.bsl-analyzer\bin\bsl-analyzer-app.exe` (`--mode broker`), reference — лаунчер `%LOCALAPPDATA%\bsl-analyzer`; кеш `<проект>\.build` | MCP workspace (project) |
 | 1c-mcp-toolkit | `http://127.0.0.1:6003/mcp` | fallback; EPF с [ROCTUP/1c-mcp-toolkit releases](https://github.com/ROCTUP/1c-mcp-toolkit/releases) → `%USERPROFILE%\tools\1c-mcp-toolkit\MCP_Toolkit.epf` |
 | skill-web-test | `tools/web-test/smoke.config.json` | UI smoke после `skill-repo-workflow` load |
-| OpenSpec | `openspec/` + `.opencode/commands/opsx-*.md` | крупные full-cycle фичи: propose → apply → archive; slash `/opsx-propose`, `/opsx-apply`, `/opsx-archive`, `/opsx-explore` |
 
 ИБ и исходники — **только** в корне открытого проекта.
 

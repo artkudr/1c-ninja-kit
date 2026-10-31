@@ -12,7 +12,7 @@ description: >-
 
 Registers are the spine of any non-trivial 1C configuration; mistakes here are expensive to undo because they are usually wired into document posting, RLS, and reports. This file consolidates the design decisions worth thinking through **before** running the metadata skill.
 
-> **Scope.** This file owns *design* rules. XML / schema mechanics live in `content/skills/1c-metadata-manage/docs/meta-manage.md`. Anti-patterns of queries against registers — `rule-anti-patterns` and `rule-dev-standards-architecture §3 → "Queries"`.
+> **Scope.** This file owns *design* rules. XML / schema mechanics live in the `meta-*` skills. Anti-patterns of queries against registers — `rule-anti-patterns` and `rule-dev-standards-architecture §3 → "Queries"`.
 
 ## 1. Choosing the register type
 
@@ -95,7 +95,7 @@ When a register has balances, the platform exposes virtual tables:
 
 | Concern | File |
 |---|---|
-| XML / schema mechanics for register objects | `content/skills/1c-metadata-manage/docs/meta-manage.md` (skill) |
+| XML / schema mechanics for register objects | `meta-*` (скиллы) |
 | Query anti-patterns (loops, dot-notation, subselects) | `rule-anti-patterns` |
 | Authoritative query rules | `rule-dev-standards-architecture §3 → "Queries"` |
 | Locks during posting | `rule-locks-and-transactions` |

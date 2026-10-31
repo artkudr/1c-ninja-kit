@@ -6,13 +6,17 @@
 
 | # | Проверка | Как | Кто |
 |---|----------|-----|-----|
-| 1.1 | OVM / oscript | `kit.ps1 doctor` | auto |
-| 1.2 | Платформа 1cv8 (8.3/8.5) | doctor: `C:\Program Files\1cv8\*\bin` | auto |
-| 1.3 | bsl-analyzer.exe | doctor; install from [itrous/bsl-analyzer releases](https://github.com/itrous/bsl-analyzer/releases) → `bsl-analyzer-windows-amd64.exe` as `%LOCALAPPDATA%\bsl-analyzer\bsl-analyzer.exe`; workspace MCP запускается из `%USERPROFILE%\.bsl-analyzer\bin\bsl-analyzer-app.exe` (кладёт лаунчер, min 0.4.0) | auto / needs-human |
-| 1.4 | Apache tools 83/85 | `%USERPROFILE%\tools\apache-83` / `apache-85` | auto / needs-human если нет |
-| 1.5 | Toolkit EPF (optional) | [ROCTUP/1c-mcp-toolkit releases](https://github.com/ROCTUP/1c-mcp-toolkit/releases) → `%USERPROFILE%\tools\1c-mcp-toolkit\MCP_Toolkit.epf` | needs-human |
+| 1.1 | OneScript + пакеты `autumn`, `autumn-mcp`, `sql`, `1connector` | `kit.ps1 doctor`; поставить `kit.ps1 deps -What oscript` | auto |
+| 1.2 | Платформа 1cv8 (8.3/8.5) | doctor: `C:\Program Files\1cv8\*\bin` | needs-human (дистрибутив) |
+| 1.3 | bsl-analyzer (лаунчер + app) | doctor; `kit.ps1 deps -What bsl-analyzer` → `%LOCALAPPDATA%\bsl-analyzer\bsl-analyzer.exe`; app кладёт лаунчер (min 0.4.0) | auto |
+| 1.4 | Apache 83/85 | doctor; `kit.ps1 deps -What apache` (ветка по установленной платформе, `-All` — обе) | auto |
+| 1.5 | Ripgrep | doctor; `kit.ps1 deps -What ripgrep` → `%USERPROFILE%\tools\ripgrep` + PATH | auto |
+| 1.6 | Node.js + Playwright + Chromium | doctor; `kit.ps1 deps -What web-test` (Node LTS portable, `npm ci` скилла, `playwright install chromium`) | auto |
+| 1.7 | Toolkit EPF (optional) | doctor; `kit.ps1 deps -What toolkit` | auto |
 
-v0.1: soft **assumed** — doctor только предупреждает.
+Всё, кроме платформы 1С, ставит `kit.ps1 deps` (версии — latest с upstream, откуда брать —
+`companions/pins.json`, фактическое состояние — `%LOCALAPPDATA%\1c-ninja-kit\deps-state.json`).
+`wsap24.dll` для Apache берётся из bin установленной платформы — поэтому 1.2 обязателен.
 
 ## 2. Kit components
 
@@ -51,7 +55,6 @@ v0.1: soft **assumed** — doctor только предупреждает.
 ## 5. Не копировать из ecoladev
 
 - Живой `opencode.jsonc` с паролями
-- Product `openspec/changes/*` (opv, screens)
 - `.build` / кэши
 - `.v8-project.json` с секретами
 

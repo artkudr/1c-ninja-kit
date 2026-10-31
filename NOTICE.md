@@ -24,7 +24,6 @@
 | MCP Toolkit EPF | [ROCTUP/1c-mcp-toolkit](https://github.com/ROCTUP/1c-mcp-toolkit) | скачать `MCP_Toolkit.epf` с Releases; рекомендуемый path `%USERPROFILE%\tools\1c-mcp-toolkit\` |
 | v8std MCP | `https://ai.v8std.ru/mcp` | эталон project MCP (`streamable-http`); не в user mcp |
 | cc-1c-skills lineage | исходный upstream Nikolay-Shirokov | skills в `profile/skills/` (meta/form/…); установка — `install/cc-skills.ps1` |
-| OpenSpec (Fission-AI) | MIT (upstream CLI опционален) | шаблоны scaffold; CLI не обязателен |
 | itrous/ai_rules_1c | upstream reference | **не** тащить второй always-on оркестратор; канон — ecoladev-форк |
 
 ## Что намеренно НЕ входит
@@ -32,6 +31,6 @@
 - Кэши: `.build`, browser-session, `__pycache__`, agent stores
 - Секреты: `.v8-project.json`, project `opencode.jsonc` с паролями, `NINJA_PASSWORD`
 - Бинарники платформы 1С, полные дистрибутивы Apache, бинарник bsl-analyzer
-- Выгрузка конфигурации ecoladev / product OpenSpec changes
+- Выгрузка конфигурации ecoladev / продуктовые проектные данные
 
 При публикации ~0.3 этот файл обязан быть актуализирован (полный THIRD_PARTY при необходимости).

@@ -35,10 +35,17 @@ SCRIPT
 ## Setup (first time)
 
 ```bash
-cd "${CLAUDE_SKILL_DIR}/scripts" && npm install
+powershell -NoProfile -ExecutionPolicy Bypass -File <kit>\install\kit.ps1 deps -What web-test
 ```
 
-Requires Node.js 18+. `npm install` downloads Playwright and Chromium.
+Это ставит Node.js (если нет), зависимости Playwright в каталог скилла и браузер Chromium.
+Вручную, если кита нет рядом:
+
+```bash
+cd "${CLAUDE_SKILL_DIR}/scripts" && npm install && npx playwright install chromium
+```
+
+Requires Node.js 18+.
 
 ## URL resolution
 

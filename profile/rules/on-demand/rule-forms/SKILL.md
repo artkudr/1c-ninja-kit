@@ -4,7 +4,7 @@ description: >-
   Router for managed-form work — skills first, companion methodology rules on demand
 ---
 
-<!-- kit-adapted cherry-pick of rule-forms; no forms-add / metadata-manage -->
+<!-- kit-adapted cherry-pick of rule-forms -->
 
 # Managed forms — entry
 
@@ -22,4 +22,4 @@ description: >-
 | `Асинх` / `Ждать` | `rule-async-methods` |
 | Adopted форма CFE | `rule-extension-patterns`, `cfe-patch-method` |
 
-Не подгружай весь набор forms-* «на всякий случай». Не используй upstream `forms-add` / `1c-metadata-manage` — канон задаёт кит скиллов.
+Не подгружай весь набор forms-* «на всякий случай». Канон форм задаёт кит скиллов.

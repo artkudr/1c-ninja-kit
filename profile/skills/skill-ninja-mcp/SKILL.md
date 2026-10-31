@@ -10,7 +10,7 @@ description: >-
 
 # 1c-ninja-mcp (static + live)
 
-Исходники сервера: `C:\1C\projects\1c-ninja-kit\components\1c-ninja-mcp` (компонент кита; отдельного checkout `1c-ninja-mcp` больше нет). Namespace: **1c-ninja-mcp**.
+Исходники сервера: `C:\1C\projects\1c-ninja-kit\components\1c-ninja-mcp` (компонент кита). Namespace: **1c-ninja-mcp**.
 
 ## Матрица владения
 

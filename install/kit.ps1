@@ -1,13 +1,30 @@
 ﻿#Requires -Version 5.1
 param(
   [Parameter(Position = 0)]
-  [ValidateSet('doctor', 'verify', 'apply', 'help')]
+  [ValidateSet('doctor', 'verify', 'apply', 'deps', 'help')]
   [string]$Command = 'help',
 
   [switch]$DryRun,
   [switch]$Strict,
 
-  [string]$ProfileName = '1c-ninja-kit'
+  [string]$ProfileName = '1c-ninja-kit',
+
+  # deps: что ставить (по умолчанию всё, что проверяет doctor)
+  [ValidateSet('all', 'required', 'oscript', 'bsl-analyzer', 'ripgrep', 'web-test', 'apache', 'toolkit')]
+  [string[]]$What = @('all'),
+
+  # deps: apache — обе ветки (8.3 и 8.5), а не только под установленную платформу
+  [switch]$All,
+
+  # deps: переустановить/обновить уже стоящее
+  [switch]$Update,
+
+  # deps: не ходить в сеть, брать только локальный кеш
+  [switch]$Offline,
+
+  # deps: ветка Apache (по умолчанию — по установленной платформе)
+  [ValidateSet('8.3', '83', '8.5', '85')]
+  [string[]]$Platform
 )
 
 $ErrorActionPreference = 'Stop'
@@ -31,19 +48,8 @@ function Expand-EnvPath([string]$p) {
   return [Environment]::ExpandEnvironmentVariables($p)
 }
 
-function Test-SoftPath([string]$Label, [string]$PathPattern, [bool]$Required) {
-  $path = Expand-EnvPath $PathPattern
-  if (Test-Path -LiteralPath $path) {
-    Write-Status 'OK' "$Label -> $path"
-    return $true
-  }
-  if ($Required) {
-    Write-Status 'FAIL' "$Label missing: $path"
-  } else {
-    Write-Status 'WARN' "$Label missing: $path"
-  }
-  return $false
-}
+# Машинный слой: установка внешних зависимостей и отчёт о их версиях.
+. (Join-Path $PSScriptRoot 'deps.ps1')
 
 function Invoke-Robo([string]$Src, [string]$Dst, [switch]$ListOnly, [switch]$Mirror) {
   if (-not (Test-Path -LiteralPath $Src)) { throw "Source missing: $Src" }
@@ -137,7 +143,7 @@ function New-OpenCodeGlobalAgentsBlock([string]$KitRoot) {
   [void]$sb.AppendLine('- 1С MCP — **только** в project `opencode.jsonc`. Глобальный `~/.config/opencode/opencode.json(c)` без 1С-серверов и секретов.')
   [void]$sb.AppendLine('- Ninja-пара: kit `components/1c-ninja-mcp` + project `src/cfe/NinjaLive` (`/hs/ninja-live`).')
   [void]$sb.AppendLine('- Список расширений в ИБ: MCP `live_extensions_list` (не Предприятие).')
-  [void]$sb.AppendLine('- Запрещено: Platform Tools MCP / реестр PT; ручные вызовы Конфигуратора в обход скиллов контура; правка XML метаданных вручную.')
+  [void]$sb.AppendLine('- Запрещено: внешние MCP и реестры для операций с конфигурацией и ИБ; ручные вызовы Конфигуратора в обход скиллов контура; правка XML метаданных вручную.')
   [void]$sb.AppendLine('- Отвечать пользователю на **русском**; при неоднозначности — `CONFUSION` (варианты A/B → вопрос), не молчаливый выбор.')
   [void]$sb.AppendLine('')
   [void]$sb.AppendLine('## Triage')
@@ -146,7 +152,7 @@ function New-OpenCodeGlobalAgentsBlock([string]$KitRoot) {
   [void]$sb.AppendLine('|------|-------|')
   [void]$sb.AppendLine('| Quick-fix | Один файл/метод; ≲20 строк BSL; без транзакций, публичного API, adopted CFE, RLS |')
   [void]$sb.AppendLine('| Docs-fix | Только Markdown / rules / docs |')
-  [void]$sb.AppendLine('| Full-cycle | Всё остальное; крупное → OpenSpec (`rule-sdd-integrations`) до кода |')
+  [void]$sb.AppendLine('| Full-cycle | Всё остальное; крупное — с явным планом до кода |')
   [void]$sb.AppendLine('')
   [void]$sb.AppendLine('## MCP routes')
   [void]$sb.AppendLine('')
@@ -167,7 +173,7 @@ function New-OpenCodeGlobalAgentsBlock([string]$KitRoot) {
   [void]$sb.AppendLine('Kit rules on-demand: `~/.config/opencode/skills/kit/rules/<id>/SKILL.md`.')
   [void]$sb.AppendLine('External skills (`cc-1c-skills`): `~/.config/opencode/skills/<id>/SKILL.md` — не переименовываются.')
   [void]$sb.AppendLine('Вызывай tool `skill` по точному id.')
-  [void]$sb.AppendLine('Частые: `skill-env-setup`, `skill-project-context`, `skill-ninja-mcp`, `skill-bsl-analyzer`, `skill-repo-workflow`, `skill-web-test`, `skill-handoff`, `rule-anti-patterns`, `rule-forms`, `rule-sdd-integrations`.')
+  [void]$sb.AppendLine('Частые: `skill-env-setup`, `skill-project-context`, `skill-ninja-mcp`, `skill-bsl-analyzer`, `skill-repo-workflow`, `skill-web-test`, `skill-handoff`, `rule-anti-patterns`, `rule-forms`.')
   [void]$sb.AppendLine('')
   [void]$sb.AppendLine('## Subagents')
   [void]$sb.AppendLine('')
@@ -181,7 +187,10 @@ function New-OpenCodeGlobalAgentsBlock([string]$KitRoot) {
   [void]$sb.AppendLine('kit.ps1 doctor')
   [void]$sb.AppendLine('kit.ps1 verify')
   [void]$sb.AppendLine('kit.ps1 apply')
+  [void]$sb.AppendLine('kit.ps1 deps')
   [void]$sb.AppendLine('```')
+  [void]$sb.AppendLine('')
+  [void]$sb.AppendLine('Внешние зависимости машины (OneScript, bsl-analyzer, ripgrep, Node/Playwright, Apache, toolkit) ставит `kit.ps1 deps`; версии и адреса — `companions/pins.json`.')
   [void]$sb.AppendLine('')
   [void]$sb.AppendLine('Новый проект: `skill-env-setup` («разверни окружение») — он создаёт структуру, конфиги и `AGENTS.md`.')
   [void]$sb.AppendLine('')
@@ -357,25 +366,55 @@ function Invoke-Doctor {
   $fail = 0
   $warn = 0
 
-  foreach ($c in @(
-      @{ L = 'OVM oscript'; P = '%LOCALAPPDATA%\ovm\current\bin\oscript.exe' },
-      @{ L = 'bsl-analyzer'; P = '%LOCALAPPDATA%\bsl-analyzer\bsl-analyzer.exe' }
-    )) {
-    if (-not (Test-SoftPath $c.L $c.P $true)) { $fail++ }
+  # Платформа 1С: ставится только дистрибутивом. Без неё Apache бесполезен —
+  # 1С-коннектор wsap24.dll берётся из её bin.
+  $v8exe = Get-ChildItem 'C:\Program Files\1cv8\*\bin\1cv8.exe' -ErrorAction SilentlyContinue | Select-Object -First 1
+  if ($v8exe) { Write-Status 'OK' "1cv8: $($v8exe.FullName)" }
+  else {
+    Write-Status 'FAIL' '1cv8 not found (C:\Program Files\1cv8\*\bin) - ставится дистрибутивом 1С, автоматически не ставится'
+    $fail++
   }
 
-  foreach ($c in @(
-      @{ L = 'Apache 8.3 tools'; P = '%USERPROFILE%\tools\apache-83' },
-      @{ L = 'Apache 8.5 tools'; P = '%USERPROFILE%\tools\apache-85' },
-      @{ L = 'Ripgrep (fast code search)'; P = '%USERPROFILE%\tools\ripgrep\rg.exe' },
-      @{ L = 'Toolkit EPF (recommended)'; P = '%USERPROFILE%\tools\1c-mcp-toolkit\MCP_Toolkit.epf' },
-      @{ L = 'Toolkit EPF (legacy)'; P = 'C:\1C\soft\MCP_Toolkit.epf' }
-    )) {
-    if (-not (Test-SoftPath $c.L $c.P $false)) { $warn++ }
+  # Внешние зависимости: что стоит, чего нет и какой командой это лечится.
+  # Версии и пути — из companions/pins.json, фактическое состояние — с машины.
+  $pins = Get-DepsPins $KitRoot
+  foreach ($dep in Get-DepsStatus $KitRoot) {
+    $hint = switch -Wildcard ($dep.Key) {
+      'oscript*' { 'oscript' }
+      'bsl-analyzer*' { 'bsl-analyzer' }
+      'apache-*' { 'apache' }
+      'node' { 'web-test' }
+      'playwright*' { 'web-test' }
+      default { $dep.Key }
+    }
+
+    if (-not $dep.Installed) {
+      if ($dep.Required) {
+        Write-Status 'FAIL' "$($dep.Label) отсутствует: $($dep.Path)"
+        $fail++
+      } else {
+        Write-Status 'WARN' "$($dep.Label) отсутствует: $($dep.Path)"
+        $warn++
+      }
+      Write-Status 'INFO' "  поставить: kit.ps1 deps -What $hint"
+      continue
+    }
+
+    $msg = "$($dep.Label) $($dep.Version) -> $($dep.Path)"
+    if ($dep.Note) { $msg += " ($($dep.Note))" }
+
+    $min = $null
+    if ($dep.Key -eq 'bsl-analyzer-app') { $min = [string]$pins.bslAnalyzer.minAppVersion }
+    elseif ($dep.Key -eq 'node') { $min = [string]$pins.webTest.minNodeVersion }
+    elseif ($dep.Key -like 'apache-*') { $min = [string]$pins.apache.minVersion }
+
+    if ($min -and -not (Test-DepsVersionAtLeast $dep.Version $min)) {
+      Write-Status 'WARN' ("{0}; ниже минимума {1} - kit.ps1 deps -What {2} -Update" -f $msg, $min, $hint)
+      $warn++
+    } else {
+      Write-Status 'OK' $msg
+    }
   }
-  Write-Status 'INFO' 'If toolkit missing: https://github.com/ROCTUP/1c-mcp-toolkit/releases'
-  Write-Status 'INFO' 'If bsl-analyzer missing: https://github.com/itrous/bsl-analyzer/releases (bsl-analyzer-windows-amd64.exe)'
-  Write-Status 'INFO' 'If ripgrep missing: https://github.com/BurntSushi/ripgrep/releases -> %USERPROFILE%\tools\ripgrep + PATH'
 
   $ninjaMain = Join-Path $KitRoot 'components\1c-ninja-mcp\main.os'
   if (Test-Path -LiteralPath $ninjaMain) { Write-Status 'OK' "1c-ninja-mcp -> $ninjaMain" }
@@ -384,10 +423,6 @@ function Invoke-Doctor {
   $nl = Join-Path $KitRoot 'project-scaffold\cfe\NinjaLive'
   if (Test-Path -LiteralPath $nl) { Write-Status 'OK' "NinjaLive pair -> $nl" }
   else { Write-Status 'FAIL' "NinjaLive missing: $nl"; $fail++ }
-
-  $v8exe = Get-ChildItem 'C:\Program Files\1cv8\*\bin\1cv8.exe' -ErrorAction SilentlyContinue | Select-Object -First 1
-  if ($v8exe) { Write-Status 'OK' "1cv8: $($v8exe.FullName)" }
-  else { Write-Status 'FAIL' '1cv8 not found (C:\Program Files\1cv8\*\bin)'; $fail++ }
 
   $ocRoot = Get-OpenCodeRoot
   foreach ($name in @('opencode.json', 'opencode.jsonc')) {
@@ -478,12 +513,18 @@ switch ($Command) {
   'doctor' { exit (Invoke-Doctor) }
   'verify' { exit (Invoke-Verify) }
   'apply' { exit (Invoke-Apply) }
+  'deps' {
+    exit (Invoke-Deps -KitRoot $KitRoot -What $What -Update:$Update -All:$All -Offline:$Offline `
+        -DryRun:$DryRun -Platform $Platform)
+  }
   default {
     $kitVersion = (Get-Content (Join-Path $KitRoot 'VERSION') -Raw).Trim()
     Write-Host "1c-ninja-kit CLI $kitVersion"
     Write-Host '  kit.ps1 doctor [-Strict]'
     Write-Host '  kit.ps1 verify'
     Write-Host '  kit.ps1 apply [-DryRun]'
+    Write-Host '  kit.ps1 deps [-What all|required|oscript|bsl-analyzer|ripgrep|web-test|apache|toolkit]'
+    Write-Host '                [-Update] [-All] [-Offline] [-Platform 8.3|8.5] [-DryRun]'
     Write-Host 'Project bootstrap: skill-env-setup ("разверни окружение")'
     Write-Host "KitRoot: $KitRoot"
     exit 0

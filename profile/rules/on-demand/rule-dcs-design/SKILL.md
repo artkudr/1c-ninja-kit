@@ -10,9 +10,9 @@ description: >-
 
 # DCS / СКД — Report Design Rules
 
-The 1C Data Composition System (СхемаКомпоновкиДанных, СКД) is the canonical engine for reports. The rules below cover design decisions that recur in code review and that the structural skill (`content/skills/1c-metadata-manage/docs/skd-manage.md`) intentionally does not opine on.
+The 1C Data Composition System (СхемаКомпоновкиДанных, СКД) is the canonical engine for reports. The rules below cover design decisions that recur in code review and that the structural skills (`skd-info` / `skd-edit` / `skd-validate`) intentionally do not opine on.
 
-> **Scope.** This file owns *report design* rules. XML / schema mechanics for `.dcs` files live in the `content/skills/1c-metadata-manage/docs/skd-manage.md` skill (XML structure, datasets API, query parameters API). Anti-patterns of slow queries inside a DCS — `rule-anti-patterns` and `rule-dev-standards-architecture §3 → "Queries"`.
+> **Scope.** This file owns *report design* rules. XML / schema mechanics for `.dcs` files live in the `skd-*` skills (XML structure, datasets API, query parameters API). Anti-patterns of slow queries inside a DCS — `rule-anti-patterns` and `rule-dev-standards-architecture §3 → "Queries"`.
 
 ## 1. Choosing the data-set type
 
@@ -131,7 +131,7 @@ Notes:
 
 | Concern | File |
 |---|---|
-| XML / schema mechanics for `.dcs` | `content/skills/1c-metadata-manage/docs/skd-manage.md` (skill) |
+| XML / schema mechanics for `.dcs` | `skd-*` (скиллы) |
 | Query anti-patterns | `rule-anti-patterns` |
 | Authoritative query rules | `rule-dev-standards-architecture §3 → "Queries"` |
 | Long-running report execution | `rule-platform-solutions §2 → "Long-running operations"` |

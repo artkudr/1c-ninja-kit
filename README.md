@@ -2,18 +2,20 @@
 
 Агентная обвязка разработки 1С: skills (kit + cc-1c-skills), rules, MCP (**1c-ninja-mcp** + CFE **NinjaLive**), bsl-analyzer, харнесс **OpenCode**.
 
-**VERSION:** 0.9.0
+**VERSION:** 0.10.0
 
 ## Quick start
 
 ```powershell
 git clone https://github.com/artkudr/1c-ninja-kit.git
 cd 1c-ninja-kit
-# If the machine has only the 1C platform installed:
-# read docs/MACHINE-BOOTSTRAP.md first
+# Платформа 1С — своим дистрибутивом; всё остальное ставит deps:
+powershell -NoProfile -ExecutionPolicy Bypass -File .\install\kit.ps1 deps
 powershell -NoProfile -File .\install\kit.ps1 doctor
 powershell -NoProfile -File .\install\kit.ps1 apply
 ```
+
+Подробности машинного слоя: `docs/MACHINE-BOOTSTRAP.md`.
 
 ## Harness
 
@@ -27,10 +29,11 @@ powershell -NoProfile -File .\install\kit.ps1 apply
 | `profile/` | skills / rules / agents |
 | `components/1c-ninja-mcp/` | MCP server (part of kit) |
 | `project-scaffold/cfe/NinjaLive/` | Live CFE pair |
-| `install/kit.ps1` | doctor / verify / apply |
+| `install/kit.ps1` | doctor / verify / apply / deps |
+| `install/deps.ps1` | установка внешних зависимостей (OneScript, bsl-analyzer, ripgrep, Node/Playwright, Apache, toolkit) |
 | `docs/opencode.md` | единственный харнесс: пути, MCP, `AGENTS.md`, ограничения |
 | `docs/NAMING.md` | контракт имён `skill-` / `rule-` / `agent-` |
-| `docs/MACHINE-BOOTSTRAP.md` | bare PC: откуда скачать OVM, bsl-analyzer, toolkit |
+| `docs/MACHINE-BOOTSTRAP.md` | bare PC: что ставит `kit.ps1 deps`, что остаётся руками |
 | `companions/pins.json` | upstream GitHub URLs для companion-бинарников |
 
 ## Hard rules

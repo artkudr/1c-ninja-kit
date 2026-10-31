@@ -25,7 +25,7 @@
 - Поиск по коду через shell (`Select-String`, `findstr`, `Get-ChildItem | Select-String`) — не использовать.
   `rg` в PATH — можно.
 - Без MCP-попытки `grep` / `glob` — только по тому, что MCP не индексирует: `.md`, rules, `handoffs/`,
-  логи, `openspec/`, JSON/YAML-конфиги, `.v8-project.json`, `bsl-analyzer.toml`.
+  логи, JSON/YAML-конфиги, `.v8-project.json`, `bsl-analyzer.toml`.
 
 ## Если индекс не готов
 

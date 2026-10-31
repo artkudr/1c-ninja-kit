@@ -12,7 +12,7 @@ argument-hint: "[-SourceProject path] [-Mode Init|Refresh|Check] [-Force]"
 
 Личный скилл: `{{SKILLS_ROOT}}\kit\skills\skill-env-setup\`.
 
-Разворачивает **привычное** окружение в **новой папке** на **той же машине** (clone / копия / worktree). Софт уже установлен — скилл не ставит OVM/Apache; набор cc-1c-skills ставится `install/cc-skills.ps1`.
+Разворачивает **привычное** окружение в **новой папке** на **той же машине** (clone / копия / worktree). Софт уже установлен — скилл не ставит OVM/Apache/ripgrep; если чего-то нет, это `kit.ps1 deps` (см. `docs/MACHINE-BOOTSTRAP.md`). Набор cc-1c-skills ставится `install/cc-skills.ps1`.
 
 Пользователь **не** правит JSON руками: агент показывает базы, спрашивает логин/пароль и **сам записывает** настройки.
 
@@ -21,7 +21,6 @@ argument-hint: "[-SourceProject path] [-Mode Init|Refresh|Check] [-Force]"
 | | `opencode` |
 |---|---|
 | MCP проекта | `opencode.jsonc` (`mcp.servers`, `type: local/remote`, `oauth: false` у streamable-http) |
-| Команды | `.opencode/commands/opsx-*.md` |
 | Правила | глобальные always-on → `~/.config/opencode/AGENTS.md`, on-demand → `~/.config/opencode/skills/kit/rules/` (`kit.ps1 apply`); в проекте — только `AGENTS.md` как память проекта (создаётся setup, не перезаписывается) |
 | Проверка дублей | `~/.config/opencode/opencode.json(c)` → `mcp.servers` |
 
@@ -46,8 +45,6 @@ argument-hint: "[-SourceProject path] [-Mode Init|Refresh|Check] [-Force]"
 | `opencode.jsonc` + `.example` | полный MCP этой ИБ (gitignore) + эталон без секретов |
 | `.build/` | кеш bsl-analyzer (граф + поиск); передаётся как `--cache-dir`, в `.gitignore` |
 | `bsl-analyzer.toml` | диагностики / source roots |
-| `.opencode/commands/opsx-*.md` | slash-команды OpenSpec (propose / apply / archive / explore) |
-| `openspec/` | scaffold: README, `config.yaml`, `project.md`, `templates/`, пустые `specs/` и `changes/archive/` |
 
 Правила: always-on — глобальный `~/.config/opencode/AGENTS.md`, on-demand — `~/.config/opencode/skills/kit/rules/` (обновляет `kit.ps1 apply`). В проекте создаётся только корневой `AGENTS.md` — память проекта, не копия глобальных правил; setup его не перезаписывает.
 
@@ -113,7 +110,7 @@ powershell.exe -NoProfile -File "$env:USERPROFILE\.config\opencode\skills\kit\sk
   -AppName "<имя-публикации>"
 ```
 
-Скрипт создаёт каталоги, `.v8-project.json`, mcp example + `opencode.jsonc` **из шаблона скилла** (не из user settings), `AGENTS.md`, bsl-analyzer.toml, `.gitignore`, `.ignore`, docs, smoke.config; **копирует** `src/cfe/NinjaLive` с эталона (SourceProject → kit `project-scaffold/cfe/NinjaLive` → соседний проект); **разворачивает** OpenSpec scaffold (`.opencode/commands/opsx-*.md`, `openspec/templates/`, README, `config.yaml`/`project.md` из tpl); вызывает `sync-cfe.ps1` **без** опроса ИБ через Предприятие (пусто или `-ExtensionNames`, если агент уже снял список). Warn, если user-конфиг содержит те же имена серверов.
+Скрипт создаёт каталоги, `.v8-project.json`, mcp example + `opencode.jsonc` **из шаблона скилла** (не из user settings), `AGENTS.md`, bsl-analyzer.toml, `.gitignore`, `.ignore`, docs, smoke.config; **копирует** `src/cfe/NinjaLive` с эталона (SourceProject → kit `project-scaffold/cfe/NinjaLive` → соседний проект); вызывает `sync-cfe.ps1` **без** опроса ИБ через Предприятие (пусто или `-ExtensionNames`, если агент уже снял список). Warn, если user-конфиг содержит те же имена серверов.
 
 В `opencode.jsonc` (и в `.example`) `bsl-analyzer-workspace` пишется с `--source-dir "<корень>"`, `--cache-dir "<корень>\.build"` и `--mode broker`, а запускается из `bsl-analyzer-app.exe` (не лаунчера) — кеш графа и поиска остаётся в проекте, backend переживает закрытие клиента. Каталог `.build` уже в gitignore-сниппете. Отдельного флага в `env-setup.ps1` нет: путь app-бинарника берётся из `Get-McpMachinePaths` (`%USERPROFILE%\.bsl-analyzer\bin\bsl-analyzer-app.exe`).
 
@@ -124,7 +121,7 @@ powershell.exe -NoProfile -File "$env:USERPROFILE\.config\opencode\skills\kit\sk
 | Mode | Поведение |
 |------|-----------|
 | `Init` | полная инициализация (default) |
-| `Refresh` | не затирать конфиги, openspec changes/specs, commands без `-Force`; каталоги + sync-cfe |
+| `Refresh` | не затирать конфиги и `AGENTS.md` без `-Force`; каталоги + sync-cfe |
 | `Check` | dry-run отчёт без записи |
 
 ### 6. Bootstrap NinjaLive + список CFE (главный способ)

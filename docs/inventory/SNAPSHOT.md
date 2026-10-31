@@ -1,10 +1,10 @@
 # Inventory snapshot
 
-- Date: 2026-10-28
-- Kit VERSION: 0.9.0
-- Skills (kit): 19
+- Date: 2026-10-31
+- Kit VERSION: 0.10.0
+- Skills (kit): 20
 - Skills (cc-1c-skills, внешний набор): 76 — ставится `install/cc-skills.ps1`; `skill-web-*` — kit-версии
-- Rules: 33 (6 always + 27 on-demand)
+- Rules: 32 (6 always + 26 on-demand)
 - Agents: 12
 - 1c-ninja-mcp: `components/1c-ninja-mcp` (in kit; static + live)
 - NinjaLive: `project-scaffold/cfe/NinjaLive` (full reference copy)
@@ -19,6 +19,7 @@
 - skill-fresh-epf-audit
 - skill-handoff
 - skill-mcp-toolkit
+- skill-move-predefined
 - skill-ninja-mcp
 - skill-project-context
 - skill-query-composition
@@ -66,7 +67,6 @@
 - rule-platform-solutions
 - rule-refactor-add
 - rule-registers-design
-- rule-sdd-integrations
 - rule-subagent-pipeline
 - rule-subagents
 - rule-systematic-debugging

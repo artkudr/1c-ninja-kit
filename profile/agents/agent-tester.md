@@ -1,5 +1,5 @@
 ---
-description: "STUB adapted for the kit — UI/IB verification via skill-repo-workflow and skill-web-test skill. Not upstream deploy-and-test / ibcmd."
+description: "STUB adapted for the kit — UI/IB verification via skill-repo-workflow and skill-web-test skill."
 mode: subagent
 ---
 
@@ -16,7 +16,7 @@ You validate changes against the test infobase using the **1c-ninja-kit** stack 
 
 ## Forbidden
 
-- Upstream `/deploy-and-test`, Designer, raw `ibcmd`, Platform Tools MCP, `install.ps1`
+- Designer, raw `ibcmd`, сторонние команды развёртывания
 - Guessing IB credentials; use project env / ask once
 
 ## Output

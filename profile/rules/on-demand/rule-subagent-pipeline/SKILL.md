@@ -13,27 +13,21 @@ description: >-
 ```
 user → triage (parent)
        → full-cycle
-            → 1b. OpenSpec propose (если крупная ветка — см. rule-orchestrator)
-            → 2. Plan (agent-planner / agent-architect / agent-explorer / agent-analyst)
-            → 3. Implement (agent-developer / …; метаданные — скиллы; только после согласования спеки / «кодируй»)
-            → 4a. Spec-compliance (parent; против openspec/changes/ если есть)
-            → 4b. Code review OPTIONAL (только по просьбе → agent-code-reviewer; на крупных — сверка со спекой)
-            → 5. rule-verification-checklist + rule-development-process / skill-repo-workflow
-            → 6. OpenSpec archive (если был change)
+            → 1. Plan (agent-planner / agent-architect / agent-explorer / agent-analyst)
+            → 2. Implement (agent-developer / …; метаданные — скиллы; только после согласования плана / «кодируй»)
+            → 3a. Plan-compliance (parent; сверка с утверждённым планом)
+            → 3b. Code review OPTIONAL (только по просьбе → agent-code-reviewer; на крупных — сверка с планом)
+            → 4. rule-verification-checklist + rule-development-process / skill-repo-workflow
             → deliver
 ```
 
-## Stage 1b — OpenSpec (крупные)
+## Stage 1 — Plan
 
-Если triage = full-cycle **и** крупная задача: артефакты в `openspec/changes/<name>/` по `rule-sdd-integrations` / `/opsx-propose`. Analytic → proposal+delta; architect → design; planner → tasks. Код не начинать до согласования границ.
+План фиксируется в чате или `handoffs/`; для крупной задачи его собирают `agent-analyst` / `agent-planner` / `agent-architect`. Код не начинать до согласования границ.
 
-Мелкий full-cycle / quick-fix — OpenSpec **не** обязателен (план в чате / `handoffs/` допустим).
+Критерии приёмки плана: задачи ≤~1 файл/метод; точные пути и имена; шаг verification; risks/rollback; **approval пользователя** перед stage 2.
 
-## Stage 2 — Plan
-
-Критерии приёмки плана: задачи ≤~1 файл/метод; точные пути и имена; шаг verification; risks/rollback; **approval пользователя** перед stage 3. При активном OpenSpec — `tasks.md` change = канон плана.
-
-## Stage 3 — Implement
+## Stage 2 — Implement
 
 - BSL: `agent-developer` / `agent-error-fixer` / …
 - XML структуры: **скиллы** `meta-*`, `form-*`, `cfe-*`, …
@@ -60,21 +54,21 @@ Upstream в начале финального отчёта:
 
 Parent передаёт блок **дословно** в `## Upstream Handoff`. Downstream не перечитывает listed artifacts «для контекста».
 
-## Stage 4a — Spec-compliance (parent)
+## Stage 3a — Plan-compliance (parent)
 
-План/`tasks.md` выполнен; нет лишних файлов; публичные сигнатуры/метаданные совпали; UUID не перегенерированы зря. Если был OpenSpec change — сверка с delta `### Requirement:` / scenarios.
+План выполнен; нет лишних файлов; публичные сигнатуры/метаданные совпали; UUID не перегенерированы зря.
 
-## Stage 4b — Review
+## Stage 3b — Review
 
 Только по явной просьбе. Иначе quality закрывают gates 2–3 checklist + process.
 
-## Stage 5 — Verification
+## Stage 4 — Verification
 
 `rule-verification-checklist` + load/syntax по `rule-development-process` / `skill-repo-workflow`.
 
 ## Anti-patterns
 
 - Skip plan «потому что мелко» — тогда это должен был быть quick-fix
-- Parallel stage 3 на одной конфигурационной области
+- Parallel stage 2 на одной конфигурационной области
 - Auto `agent-code-reviewer`
-- Designer / ibcmd / install.ps1
+- Designer / ibcmd

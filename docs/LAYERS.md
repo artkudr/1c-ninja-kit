@@ -10,7 +10,7 @@ Machine  →  Profile  →  Project
 |------|-----|------------|
 | **Machine** | OVM/OneScript, bsl-analyzer, Apache tools, Toolkit EPF, cc-1c-skills | человек + `kit doctor` |
 | **Profile** | skills / rules / agents | `kit apply` |
-| **Project** | `.v8-project.json`, mcp, NinjaLive, OpenSpec, `AGENTS.md` | скилл `skill-env-setup` |
+| **Project** | `.v8-project.json`, mcp, NinjaLive, `AGENTS.md` | скилл `skill-env-setup` |
 
 Харнесс один — **OpenCode V2**. Куда именно раскладываются skills/rules/agents и как
 собирается `AGENTS.md`, описано в `docs/opencode.md`; контракт имён — `docs/NAMING.md`.

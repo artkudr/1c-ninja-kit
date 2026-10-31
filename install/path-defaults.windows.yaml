@@ -1,39 +1,64 @@
 # Windows path defaults for 1c-ninja-kit
 # Agent MUST adapt on-site via docs/ADAPTATION.md and docs/MACHINE-BOOTSTRAP.md.
-# Binaries are NOT vendored — download from upstream GitHub/sites in pins.json.
+# Binaries are NOT vendored — they are installed by `install/kit.ps1 deps`
+# (install/deps.ps1) from upstream pins in companions/pins.json.
 
-ovm:
+depsPolicy:
+  channel: latest
+  installer: "install/deps.ps1 (kit.ps1 deps)"
+  stateFile: "%LOCALAPPDATA%\\1c-ninja-kit\\deps-state.json"
+  offlineCache: "%LOCALAPPDATA%\\1c-ninja-kit\\cache"
+  note: "Ставит всё, что проверяет doctor. Не ставится: платформа 1С (дистрибутив)."
+
+oneScript:
+  site: "https://oscript.io/"
+  githubRepo: "EvilBeaver/OneScript"
   root: "%LOCALAPPDATA%\\ovm\\current"
   oscript: "%LOCALAPPDATA%\\ovm\\current\\bin\\oscript.exe"
-  site: "https://oscript.io/"
+  engineVersion: "2.2.0"
+  packages: ["autumn", "autumn-mcp", "sql", "1connector"]
+  knownGood:
+    autumn: "4.3.11"
+    autumn-mcp: "1.1.2"
+    sql: "1.3.3"
+    1connector: "2.3.3"
+  note: "Движок — из официального win-x64 zip релиза (bin\\opm.bat и lib внутри); OVM не нужен. Пакеты: latest, при требовании невыпущенного движка — набор knownGood."
 
 bslAnalyzer:
   upstream: "https://github.com/itrous/bsl-analyzer"
   releases: "https://github.com/itrous/bsl-analyzer/releases"
-  windowsLauncherAsset: "bsl-analyzer-windows-amd64.exe"
+  githubRepo: "itrous/bsl-analyzer"
+  launcherAssetPattern: "^bsl-analyzer-windows-amd64\\.exe$"
   exe: "%LOCALAPPDATA%\\bsl-analyzer\\bsl-analyzer.exe"
   # Рабочий бинарь текущей версии, который кладёт лаунчер. Для workspace MCP запускать его, а не
   # лаунчер: лаунчер держит потомка в Windows Job (kill-on-close) и убивает broker-backend вместе
   # с прокси — остаётся мёртвый writer.lease и граф отвечает "graph busy" (itrous/bsl-analyzer#345).
   appExe: "%USERPROFILE%\\.bsl-analyzer\\bin\\bsl-analyzer-app.exe"
   projectCache: "<project>\\.build"
+  # Версия app (не лаунчера); ниже неё doctor ругается.
   minAppVersion: "0.4.0"
 
 apache:
-  "8.3":
-    port: 8083
-    toolsDir: "%USERPROFILE%\\tools\\apache-83"
-  "8.5":
-    port: 8085
-    toolsDir: "%USERPROFILE%\\tools\\apache-85"
+  listing: "https://www.apachelounge.com/download/"
+  assetPattern: "Win64-VS18"
+  minVersion: "2.4.60"
+  platforms:
+    "8.3":
+      port: 8083
+      toolsDir: "%USERPROFILE%\\tools\\apache-83"
+    "8.5":
+      port: 8085
+      toolsDir: "%USERPROFILE%\\tools\\apache-85"
   notes:
     - "Do not commit Apache into git."
     - "webUrl smoke always with /ru_RU/ suffix."
+    - "Коннектор 1С — wsap24.dll из bin установленной платформы; платформа ставится дистрибутивом."
 
 ripgrep:
   upstream: "https://github.com/BurntSushi/ripgrep"
   releases: "https://github.com/BurntSushi/ripgrep/releases"
-  windowsAsset: "ripgrep-<version>-x86_64-pc-windows-msvc.zip"
+  githubRepo: "BurntSushi/ripgrep"
+  assetPattern: "^ripgrep-\\d+(?:\\.\\d+){1,3}-x86_64-pc-windows-msvc\\.zip$"
   toolsDir: "%USERPROFILE%\\tools\\ripgrep"
   exe: "%USERPROFILE%\\tools\\ripgrep\\rg.exe"
   pathEntry: "%USERPROFILE%\\tools\\ripgrep"
@@ -42,9 +67,19 @@ ripgrep:
     - "Нужен в PATH: без него поиск по коду из shell идёт через PowerShell Select-String (минуты на типовой выгрузке)."
     - "Не путать с %USERPROFILE%\\.cache\\opencode\\bin\\rg.exe — это встроенный rg opencode, его кеш можно снести."
 
+webTest:
+  skill: "skill-web-test"
+  nodeDistIndex: "https://nodejs.org/dist/index.json"
+  nodeToolsDir: "%USERPROFILE%\\tools\\node"
+  minNodeVersion: "18.0.0"
+  browsers: ["chromium"]
+  skillScriptsRelative: ".config\\opencode\\skills\\kit\\skills\\skill-web-test\\scripts"
+  note: "Веб-прогон обязателен. deps: Node LTS portable -> npm ci в каталоге скилла -> playwright install chromium."
+
 toolkit:
   upstream: "https://github.com/ROCTUP/1c-mcp-toolkit"
   releases: "https://github.com/ROCTUP/1c-mcp-toolkit/releases"
+  githubRepo: "ROCTUP/1c-mcp-toolkit"
   windowsEpfAsset: "MCP_Toolkit.epf"
   mcpUrl: "http://127.0.0.1:6003/mcp"
   epfRecommended: "%USERPROFILE%\\tools\\1c-mcp-toolkit\\MCP_Toolkit.epf"

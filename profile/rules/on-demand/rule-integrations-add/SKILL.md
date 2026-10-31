@@ -28,7 +28,7 @@ For the full MCP playbook see `rule-tooling-playbooks → Integrations`.
 ## 3. HTTP client
 
 - Use platform `HTTPСоединение` / `HTTPЗапрос` or the БСП wrapper. `КомпонентаHTTPСервисы` and third-party COM objects are forbidden (see `rule-dev-standards-architecture §3 → "Cross-Platform Compatibility"`).
-- Connection timeout and read timeout MUST be set **explicitly** — use values from `.dev.env` or configuration constants, not magic numbers in code.
+- Connection timeout and read timeout MUST be set **explicitly** — use configuration constants or settings, not magic numbers in code.
 - Any response code different from the expected one MUST be turned into a meaningful exception with `ПодробноеПредставлениеОшибки(ИнформацияОбОшибке())` written to the event log. See `rule-dev-standards-architecture §3 → "Error Handling"`.
 
 ## 4. Serialization and data contract

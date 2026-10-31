@@ -98,25 +98,7 @@ tools/web-test/scenarios/{after-load,manual}
 AGENTS.md            # память проекта: правила + невыводимые факты
 .ignore              # ripgrep: артефакты и vendor вне поиска (работает без .git)
 docs/dev-stack.md
-
-.opencode/commands/opsx-{propose,apply,archive,explore}.md
-openspec/{README.md,config.yaml,project.md,templates/,specs/,changes/archive/}
 ```
-
-### OpenSpec scaffold
-
-Setup разворачивает из шаблонов скилла (`scripts/templates/openspec/`, `scripts/templates/commands/`):
-
-| Путь | Источник | Refresh без `-Force` |
-|------|----------|----------------------|
-| `.opencode/commands/opsx-*.md` | шаблоны скилла | skip if exists |
-| `openspec/README.md`, `specs/README.md`, `changes/README.md` | шаблоны скилла | skip if exists |
-| `openspec/templates/*.md` | шаблоны скилла | skip if exists |
-| `openspec/config.yaml`, `openspec/project.md` | tpl с `{{PROJECT_NAME}}`, `{{COMPAT_MODE}}` | skip if exists |
-| `openspec/changes/<name>/` (живые) | **только вручную / агентом** | **никогда** не копировать из SourceProject |
-| `openspec/specs/<domain>/spec.md` | после archive | **никогда** не копировать из SourceProject |
-
-`COMPAT_MODE` читается из `src/cf/Configuration.xml` при наличии; иначе `Version8_3_27`.
 
 Правила: always-on — глобальный `~/.config/opencode/AGENTS.md`, on-demand — `~/.config/opencode/skills/kit/rules/` (обновляет `kit.ps1 apply`). В проекте создаётся только корневой `AGENTS.md` — память проекта, не копия глобальных правил; setup его не перезаписывает.
 
@@ -125,8 +107,7 @@ Setup разворачивает из шаблонов скилла (`scripts/te
 - Назначение: короткие правила и невыводимые факты, которые нужны в каждой сессии. OpenCode загружает файл автоматически.
 - Шаблон: `scripts/templates/AGENTS.md.tpl`; подстановки — `{{PROJECT_NAME}}`, `{{APP_NAME}}`, `{{PROJECT_ROOT}}`, `{{WEB_PORT}}`, `{{V8_VERSION}}`, `{{IB_CONNECTION}}`.
 - Критерии записи: невыводимо из кода/конфигов/docs, стабильно, меняет поведение, не дублирует глобальные правила и `docs/`.
-- Лимит — ~100 строк. Детали и runbook — в `docs/<тема>.md`, состояние — в `handoffs/` / `openspec/`, история решений — в `docs/decisions.md`.
-- `memory.md` не создаётся: OpenCode не загружает его автоматически, и он дублирует `AGENTS.md`/`docs`.
+- Лимит — ~100 строк. Детали и runbook — в `docs/<тема>.md`, состояние — в `handoffs/`, история решений — в `docs/decisions.md`.
 
 ## Bootstrap NinjaLive и список расширений ИБ (главный способ)
 
@@ -156,5 +137,3 @@ Setup разворачивает из шаблонов скилла (`scripts/te
 - `src/cfe/NinjaLive` — эталон на месте; Init в чужую папку копирует отсюда
 
 `tools/syntax-check-excludes.txt` может отсутствовать — Check покажет `would-create`.
-
-OpenSpec: Check/Refresh добавляют `.opencode/commands/opsx-*.md` и недостающие шаблоны `openspec/`; живые `openspec/changes/*` и `config.yaml`/`project.md` без `-Force` не затираются.

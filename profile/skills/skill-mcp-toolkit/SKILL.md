@@ -23,13 +23,13 @@ MCP-сервер **1c-mcp-toolkit** — доступ к **работающей**
 |-----|------|
 | Upstream / скачать EPF | https://github.com/ROCTUP/1c-mcp-toolkit/releases → asset **`MCP_Toolkit.epf`** |
 | Рекомендуемый локальный путь | `%USERPROFILE%\tools\1c-mcp-toolkit\MCP_Toolkit.epf` |
-| Legacy (не требовать) | `C:\1C\soft\MCP_Toolkit.epf` — только если уже так заведено на машине |
+| Альтернативный путь | `C:\1C\soft\MCP_Toolkit.epf` — только если уже так заведено на машине |
 | MCP (project) | `opencode.jsonc` → `http://127.0.0.1:6003/mcp` (не дублировать в user-конфиг) |
 | Namespace MCP | `1c-mcp-toolkit` |
 
 ## Запуск (встроенный сервер, без Python)
 
-1. Скачай EPF с GitHub Releases (см. таблицу выше), если файла ещё нет.
+1. Если EPF ещё нет — `kit.ps1 deps -What toolkit` (качает latest из GitHub Releases в `%USERPROFILE%\tools\1c-mcp-toolkit`).
 2. Открыть **Предприятие** на ИБ текущего проекта.
 3. Файл → Открыть → путь к `MCP_Toolkit.epf`.
 4. Режим **«Встроенный сервер»** → **«Запустить сервер»** (порт **6003**).

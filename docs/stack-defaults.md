@@ -10,6 +10,8 @@
 | **8.5** | **8085** | `%USERPROFILE%\tools\apache-85` |
 
 - Apache **не** копировать в git проекта.
+- Ставит Apache `kit.ps1 deps -What apache` (Apache Lounge Win64, latest); коннектор 1С —
+  `wsap24.dll` из bin установленной платформы, поэтому платформа нужна.
 - Smoke / webUrl — с суффиксом **`/ru_RU/`**.
 - Выбор порта в проекте: по платформе (`v8path`) / `web.port` в `.v8-project.json`.
 
@@ -35,7 +37,6 @@
 
 - ИБ и исходники — только корень открытого проекта.
 - Кеш bsl-analyzer: `<project>\.build` (gitignore).
-- OpenSpec scaffold — для крупных full-cycle; мелочи не тащить.
 - Скиллы: kit-профиль + cc-1c-skills (`install/cc-skills.ps1`).
 
 Машиночитаемо: `install/path-defaults.windows.yaml`, `manifest.yaml`.

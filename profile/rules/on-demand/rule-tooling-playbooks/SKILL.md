@@ -8,7 +8,7 @@ description: >-
 
 # Tooling playbooks
 
-Каталог MCP и fallback — правила `rule-bsl-analyzer`, `rule-ninja-mcp`, `rule-development-process`. Этот файл — последовательности по типу задачи. **Не** используй `1c-metadata-manage`; операции с ИБ — только скиллы контура (`db-*`, `skill-repo-workflow`), не ручные вызовы Конфигуратора.
+Каталог MCP и fallback — правила `rule-bsl-analyzer`, `rule-ninja-mcp`, `rule-development-process`. Этот файл — последовательности по типу задачи. Операции с ИБ — только скиллы контура (`db-*`, `skill-repo-workflow`), не ручные вызовы Конфигуратора и не сторонние metadata-менеджеры.
 
 ## Minimum evidence
 
@@ -65,7 +65,7 @@ description: >-
 1. Найти объект: `meta-info` / `form-info` / `metadata`.
 2. Менять **только** скиллами: `meta-edit`/`meta-compile`, `form-edit`/`form-compile`, `cfe-borrow`/`cfe-patch-method`, `skd-*`, `role-*`, …
 3. `*-validate` того же типа.
-4. Load: скиллы контура (`db-load-xml` / `skill-repo-workflow`) — см. `rule-development-process`. **Запрещены** ручные вызовы Конфигуратора и `1c-metadata-manage`.
+4. Load: скиллы контура (`db-load-xml` / `skill-repo-workflow`) — см. `rule-development-process`. **Запрещены** ручные вызовы Конфигуратора и сторонние metadata-менеджеры.
 
 ## Integrations
 

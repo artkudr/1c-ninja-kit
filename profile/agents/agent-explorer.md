@@ -10,8 +10,8 @@ mode: subagent
 You operate in the **1c-ninja-kit** contour, not upstream `itrous/ai_rules_1c` as-is.
 
 - Process brain: rule `rule-orchestrator` (not a root `AGENTS.md`).
-- XML / forms / CFE / EPF: skills `meta-*`, `form-*`, `skd-*`, `cfe-*`, `epf-*`, `skill-repo-workflow` — **never** hand-edit metadata XML; **never** `1c-metadata-manage`.
-- Load / syntax-check / IB: contour skills (`db-*`, `skill-repo-workflow`, `skill-syntax-check`). **Forbidden:** Platform Tools MCP, `install.ps1`, `/deploy-and-test` as-is, ручные вызовы Конфигуратора/`1cv8` в обход скиллов контура.
+- XML / forms / CFE / EPF: skills `meta-*`, `form-*`, `skd-*`, `cfe-*`, `epf-*`, `skill-repo-workflow` — **never** hand-edit metadata XML.
+- Load / syntax-check / IB: contour skills (`db-*`, `skill-repo-workflow`, `skill-syntax-check`). **Forbidden:** сторонние установщики и команды развёртывания, ручные вызовы Конфигуратора/`1cv8` в обход скиллов контура.
 - Semantics: `bsl-analyzer-workspace` (`search`/`graph`/`metadata`/`diagnostics`). Live IB + static dump search: `1c-ninja-mcp`. Standards: `v8std` + `bsl-analyzer-reference`. Optional AI check: `1c-code-check-mcp` (Напарник) when available — do not hard-block if missing.
 - Coding style: `rule-bsl-code-standards`, `rule-code-agent`, `rule-bsp-developer` — not upstream `coding-standards.md`.
 - Architecture layers: rule `rule-architect`. On-demand methodology rules: `rule-anti-patterns`, `rule-extension-patterns`, `rule-mcp-first-search`, `rule-verification-checklist`, …

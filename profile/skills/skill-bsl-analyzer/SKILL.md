@@ -29,7 +29,9 @@ Rust MCP **workspace** (itrous/bsl-analyzer, **≥0.2.86**): модель исх
 
 ### Установка на новой машине
 
-См. `docs/MACHINE-BOOTSTRAP.md` §2. Кратко: скачать launcher с GitHub Releases → переименовать/скопировать в `%LOCALAPPDATA%\bsl-analyzer\bsl-analyzer.exe` → при необходимости `--launcher-update`.
+`kit.ps1 deps -What bsl-analyzer` (см. `docs/MACHINE-BOOTSTRAP.md` §3): ставит лаунчер из
+GitHub Releases в `%LOCALAPPDATA%\bsl-analyzer\bsl-analyzer.exe` и подтягивает app через
+`--launcher-update`. Руками — только если кит недоступен.
 
 Прогрев: `metadata`/`graph` `action=status` → `ready` (на больших конфигурациях graph cold ~5 мин). Пока `loading` — повтори, не трактуй как «пусто».
 

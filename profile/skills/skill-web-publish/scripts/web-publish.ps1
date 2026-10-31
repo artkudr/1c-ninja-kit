@@ -1,4 +1,4 @@
-﻿# web-publish v1.6 — Publish 1C infobase via profile Apache (apache-83 / apache-85)
+﻿# web-publish v1.7 — Publish 1C infobase via profile Apache (apache-83 / apache-85)
 # Source: https://github.com/Nikolay-Shirokov/cc-1c-skills
 <#
 .SYNOPSIS
@@ -9,6 +9,8 @@
     Apache — профильный (не в проекте):
       %USERPROFILE%\tools\apache-83  порт 8083  (платформа 8.3*)
       %USERPROFILE%\tools\apache-85  порт 8085  (платформа 8.5*)
+    Если Apache нет — ставит его кит (install\kit.ps1 deps -What apache): версия
+    и адрес загрузки живут в companions/pins.json, а не в этом скрипте.
     Платформа: -V8Path или v8path из .v8-project.json → bin с wsap24.dll.
     AppName: -AppName / web.appName из .v8-project.json / smoke webUrl / имя папки проекта.
 
@@ -145,85 +147,34 @@ if (-not (Test-Path $httpdExe)) {
     if ($Manual) {
         Write-Host "Apache не найден: $ApachePath" -ForegroundColor Yellow
         Write-Host ""
-        Write-Host "Установите Apache вручную:" -ForegroundColor Cyan
-        Write-Host "  1. Скачайте Apache Lounge (x64) с https://www.apachelounge.com/download/"
-        Write-Host "  2. Распакуйте содержимое Apache24\ в: $ApachePath"
-        Write-Host "  3. Запустите скрипт повторно"
+        Write-Host "Установите Apache через кит:" -ForegroundColor Cyan
+        Write-Host "  install\kit.ps1 deps -What apache -Platform $($targets.ApacheLabel)"
         exit 1
     }
 
-    Write-Host "Apache не найден. Скачиваю..." -ForegroundColor Cyan
-    $tmpZip = Join-Path $env:TEMP "apache24.zip"
-    $tmpDir = Join-Path $env:TEMP "apache24_extract"
-
-    try {
-        [Net.ServicePointManager]::SecurityProtocol = [Net.SecurityProtocolType]::Tls12
-        $wc = New-Object System.Net.WebClient
-
-        # Parse Apache Lounge download page for latest Win64 zip URL
-        $downloadPage = "https://www.apachelounge.com/download/"
-        Write-Host "Определяю актуальную версию с $downloadPage ..."
-        $html = $wc.DownloadString($downloadPage)
-        # Links are typically relative (/download/...), try that first
-        $match = [regex]::Match($html, '(?i)href="(/download/[^"]*?httpd-[^"]*?Win64[^"]*?\.zip)"')
-        if (-not $match.Success) {
-            $match = [regex]::Match($html, '(?i)href="(https://[^"]*?httpd-[^"]*?Win64[^"]*?\.zip)"')
+    # Версии и адрес загрузки Apache держит кит (companions/pins.json + kit.ps1 deps),
+    # чтобы на разных машинах не приезжали разные сборки и версии.
+    $kitRoot = $env:NINJA_KIT_ROOT
+    if (-not $kitRoot -or -not (Test-Path (Join-Path $kitRoot 'install\kit.ps1'))) {
+        foreach ($candidate in @('C:\1C\projects\1c-ninja-kit')) {
+            if (Test-Path (Join-Path $candidate 'install\kit.ps1')) { $kitRoot = $candidate; break }
         }
-
-        if ($match.Success) {
-            $zipUrl = $match.Groups[1].Value
-            if ($zipUrl.StartsWith('/')) {
-                $zipUrl = "https://www.apachelounge.com$zipUrl"
-            }
-            Write-Host "Найдено: $zipUrl" -ForegroundColor Green
-        } else {
-            Write-Host "Не удалось определить ссылку автоматически." -ForegroundColor Yellow
-            Write-Host "Скачайте вручную: $downloadPage" -ForegroundColor Yellow
-            exit 1
-        }
-
-        $wc.DownloadFile($zipUrl, $tmpZip)
-    } catch {
-        Write-Host "Error: не удалось скачать Apache: $_" -ForegroundColor Red
-        Write-Host "Скачайте вручную: https://www.apachelounge.com/download/" -ForegroundColor Yellow
+    }
+    if (-not $kitRoot -or -not (Test-Path (Join-Path $kitRoot 'install\kit.ps1'))) {
+        Write-Host "Apache не найден: $ApachePath" -ForegroundColor Yellow
+        Write-Host "Кит не найден (NINJA_KIT_ROOT или C:\1C\projects\1c-ninja-kit)." -ForegroundColor Yellow
+        Write-Host "Поставьте Apache из кита: install\kit.ps1 deps -What apache -Platform $($targets.ApacheLabel)" -ForegroundColor Cyan
         exit 1
     }
 
-    Write-Host "Распаковка..."
-    if (Test-Path $tmpDir) { Remove-Item $tmpDir -Recurse -Force }
-    Expand-Archive -Path $tmpZip -DestinationPath $tmpDir -Force
-
-    # Move Apache24 contents up to ApachePath
-    $innerDir = Join-Path $tmpDir "Apache24"
-    if (-not (Test-Path $innerDir)) {
-        # Try to find Apache24 in nested folder
-        $innerDir = Get-ChildItem $tmpDir -Directory -Recurse -Filter "Apache24" | Select-Object -First 1
-        if ($innerDir) { $innerDir = $innerDir.FullName } else {
-            Write-Host "Error: каталог Apache24 не найден в архиве" -ForegroundColor Red
-            exit 1
-        }
+    Write-Host "Apache не найден: $ApachePath" -ForegroundColor Yellow
+    Write-Host "Ставлю профильный Apache (apache-$($targets.ApacheLabel)) через kit deps..." -ForegroundColor Cyan
+    & powershell -NoProfile -ExecutionPolicy Bypass -File (Join-Path $kitRoot 'install\kit.ps1') `
+        deps -What apache -Platform $targets.ApacheLabel
+    if (-not (Test-Path $httpdExe)) {
+        Write-Host "Error: kit deps не поставил Apache: $ApachePath" -ForegroundColor Red
+        exit 1
     }
-
-    if (-not (Test-Path $ApachePath)) {
-        New-Item -ItemType Directory -Path $ApachePath -Force | Out-Null
-    }
-    Copy-Item -Path (Join-Path $innerDir "*") -Destination $ApachePath -Recurse -Force
-
-    # Cleanup
-    Remove-Item $tmpZip -Force -ErrorAction SilentlyContinue
-    Remove-Item $tmpDir -Recurse -Force -ErrorAction SilentlyContinue
-
-    # Patch ServerRoot in httpd.conf
-    $confFile = Join-Path (Join-Path $ApachePath "conf") "httpd.conf"
-    if (Test-Path $confFile) {
-        $apachePathFwd = $ApachePath -replace '\\','/'
-        $confContent = [System.IO.File]::ReadAllText($confFile)
-        $confContent = $confContent -replace '(?m)^Define SRVROOT .*$', "Define SRVROOT `"$apachePathFwd`""
-        [System.IO.File]::WriteAllText($confFile, $confContent)
-        Write-Host "ServerRoot обновлён: $apachePathFwd" -ForegroundColor Green
-    }
-
-    Write-Host "Apache установлен: $ApachePath" -ForegroundColor Green
 }
 
 # --- AppName already resolved via Resolve-1cWebTargets ---

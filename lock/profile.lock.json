@@ -1,13 +1,13 @@
 {
-  "version": "0.9.0",
+  "version": "0.10.0",
   "profile": "1c-ninja-kit",
-  "capturedAt": "2026-10-28T00:00:00+05:00",
+  "capturedAt": "2026-10-31T00:00:00+05:00",
   "counts": {
     "agents": 12,
-    "skills": 19,
-    "rules": 33
+    "skills": 20,
+    "rules": 32
   },
-  "namesHashSha256": "b69131ad27f67e224d22ea555ab1c6a92a62213348ae402fecb3fd676d621eab",
+  "namesHashSha256": "e78f78e0e2d510bedfb0898af069ef347e123934da8cb7f62d3d71ecb59ae48e",
   "skills": [
     "skill-bsl-analyzer",
     "skill-env-setup",
@@ -16,6 +16,7 @@
     "skill-fresh-epf-audit",
     "skill-handoff",
     "skill-mcp-toolkit",
+    "skill-move-predefined",
     "skill-ninja-mcp",
     "skill-project-context",
     "skill-query-composition",
@@ -57,7 +58,6 @@
     "rule-refactor-add",
     "rule-registers-design",
     "rule-reply-style",
-    "rule-sdd-integrations",
     "rule-subagent-pipeline",
     "rule-subagents",
     "rule-systematic-debugging",

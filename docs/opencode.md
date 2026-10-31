@@ -54,7 +54,7 @@ powershell -NoProfile -File "$env:USERPROFILE\.config\opencode\skills\kit\skills
 ```
 
 Скрипт создаёт структуру каталогов, `.v8-project.json`, `AGENTS.md`, `opencode.jsonc`
-(+ `.example`), `.opencode/commands`, OpenSpec, `.ignore`, `docs/dev-stack.md`, smoke-config
+(+ `.example`), `.ignore`, `docs/dev-stack.md`, smoke-config
 и копирует `NinjaLive` из `SourceProject` / kit-эталона / соседнего проекта.
 
 ## Что OpenCode умеет нативно

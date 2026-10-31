@@ -1,4 +1,4 @@
-# TEST GUIDE — OpenCode V2 (1c-ninja-kit v0.9)
+# TEST GUIDE — OpenCode V2 (1c-ninja-kit v0.10)
 
 Проверка доставки kit под **OpenCode**: глобальный профиль (`skills/kit/`, `agents/`, `AGENTS.md`) + project `opencode.jsonc`.
 
@@ -26,9 +26,13 @@
 ### 1. Doctor / verify
 
 ```powershell
+powershell -NoProfile -ExecutionPolicy Bypass -File .\install\kit.ps1 deps -DryRun
 powershell -NoProfile -File .\install\kit.ps1 doctor
 powershell -NoProfile -File .\install\kit.ps1 verify
 ```
+
+`deps -DryRun` показывает план установки внешних зависимостей; `doctor` — версии и пути
+уже стоящего (`fail=0 warn=0` на подготовленной машине).
 
 Ожидается `opencode profile installed: skills=<N>`.
 
@@ -64,7 +68,7 @@ powershell -NoProfile -File "$env:USERPROFILE\.config\opencode\skills\kit\skills
   -SkipSyncCfe
 ```
 
-Проверь: `AGENTS.md`, `opencode.jsonc`, `.opencode/commands/opsx-*.md`, `src/cfe/NinjaLive`, `.ignore`, `build/out/cfe`, `docs/dev-stack.md`.
+Проверь: `AGENTS.md`, `opencode.jsonc`, `src/cfe/NinjaLive`, `.ignore`, `build/out/cfe`, `docs/dev-stack.md`.
 
 ### 4. MCP
 

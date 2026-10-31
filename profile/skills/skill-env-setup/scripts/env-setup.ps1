@@ -356,28 +356,14 @@ function Merge-Gitignore {
 
 function Get-ProjectContextVars {
     $name = (Split-Path $ProjectRoot -Leaf)
-    $compat = "Version8_3_27"
-    $cfgPath = Join-Path $ProjectRoot "src\cf\Configuration.xml"
-    if (Test-Path -LiteralPath $cfgPath) {
-        try {
-            [xml]$cfg = Get-Content -LiteralPath $cfgPath -Encoding UTF8
-            $node = $cfg.SelectSingleNode("//*[local-name()='CompatibilityMode']")
-            if ($node -and $node.InnerText) {
-                $compat = $node.InnerText.Trim()
-            }
-        } catch {}
-    }
     return [pscustomobject]@{
         ProjectName = $name
-        CompatMode  = $compat
     }
 }
 
 function Expand-TemplateContent {
     param([string]$Content, [object]$Vars)
-    return $Content.
-        Replace("{{PROJECT_NAME}}", $Vars.ProjectName).
-        Replace("{{COMPAT_MODE}}", $Vars.CompatMode)
+    return $Content.Replace("{{PROJECT_NAME}}", $Vars.ProjectName)
 }
 
 function Install-ScaffoldFile {
@@ -414,70 +400,6 @@ function Install-ScaffoldFile {
     $utf8 = New-Object System.Text.UTF8Encoding($false)
     [System.IO.File]::WriteAllText($dest, $content, $utf8)
     Add-Report $DestRelative $(if ($exists) { "updated" } else { "created" }) $tplPath
-}
-
-function Sync-Commands {
-    $rel = ".opencode\commands"
-    $relUnix = $rel -replace '\\', '/'
-    $cmdDir = Join-Path $ProjectRoot $rel
-    $tplDir = Join-Path $templatesDir "commands"
-    if (-not (Test-Path -LiteralPath $tplDir)) {
-        Add-Report "$relUnix" "fail" "template dir missing"
-        return
-    }
-    if ($dryRun) {
-        Ensure-Dir $cmdDir
-    } elseif (-not (Test-Path -LiteralPath $cmdDir)) {
-        New-Item -ItemType Directory -Path $cmdDir -Force | Out-Null
-    }
-    $files = @(Get-ChildItem -LiteralPath $tplDir -Filter "*.md" -File -ErrorAction SilentlyContinue)
-    foreach ($file in $files) {
-        $dest = Join-Path $cmdDir $file.Name
-        $exists = Test-Path -LiteralPath $dest
-        if ($exists -and -not $Force) {
-            Add-Report "$relUnix/$($file.Name)" "skip" "exists"
-            continue
-        }
-        if ($dryRun) {
-            $action = if ($exists) { "would-overwrite" } else { "would-create" }
-            Add-Report "$relUnix/$($file.Name)" $action $file.FullName
-            continue
-        }
-        Copy-Item -LiteralPath $file.FullName -Destination $dest -Force
-        Add-Report "$relUnix/$($file.Name)" $(if ($exists) { "updated" } else { "created" }) ""
-    }
-    if ($files.Count -gt 0) {
-        Add-Report "$relUnix" "synced" "$($files.Count) opsx commands"
-    }
-}
-
-function Sync-OpenspecScaffold {
-    # Scaffold only from skill templates. Never copy live changes/* or specs/*/spec.md from SourceProject.
-    $openspecDirs = @(
-        "openspec",
-        "openspec\templates",
-        "openspec\specs",
-        "openspec\changes",
-        "openspec\changes\archive"
-    )
-    foreach ($d in $openspecDirs) {
-        Ensure-Dir (Join-Path $ProjectRoot $d)
-    }
-
-    Install-ScaffoldFile -DestRelative "openspec/README.md" -TemplateRelative "openspec/README.md"
-    Install-ScaffoldFile -DestRelative "openspec/specs/README.md" -TemplateRelative "openspec/specs-README.md"
-    Install-ScaffoldFile -DestRelative "openspec/changes/README.md" -TemplateRelative "openspec/changes-README.md"
-    Install-ScaffoldFile -DestRelative "openspec/config.yaml" -TemplateRelative "openspec/config.yaml.tpl" -ExpandPlaceholders
-    Install-ScaffoldFile -DestRelative "openspec/project.md" -TemplateRelative "openspec/project.md.tpl" -ExpandPlaceholders
-
-    $artifactTplDir = Join-Path $templatesDir "openspec\templates"
-    if (Test-Path -LiteralPath $artifactTplDir) {
-        Get-ChildItem -LiteralPath $artifactTplDir -Filter "*.md" -File -ErrorAction SilentlyContinue | ForEach-Object {
-            Install-ScaffoldFile -DestRelative "openspec/templates/$($_.Name)" -TemplateRelative "openspec/templates/$($_.Name)"
-        }
-    }
-
-    Add-Report "openspec/" "scaffold" "templates only; live changes/specs preserved"
 }
 
 function Sync-ProjectRulesFromProfile {
@@ -789,8 +711,6 @@ if (-not $SourceProject) {
 }
 
 Sync-ProjectRulesFromProfile
-Sync-Commands
-Sync-OpenspecScaffold
 
 # Scaffold dirs
 $dirs = @(
@@ -798,10 +718,7 @@ $dirs = @(
     "build\out\syntax-check\junit", "build\out\syntax-check\allure",
     "build\out\cfe", "build\out\epf", "build\out\erf",
     "tools\web-test\scenarios\after-load", "tools\web-test\scenarios\manual",
-    "docs", ".opencode",
-    "openspec", "openspec\templates", "openspec\specs",
-    "openspec\changes", "openspec\changes\archive",
-    ".opencode\commands"
+    "docs", ".opencode"
 )
 foreach ($d in $dirs) {
     Ensure-Dir (Join-Path $ProjectRoot $d)

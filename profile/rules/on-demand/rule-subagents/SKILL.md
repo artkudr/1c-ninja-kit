@@ -33,7 +33,7 @@ description: >-
 | **agent-error-fixer** | Синтаксис / runtime без архитектуры | Нужен редизайн |
 | **agent-code-reviewer** | **Только** явная просьба review | Автопосле правок — запрещено |
 | **agent-doc-writer** | Пользовательские гайды | Inline-комментарии кода |
-| **agent-tester** | Stub: `skill-repo-workflow` + `skill-web-test` | Не звать deploy/ibcmd из upstream |
+| **agent-tester** | Stub: `skill-repo-workflow` + `skill-web-test` | Не звать Designer / raw `ibcmd` |
 
 
 Стек агентов: скиллы контура (`db-*`, `skill-repo-workflow`), ninja live, `bsl-analyzer-workspace`, профильные XML-скиллы. Наследуют triage/`CONFUSION` из `rule-orchestrator`.

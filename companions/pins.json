@@ -1,19 +1,29 @@
 {
+  "depsPolicy": {
+    "channel": "latest",
+    "installer": "install/deps.ps1 (kit.ps1 deps)",
+    "stateFile": "%LOCALAPPDATA%\\1c-ninja-kit\\deps-state.json",
+    "offlineCache": "%LOCALAPPDATA%\\1c-ninja-kit\\cache",
+    "note": "Версии берутся с upstream при установке. Поля *_version/testedVersion — то, на чём кит проверен; minimum — нижняя граница, ниже которой doctor ругается. Ставит всё это kit.ps1 deps, руками ничего скачивать не нужно."
+  },
   "bslAnalyzer": {
     "upstream": "https://github.com/itrous/bsl-analyzer",
     "releases": "https://github.com/itrous/bsl-analyzer/releases",
-    "windowsLauncherAsset": "bsl-analyzer-windows-amd64.exe",
+    "githubRepo": "itrous/bsl-analyzer",
+    "launcherAssetPattern": "^bsl-analyzer-windows-amd64\\.exe$",
     "installAs": "%LOCALAPPDATA%\\bsl-analyzer\\bsl-analyzer.exe",
-    "minAppVersion": "0.2.86",
-    "note": "Launcher downloads app into %USERPROFILE%\\.bsl-analyzer\\bin. Prefer launcher asset, not bsl-analyzer-app-*.exe unless you know you need the full binary. The launcher is a separate version line (--launcher-version); to move it, replace %LOCALAPPDATA%\\bsl-analyzer\\bsl-analyzer.exe -- Windows refuses to overwrite a running exe, so copy the new asset in as a side file, rename the old one to *.bak, then rename the new one onto the battle path. --launcher-update only refreshes the app inside."
+    "appExe": "%USERPROFILE%\\.bsl-analyzer\\bin\\bsl-analyzer-app.exe",
+    "minAppVersion": "0.4.0",
+    "note": "Launcher downloads app into %USERPROFILE%\\.bsl-analyzer\\bin. Prefer launcher asset, not bsl-analyzer-app-*.exe unless you know you need the full binary. The launcher is a separate version line (--launcher-version); to move it, replace %LOCALAPPDATA%\\bsl-analyzer\\bsl-analyzer.exe -- Windows refuses to overwrite a running exe, so the installer copies the new asset in as a side file, renames the old one to *.bak, then renames the new one onto the battle path. --launcher-update only refreshes the app inside. minAppVersion is the app version, not the launcher version."
   },
   "mcpToolkit": {
     "upstream": "https://github.com/ROCTUP/1c-mcp-toolkit",
     "releases": "https://github.com/ROCTUP/1c-mcp-toolkit/releases",
+    "githubRepo": "ROCTUP/1c-mcp-toolkit",
     "windowsEpfAsset": "MCP_Toolkit.epf",
     "recommendedPath": "%USERPROFILE%\\tools\\1c-mcp-toolkit\\MCP_Toolkit.epf",
     "mcpUrl": "http://127.0.0.1:6003/mcp",
-    "note": "Optional fallback when NinjaLive is unavailable. Download from GitHub releases — do not rely on another machine's C:\\1C\\soft path."
+    "note": "Optional fallback when NinjaLive is unavailable. kit.ps1 deps -What toolkit downloads the latest EPF from GitHub releases."
   },
   "1cNinjaMcp": {
     "inKit": true,
@@ -22,24 +32,48 @@
     "pair": "project-scaffold/cfe/NinjaLive"
   },
   "apache": {
-    "8.3": { "port": 8083, "toolsDir": "%USERPROFILE%\\tools\\apache-83" },
-    "8.5": { "port": 8085, "toolsDir": "%USERPROFILE%\\tools\\apache-85" }
+    "listing": "https://www.apachelounge.com/download/",
+    "assetPattern": "Win64-VS18",
+    "minVersion": "2.4.60",
+    "note": "Ставится из Apache Lounge (Win64, VS18) последней версии. 1С-коннектор wsap24.dll берётся из установленной платформы и подключается web-publish, поэтому платформа обязательна. Apache в git не коммитится.",
+    "platforms": {
+      "8.3": { "port": 8083, "toolsDir": "%USERPROFILE%\\tools\\apache-83" },
+      "8.5": { "port": 8085, "toolsDir": "%USERPROFILE%\\tools\\apache-85" }
+    }
   },
   "ripgrep": {
     "upstream": "https://github.com/BurntSushi/ripgrep",
     "releases": "https://github.com/BurntSushi/ripgrep/releases",
-    "windowsAsset": "ripgrep-15.2.0-x86_64-pc-windows-msvc.zip",
-    "version": "15.2.0",
+    "githubRepo": "BurntSushi/ripgrep",
+    "assetPattern": "^ripgrep-\\d+(?:\\.\\d+){1,3}-x86_64-pc-windows-msvc\\.zip$",
     "recommendedPath": "%USERPROFILE%\\tools\\ripgrep\\rg.exe",
+    "toolsDir": "%USERPROFILE%\\tools\\ripgrep",
     "pathEntry": "%USERPROFILE%\\tools\\ripgrep",
-    "note": "Ставится рядом с apache-83/85 в %USERPROFILE%\\tools и прописывается в user PATH. Нужен для быстрого поиска по коду из shell; встроенный rg opencode (%USERPROFILE%\\.cache\\opencode\\bin) — не замена, его кеш живёт своей жизнью."
+    "testedVersion": "15.2.0",
+    "note": "Ставится рядом с apache-83/85 в %USERPROFILE%\\tools и прописывается в user PATH. Нужен для быстрого поиска по коду из shell; встроенный rg opencode (%USERPROFILE%\\.cache\\opencode\\bin) — не замена, его кеш живёт своей жизнью. sha256 берётся из ассета .zip.sha256 того же релиза."
+  },
+  "webTest": {
+    "skill": "skill-web-test",
+    "nodeDistIndex": "https://nodejs.org/dist/index.json",
+    "nodeToolsDir": "%USERPROFILE%\\tools\\node",
+    "minNodeVersion": "18.0.0",
+    "browsers": ["chromium"],
+    "skillScriptsRelative": ".config\\opencode\\skills\\kit\\skills\\skill-web-test\\scripts",
+    "note": "Веб-прогон — обязательная часть разработки. deps ставит Node.js portable (latest LTS) в %USERPROFILE%\\tools\\node, затем npm ci в каталоге скилла skill-web-test и браузеры playwright (chromium) в %LOCALAPPDATA%\\ms-playwright. node_modules ставится в глобальную копию скилла после kit.ps1 apply; если её ещё нет — в кит, и после apply нужно повторить deps -What web-test."
   },
   "oneScript": {
     "site": "https://oscript.io/",
+    "githubRepo": "EvilBeaver/OneScript",
     "ovmCurrent": "%LOCALAPPDATA%\\ovm\\current",
     "engineVersion": "2.2.0",
-    "slots": "%LOCALAPPDATA%\\ovm\\<version> + junction `current`",
-    "note": "No ovm CLI on this machine: update = copy the current slot to a new %LOCALAPPDATA%\\ovm\\<version>, overlay bin\\* from the GitHub release zip, then repoint the `current` junction (cmd mklink /J). Never overlay lib\\ -- it holds opm and the oscript packages used by the MCP servers. Restart the MCP servers afterwards: a running oscript keeps the engine it was started with."
+    "packages": ["autumn", "autumn-mcp", "sql", "1connector"],
+    "knownGood": {
+      "autumn": "4.3.11",
+      "autumn-mcp": "1.1.2",
+      "sql": "1.3.3",
+      "1connector": "2.3.3"
+    },
+    "note": "Движок — из официального win-x64 zip релиза OneScript (внутри уже есть bin\\opm.bat и lib) в %LOCALAPPDATA%\\ovm\\<version>, junction current переключается на него. OVM не нужен: его установщик качает движок со своего сервера обновлений и падает с EOF. Пакеты контура (autumn, autumn-mcp, sql, 1connector) — opm install в lib движка, сначала latest; если hub требует движок новее выпущенного (так было с autumn 5.0.0 -> OneScript 2.2.1), ставится набор knownGood. Движок не переустанавливается, если oscript.exe уже есть: иначе слетят пакеты в текущем слоте."
   },
   "cc1cSkills": {
     "repo": "https://github.com/Nikolay-Shirokov/cc-1c-skills",

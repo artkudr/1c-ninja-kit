@@ -1,6 +1,6 @@
 ---
 name: skill-handoff
-description: "Compact the current conversation into a self-contained handoff document so a fresh agent (new chat, another machine, another AI client) can continue the work without re-discovering the context. References durable artifacts (`openspec/changes/*`, `AGENTS.md`, `docs/decisions.md`, commits) instead of duplicating them. Use when the user says 'handoff', 'compact session', 'save context for continuation', or invokes `/handoff`."
+description: "Compact the current conversation into a self-contained handoff document so a fresh agent (new chat, another machine, another AI client) can continue the work without re-discovering the context. References durable artifacts (`AGENTS.md`, `docs/decisions.md`, commits) instead of duplicating them. Use when the user says 'handoff', 'compact session', 'save context for continuation', or invokes `/handoff`."
 argument-hint: "Optional: focus of the next session, or a target path/folder for the handoff file."
 ---
 
@@ -63,10 +63,9 @@ Which gates from `rule-verification-checklist` passed / failed / were skipped. L
 - **Subagents**: `agent-<name>` when the task matches their role (see `rule-orchestrator`).
 - **On-demand rules**: `rule-<name>` skills based on the task trigger (see `rule-orchestrator → Skills`).
 - **MCP tools**: especially relevant tools (`metadata object` for X, `graph neighbors`/`callers` before refactoring Y, `search search_code` over the БСП modules for topic Z).
-- **Slash commands**: `/opsx-propose` when the task needs a new OpenSpec proposal, cf dump via `db-dump-xml` / 1c-ninja-mcp for metadata re-export, etc.
+- **Slash commands**: cf dump via `db-dump-xml` / 1c-ninja-mcp for metadata re-export, etc.
 
 ## Links (DO NOT copy content)
-- `openspec/changes/<id>/proposal.md`, `design.md`, `tasks.md`
 - `AGENTS.md` — relevant sections (already loaded by the harness)
 - `docs/decisions.md` — dated decision history, if the project keeps one
 - Commits / PR / Issue
@@ -75,9 +74,9 @@ Which gates from `rule-verification-checklist` passed / failed / were skipped. L
 
 ## What NOT to write in the handoff
 
-- Contents of existing artifacts (PRD, OpenSpec proposal/design/tasks, ADR, ITS page, commit, PR description). Link only.
+- Contents of existing artifacts (PRD, design notes, ADR, ITS page, commit, PR description). Link only.
 - Full module code. Only include a short change description and path.
-- Secrets, tokens, passwords, `.dev.env` contents, infobase connection strings.
+- Secrets, tokens, passwords, infobase connection strings.
 - Long MCP output dumps. Include only the result and call parameters so the check can be repeated if needed.
 
 ## After writing
@@ -92,6 +91,6 @@ Which gates from `rule-verification-checklist` passed / failed / were skipped. L
 ## Boundaries
 
 - Handoff is a session artifact, not configuration and not code. Do not run `diagnostics file` / `check_1c_code` / `review_1c_code` against it.
-- Handoff **does not replace** an OpenSpec proposal. If the task requires a proposal and it does not exist yet, additionally suggest `/opsx-propose` and reference the future ID from the handoff.
+- Handoff **does not replace** a plan or design note. If the task needs a plan that does not exist yet, suggest writing it in the handoff itself or in `docs/`.
 - Handoff **does not duplicate** `AGENTS.md` or `docs/decisions.md`. Memory and handoff are different channels (see `rule-orchestrator → Память проекта`).
 - Handoff is written in normal grammar, not caveman style, so the next agent can read it without ambiguity.

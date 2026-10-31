@@ -30,7 +30,7 @@ description: >-
 
 ### 5. Metadata / form validation
 
-Если трогали XML структуры: профильный `*-validate` (meta/form/skd/…). **Не** `1c-metadata-manage`. Для CFE с хранилищем — гейты `skill-repo-workflow`.
+Если трогали XML структуры: профильный `*-validate` (meta/form/skd/…). Для CFE с хранилищем — гейты `skill-repo-workflow`.
 
 ### 6. Platform / load gates
 

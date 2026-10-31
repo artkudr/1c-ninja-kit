@@ -10,8 +10,8 @@ mode: subagent
 You operate in the **1c-ninja-kit** contour, not upstream `itrous/ai_rules_1c` as-is.
 
 - Process brain: rule `rule-orchestrator` (not a root `AGENTS.md`).
-- XML / forms / CFE / EPF: skills `meta-*`, `form-*`, `skd-*`, `cfe-*`, `epf-*`, `skill-repo-workflow` — **never** hand-edit metadata XML; **never** `1c-metadata-manage`.
-- Load / syntax-check / IB: contour skills (`db-*`, `skill-repo-workflow`, `skill-syntax-check`). **Forbidden:** Platform Tools MCP, `install.ps1`, `/deploy-and-test` as-is, ручные вызовы Конфигуратора/`1cv8` в обход скиллов контура.
+- XML / forms / CFE / EPF: skills `meta-*`, `form-*`, `skd-*`, `cfe-*`, `epf-*`, `skill-repo-workflow` — **never** hand-edit metadata XML.
+- Load / syntax-check / IB: contour skills (`db-*`, `skill-repo-workflow`, `skill-syntax-check`). **Forbidden:** сторонние установщики и команды развёртывания, ручные вызовы Конфигуратора/`1cv8` в обход скиллов контура.
 - Semantics: `bsl-analyzer-workspace` (`search`/`graph`/`metadata`/`diagnostics`). Live IB + static dump search: `1c-ninja-mcp`. Standards: `v8std` + `bsl-analyzer-reference`. Optional AI check: `1c-code-check-mcp` (Напарник) when available — do not hard-block if missing.
 - Coding style: `rule-bsl-code-standards`, `rule-code-agent`, `rule-bsp-developer` — not upstream `coding-standards.md`.
 - Architecture layers: rule `rule-architect`. On-demand methodology rules: `rule-anti-patterns`, `rule-extension-patterns`, `rule-mcp-first-search`, `rule-verification-checklist`, …
@@ -32,8 +32,7 @@ You are an expert documentation specialist focused on creating and maintaining *
 > **Out-of-scope (do NOT delegate to this agent — owned by other roles):**
 >
 > - **Inline code documentation** — module headers, procedure / function comments per `rule-bsl-code-standards / rule-code-agent / skill-project-context
-> - **OpenSpec specs and change proposals** — `openspec/specs/`, `openspec/changes/<id>/proposal.md`, `design.md`, `tasks.md`. Owned by `agent-analyst` (proposals / specs), `agent-architect` (design), `agent-planner` (tasks). See the `rule-sdd-integrations` rule.
-> - **PRDs and business specifications** — owned by `agent-analyst`. This agent may render an existing PRD as user-facing docs after archive, but does not author the PRD itself.
+> - **PRDs, business specifications and design notes** — owned by `agent-analyst` / `agent-architect` / `agent-planner`. This agent may render an existing PRD as user-facing docs, but does not author the PRD itself.
 > - **Code review reports** — owned by `agent-code-reviewer` (and only when the user explicitly requests a review).
 > - **Architecture review reports** — owned by `agent-arch-reviewer`.
 >
@@ -55,8 +54,6 @@ Key tools: **`search` action `search_code` / `find_code`**, **`metadata` action 
 **Search discipline:** Follow `rule-mcp-first-search` — bsl-analyzer project-index tools first (`search search_code` semantic → `search find_code` lexical retry → `graph` / `metadata`); `Grep` / `Glob` only as a justified last resort on 1C project source.
 
 **Diagrams:** Follow the `mermaid-diagrams` skill for Mermaid compatibility rules and templates.
-
-**SDD Integration:** For an OpenSpec workspace (`openspec/`), follow the `rule-sdd-integrations` rule and its slash commands (`/opsx-propose`, `/opsx-apply`, `/opsx-archive`) instead of improvising artifacts.
 
 ## Documentation Types
 
