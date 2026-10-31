@@ -6,4 +6,4 @@
 конфиги, `AGENTS.md` и копирует `NinjaLive` из `SourceProject` или из этого эталона.
 Шаблоны проекта лежат в `profile/skills/skill-env-setup/scripts/templates/`.
 
-`kit init-project` удалён в 0.8.0. CLI кита — только `doctor`, `verify`, `apply`.
+`kit init-project` удалён в 0.8.0. CLI кита — `doctor`, `verify`, `apply`, `deps`.
