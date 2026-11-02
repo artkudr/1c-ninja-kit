@@ -1,4 +1,4 @@
-# read-ibases.ps1 — список информационных баз из ibases.v8i
+﻿# read-ibases.ps1 — список информационных баз из ibases.v8i
 <#
 .SYNOPSIS
     Читает список баз 1С из ibases.v8i и выводит таблицу / JSON.

@@ -114,6 +114,10 @@ Options for exec:
 Global options (any command):
   --no-preserve-clipboard  Don't save/restore OS clipboard around action calls.
                            Default: on (env: WEB_TEST_PRESERVE_CLIPBOARD=0 to disable globally).
+  --headless               Headless browser (default; verified on the 1C web client).
+  --headed                 Visible browser window (for recording / manual watching).
+                           Env: WEB_TEST_HEADLESS=1|0.
+                           Window and page size: WEB_TEST_VIEWPORT=1920x1080 (default).
 
 Options for test:
   --url=URL                Override the base URL (default: from webtest.config.mjs)

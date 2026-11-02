@@ -403,8 +403,9 @@ function Install-ScaffoldFile {
 }
 
 function Sync-ProjectRulesFromProfile {
-    # Kit rules live in the global OpenCode profile: AGENTS.md + skills/kit/rules.
-    Add-Report "rules" "n/a" "opencode: global AGENTS.md + skills/kit/rules (kit.ps1 apply)"
+    # Kit rules and skills are not copied: the global opencode.jsonc points at the
+    # kit repository (kit.ps1 apply). The project keeps only its own AGENTS.md.
+    Add-Report "rules" "n/a" "opencode: global config points into kit (kit.ps1 apply)"
 }
 function Write-V8Project {
     $path = Join-Path $ProjectRoot ".v8-project.json"
@@ -715,10 +716,9 @@ Sync-ProjectRulesFromProfile
 # Scaffold dirs
 $dirs = @(
     "src\cf", "src\cfe", "src\epf", "src\erf",
-    "build\out\syntax-check\junit", "build\out\syntax-check\allure",
     "build\out\cfe", "build\out\epf", "build\out\erf",
     "tools\web-test\scenarios\after-load", "tools\web-test\scenarios\manual",
-    "docs", ".opencode"
+    "docs", "Задачи"
 )
 foreach ($d in $dirs) {
     Ensure-Dir (Join-Path $ProjectRoot $d)
@@ -736,11 +736,6 @@ if (-not (Test-Path -LiteralPath $cfeReadme)) {
 На каждое расширение создается отдельный подкаталог с именем расширения.
 "@
     [void](Write-FileSafe -Path $cfeReadme -Content $readme -OnlyIfMissing)
-}
-
-$excludes = Join-Path $ProjectRoot "tools\syntax-check-excludes.txt"
-if (-not (Test-Path -LiteralPath $excludes)) {
-    [void](Write-FileSafe -Path $excludes -Content "# syntax-check excludes`n" -OnlyIfMissing)
 }
 
 Write-V8Project
@@ -822,4 +817,5 @@ Write-Host "Manual next steps:" -ForegroundColor Yellow
     Write-Host "  3. Warm bsl-analyzer graph (metadata/graph status -> ready)"
     Write-Host "  4. toolkit :6003 only as fallback (server is disabled in opencode.jsonc by default)"
     Write-Host "  5. Global %USERPROFILE%\.config\opencode\opencode.json(c) must NOT repeat 1C MCP server names"
-    Write-Host "  6. Always-on rules come from %USERPROFILE%\.config\opencode\AGENTS.md (kit.ps1 apply)"
+    Write-Host "  6. Rules/skills come from kit.ps1 apply (global opencode.jsonc paths); task framework is global"
+    Write-Host "     Task state lives in .\Задачи\: taskctl.ps1 next --task <номер> from the project root"

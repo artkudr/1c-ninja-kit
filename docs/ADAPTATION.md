@@ -50,7 +50,7 @@
 2. `db-load-xml -ConfigDir "src\cfe\NinjaLive" -Mode Full -Extension "NinjaLive" -UpdateDB`
 3. Опубликовать `/hs/ninja-live`
 4. Проверить `live_version` / `live_extensions_list`
-5. Правила: глобальный `AGENTS.md` + `skills/kit/rules` (`kit.ps1 apply`)
+5. Правила и скиллы: `kit.ps1 apply` прописывает пути кита в глобальном `opencode.jsonc` (`skills`, `instructions`); агенты, команды и `taskctl.ps1` копируются в `~/.config/opencode/`
 
 ## 5. Не копировать из ecoladev
 

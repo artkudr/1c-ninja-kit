@@ -89,10 +89,8 @@ User-конфиг (`~/.config/opencode/opencode.json(c)`) — **без** эти�
 
 ```
 src/cf, src/cfe, src/epf/<Имя>/…, src/erf/<Имя>/…
-build/out/syntax-check/{junit,allure}
 build/out/{cfe,epf,erf}
 
-tools/syntax-check-excludes.txt
 tools/web-test/smoke.config.json
 tools/web-test/scenarios/{after-load,manual}
 AGENTS.md            # память проекта: правила + невыводимые факты
@@ -100,7 +98,9 @@ AGENTS.md            # память проекта: правила + невыв�
 docs/dev-stack.md
 ```
 
-Правила: always-on — глобальный `~/.config/opencode/AGENTS.md`, on-demand — `~/.config/opencode/skills/kit/rules/` (обновляет `kit.ps1 apply`). В проекте создаётся только корневой `AGENTS.md` — память проекта, не копия глобальных правил; setup его не перезаписывает.
+Каркас задачи в проект **не** копируется: `taskctl.ps1` и команды `Задача`/`Продолжить`/`Статус` живут в `%USERPROFILE%\.config\opencode\scripts` и `…\commands` (ставит `kit.ps1 apply`). В проекте — только папка `Задачи/` с состоянием; её создаёт `taskctl.ps1 new`. Скрипт запускается из корня проекта, корень ищет вверх по каталогам (`Задачи\` или `.v8-project.json`) или берёт из `--project`.
+
+Правила: always-on и on-demand читаются прямо из кита по путям в глобальном `~/.config/opencode/opencode.jsonc` (`skills` + `instructions`, обновляет `kit.ps1 apply`). В проекте создаётся только корневой `AGENTS.md` — память проекта, не копия глобальных правил; setup его не перезаписывает.
 
 ## Память проекта (`AGENTS.md`)
 
@@ -134,6 +134,5 @@ docs/dev-stack.md
 - `.gitignore` — required entries present
 - `read-ibases.ps1` — читает `%APPDATA%\1C\1CEStart\ibases.v8i` (таблица баз)
 - `sync-cfe.ps1 -DryRun` — fallback `.v8-project.json` + src/cfe работает (без Предприятия)
+- `Задачи/` — состояние задач (каркас глобальный, в проекте только данные)
 - `src/cfe/NinjaLive` — эталон на месте; Init в чужую папку копирует отсюда
-
-`tools/syntax-check-excludes.txt` может отсутствовать — Check покажет `would-create`.

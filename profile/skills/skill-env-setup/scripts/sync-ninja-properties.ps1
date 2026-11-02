@@ -1,4 +1,4 @@
-#Requires -Version 5.1
+﻿#Requires -Version 5.1
 <#
 .SYNOPSIS
     Syncs the controlled (mirrored) properties of a bootstrap extension with the

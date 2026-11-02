@@ -6,7 +6,7 @@
 
 | Компонент | Где в kit | Примечание |
 |-----------|-----------|------------|
-| Rules / orchestration (ecoladev-форк) | `profile/rules/` | Процессный мозг: `rule-orchestrator` и спутники |
+| Rules / orchestration (ecoladev-форк) | `profile/rules/` | Процессный мозг: `rule-workspace`, `rule-development-process` и спутники |
 | Skills (профиль) | `profile/skills/` | В т.ч. meta/form/cfe и orchestration |
 | Agents `agent-*` | `profile/agents/` | OpenCode agent prompts |
 | **1c-ninja-mcp** | `components/1c-ninja-mcp/` | MCP-сервер (часть kit) |

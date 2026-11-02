@@ -17,7 +17,7 @@ Automates user interactions with 1C:Enterprise web client via Playwright — nav
 ## Quick start
 
 ```bash
-RUN="${CLAUDE_SKILL_DIR}/scripts/run.mjs"
+RUN="C:\1C\projects\1c-ninja-kit\profile\skills/skill-web-test/scripts/run.mjs"
 
 # One-shot: opens browser → runs script → closes browser → exits
 node $RUN run http://localhost:8083/app/ru_RU/ test-scenario.js
@@ -42,7 +42,7 @@ powershell -NoProfile -ExecutionPolicy Bypass -File <kit>\install\kit.ps1 deps -
 Вручную, если кита нет рядом:
 
 ```bash
-cd "${CLAUDE_SKILL_DIR}/scripts" && npm install && npx playwright install chromium
+cd "C:\1C\projects\1c-ninja-kit\profile\skills/skill-web-test/scripts" && npm install && npx playwright install chromium
 ```
 
 Requires Node.js 18+.
@@ -59,6 +59,17 @@ Use `/skill-web-publish` first if the database is not published.
 Playwright context uses `locale: 'ru-RU'` so `Accept-Language` matches.
 
 ## Execution modes
+
+### Browser mode and window size
+
+По умолчанию браузер безголовый (`headless`), окно и область страницы — 1920×1080.
+
+- `--headless` — безголовый режим (умолчание);
+- `--headed` — видимое окно: нужно, когда за прогоном смотрят глазами или пишут видео (`startRecording`);
+- `WEB_TEST_HEADLESS=1|0` — то же через окружение; флаг сильнее переменной;
+- `WEB_TEST_VIEWPORT=1600x900` — другой размер окна и viewport (по умолчанию 1920×1080).
+
+Почему умолчание безголовое: проверено на живой базе (devtools, 1С 8.5, `http://localhost:8085/devtools/ru_RU/`). Безголовый Chromium открывает веб-клиент, рисует форму «Ставки НДС», двойной щелчок открывает карточку, фильтр через буфер обмена (`filterList('20%')`) срабатывает, снимок 1920×1080 совпадает с видимым режимом. Единственное отличие: сохранение и восстановление системного буфера обмена в безголовом режиме может быть пропущено (`clipboard preserve skipped`, одно предупреждение) — вставка работает, но пользовательский буфер затрётся значением теста. Если это важно — `--headed`.
 
 ### Autonomous mode (preferred for complete scenarios)
 
@@ -477,6 +488,20 @@ Clear filters. Without arguments clears all, with `{ field }` clears specific ba
 ### Utility
 
 #### `screenshot()` → PNG Buffer
+#### `shotElement(selector, path?, { padding?, timeout? })` → PNG path (Buffer when `path` is omitted)
+Screenshot of one element's box — a form, field group, button, report row — instead of the whole window. The element is scrolled into view, the clip is padded and kept inside the viewport, and a relative `path` is resolved from the project root (directories are created).
+```js
+const file = await shotElement('form1_Шапка_container', 'Задачи/001/Артефакты/Бард/шаг-2.png');
+```
+
+#### `annotate([{ selector | rect, label }], { path?, padding?, color? })` → `{ file, boxes }` (`{ buffer, boxes }` without `path`)
+Draws semi-transparent frames with readable numbered badges over page areas, takes a PNG screenshot and removes the overlay again. Numbers follow array order, `label` is appended to the number (`"1. Ставка НДС"`). `rect` is in document coordinates; `selector` is resolved to the element's current box. The overlay layer is `pointer-events:none`, so it never intercepts clicks. `clearAnnotation()` removes it if a script needs to.
+```js
+await annotate([
+  { selector: 'form1_СтавкаНДС', label: 'Ставка НДС' },
+  { rect: { x: 40, y: 300, width: 320, height: 120 }, label: 'Итог' },
+], { path: 'Задачи/001/Артефакты/Бард/шаг-2.png' });
+```
 #### `wait(seconds)` → form state
 #### `getPage()` → Playwright Page (raw, for advanced scripting)
 #### `startRecording(path, opts?)` / `stopRecording()` → MP4 video recording (`{ force: true }` to restart if already recording)
@@ -625,7 +650,7 @@ On error (auto-screenshot taken):
 
 ## Important notes
 
-- **Headed mode** — 1C requires visible browser, no headless
+- **Browser mode** — headless by default (1920×1080); `--headed` for a visible window when recording or watching manually. `WEB_TEST_HEADLESS=1|0`, `WEB_TEST_VIEWPORT=WxH` override.
 - **Startup time** — 1C loads 30-60s on initial connect (built into `start`)
 - **Fuzzy matching** — all name lookups: exact > startsWith > includes
 - **Clipboard paste** — all text fields filled via Ctrl+V (triggers 1C events properly). The OS clipboard is automatically saved before each action and restored after, so a local user's clipboard survives a test run. Opt out with `--no-preserve-clipboard` (any command), `WEB_TEST_PRESERVE_CLIPBOARD=0` env, or `preserveClipboard: false` in `webtest.config.mjs`
@@ -636,3 +661,5 @@ On error (auto-screenshot taken):
 ## Regression suites
 
 When the user asks to cover a 1C solution with automated regression — multi-file test suites with assertions, hooks, tags, retries, Allure/JUnit reports, multi-user process tests — switch to the `test` mode. See [regress.md](regress.md) for authoring discipline, recon flow (metadata + live walkthrough via `exec`), per-application folder layout, ready-to-paste templates, and failure triage. Default to ad-hoc `run`/`exec` for single-script automation — `test` is the specialised mode for project-wide coverage.
+
+**Kit convention overrides the default `tests/` root:** чеки и наборы живут в папке задачи — `Задачи/<номер>/Проверки/` (`webtest.config.mjs`, `_hooks.mjs`, `*.test.mjs`, отчёты). В корень проекта и в `src/` ничего не складывать; всё, что вне задачи, — только `src/` и `build/`.

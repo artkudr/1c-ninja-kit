@@ -18,6 +18,50 @@ export async function screenshot() {
   return await page.screenshot({ type: 'png' });
 }
 
+/**
+ * Screenshot of a single element (its box, optionally padded) instead of the whole
+ * window — a form, a field group, a button, a report row. Guide images need the
+ * element of the step, not the screen around it.
+ * @param {string} selector  Playwright selector of the element
+ * @param {string} [outputPath]  PNG path (relative to project root). Omit to get a Buffer.
+ * @param {object} [opts]
+ * @param {number} [opts.padding=6]  Extra pixels around the element box
+ * @param {number} [opts.timeout=10000]  Visibility timeout, ms
+ * @returns {Promise<Buffer|string>}  Buffer, or the absolute path of the written PNG
+ */
+export async function shotElement(selector, outputPath, opts = {}) {
+  ensureConnected();
+  const padding = opts.padding ?? 6;
+  const timeout = opts.timeout ?? 10000;
+
+  const locator = page.locator(selector).first();
+  await locator.waitFor({ state: 'visible', timeout });
+  await locator.scrollIntoViewIfNeeded();
+
+  const box = await locator.boundingBox();
+  if (!box) throw new Error(`shotElement: "${selector}" has no box (hidden or zero-size)`);
+
+  // Window size is fixed by the configured viewport (state.mjs), so viewportSize() is not
+  // empty; window.innerWidth/innerHeight still describe the pixels the clip is measured in.
+  const viewport = await page.evaluate(() => ({ width: window.innerWidth, height: window.innerHeight }));
+
+  const left = Math.max(0, box.x - padding);
+  const top = Math.max(0, box.y - padding);
+  const right = Math.min(viewport.width, box.x + box.width + padding);
+  const bottom = Math.min(viewport.height, box.y + box.height + padding);
+  const width = right - left;
+  const height = bottom - top;
+  if (width <= 0 || height <= 0) throw new Error(`shotElement: "${selector}" is outside the viewport`);
+
+  const buffer = await page.screenshot({ type: 'png', clip: { x: left, y: top, width, height } });
+  if (!outputPath) return buffer;
+
+  const file = resolveProjectPath(outputPath);
+  mkdirSync(dirname(file), { recursive: true });
+  writeFileSync(file, buffer);
+  return file;
+}
+
 /** Wait for a specified number of seconds. */
 export async function wait(seconds) {
   ensureConnected();

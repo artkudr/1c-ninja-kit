@@ -33,10 +33,10 @@ If the impact-analysis MCPs are not exposed in the session, follow the graceful-
 
 - `search` action `find_code` (lexical / FTS, raise the result limit) → `search_code` (semantic) for behavioural matches; drill into a full body via `graph` action `node` `detail=bodies` using the returned `graph_id` — confirm no remaining references to the old names / patterns.
 - Full closing gate — `rule-verification-checklist` (every gate, no skipping).
-- If the refactor is large enough to enter the subagent pipeline — `rule-subagent-pipeline → Stage 3` (delegate to `agent-refactoring`).
+- If the refactor is large enough to enter the subagent pipeline — `rule-subagent-pipeline` (делегируй Колдуну внутри задачи, не сам).
 
 ## What this file is **not**
 
 - Not a tool catalogue — that lives in `rule-tooling-playbooks → Refactoring`.
 - Not a list of anti-patterns to fix — that lives in `rule-anti-patterns`.
-- Not an architectural guide — that lives in `rule-dev-standards-architecture` and the `agent-architect` subagent.
+- Not an architectural guide — that lives in `rule-dev-standards-architecture` and the `rule-architect` rule.

@@ -8,7 +8,7 @@ description: >-
 
 # Systematic Debugging — 1C Adaptation
 
-**When to load this file:** any task that involves diagnosing a bug, runtime error, regression, performance regression, or unexpected behavior — whether the parent agent is debugging directly or delegating to the `agent-error-fixer` / `agent-performance-optimizer` subagent.
+**When to load this file:** any task that involves diagnosing a bug, runtime error, regression, performance regression, or unexpected behavior — whether the parent agent is debugging directly or the work is delegated to a role (Колдун fixes, Инквизитор reproduces on live data).
 
 **Goal:** replace ad-hoc trial-and-error with a structured root-cause loop. Skipping a phase is a defect, the same way as skipping `diagnostics file` after editing code.
 
@@ -107,7 +107,7 @@ Required:
 - Verification chain runs cleanly: `diagnostics file` → `check_1c_code` → `review_1c_code` → `graph callers`/`neighbors` against the touched objects (see `rule-verification-checklist`).
 - The original reproduction case from phase 1 no longer triggers the symptom.
 
-If the fix requires architectural rework (signature changes in shared common modules, metadata edits, a new register), escalate — call the `agent-architect` or `agent-developer` subagent rather than expanding the scope of the bug fix yourself.
+If the fix requires architectural rework (signature changes in shared common modules, metadata edits, a new register), escalate — return `к-часовщику` (the plan must cover the rework) rather than expanding the scope of the bug fix yourself.
 
 ## Anti-patterns
 
@@ -133,6 +133,6 @@ Reproduce ──► Hypothesize ──► Experiment ──► Fix
 ## Companion rules
 
 - `rule-verification-checklist` — the post-fix gate.
-- `rule-subagent-pipeline` — when to delegate the bug to `agent-error-fixer` vs. handle it directly.
+- `rule-subagent-pipeline` — when to delegate the bug to Колдун vs. handle it directly.
 - `rule-tooling-playbooks → Error Fixing` — concrete MCP tool sequence for each phase.
 - `rule-anti-patterns` — to recognize anti-patterns that produce bugs in the first place.

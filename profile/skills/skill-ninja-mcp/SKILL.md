@@ -16,7 +16,7 @@ description: >-
 
 | Контур | Владелец | Tools / операции |
 |--------|----------|------------------|
-| Load/unload CF·CFE, update БД, синтакс-контроль, хранилище | **скиллы контура** | `db-load-xml`, `db-dump-xml`, `db-update`, `db-repo`, `skill-repo-workflow`, `skill-syntax-check`, `db-cfe-admin` |
+| Load/unload CF·CFE, update БД, хранилище | **скиллы контура** | `db-load-xml`, `db-dump-xml`, `db-update`, `db-repo`, `skill-repo-workflow`, `db-cfe-admin` |
 | Разбор / сборка EPF·ERF | **скиллы контура** | `epf-dump` / `epf-build`, `erf-dump` / `erf-build` |
 | Static-поиск по выгрузке, offline-справка | **1c-ninja-mcp** | `bsl_search`, `xml_search`, `config_list`, `read_module`, `syntax_help_search` |
 | Живые данные ИБ | **1c-ninja-mcp** | `live_*` (приоритет); toolkit — fallback |
@@ -28,9 +28,9 @@ description: >-
 
 | Уровень | Файл | Что там |
 |---------|------|---------|
-| Project (открытый репозиторий) | `<проект>\{{PROJECT_MCP}}` | `1c-ninja-mcp` **с** URL/учётом этой ИБ (gitignore). Эталон — скилл `skill-env-setup`. |
-| Пример без секретов | `<проект>\{{PROJECT_MCP}}.example` | тот же состав, плейсхолдеры |
-| User | `{{USER_MCP}}` | **без** `1c-ninja-mcp` (и без других 1С-серверов из шаблона скилла) |
+| Project (открытый репозиторий) | `<проект>\opencode.jsonc` | `1c-ninja-mcp` **с** URL/учётом этой ИБ (gitignore). Эталон — скилл `skill-env-setup`. |
+| Пример без секретов | `<проект>\opencode.jsonc.example` | тот же состав, плейсхолдеры |
+| User | `<не заводи 1С MCP в user-конфиг — держи только в проекте>` | **без** `1c-ninja-mcp` (и без других 1С-серверов из шаблона скилла) |
 
 Клиент читает user **и** project. Одно имя сервера в обоих файлах = два MCP у агента. **Не** копировать user-конфиг в проект и **не** класть live-URL проекта (или любой другой базы) в глобальный конфиг.
 
@@ -44,7 +44,7 @@ description: >-
 | Запросы / метаданные / журнал / код в **живой** ИБ | **1c-ninja-mcp** `live_*` (**приоритет**, URL = этот workspace) |
 | То же, если NinjaLive / публикация недоступны | **1c-mcp-toolkit** (fallback; нужен EPF на `:6003`) |
 | Семантика кода: граф, symbol_info, diagnostics по файлам | **bsl-analyzer** workspace — скилл `skill-bsl-analyzer` |
-| Полная загрузка XML, хранилище, синтакс-контроль | **скиллы контура** (`db-*`, `skill-repo-workflow`, `skill-syntax-check`) |
+| Полная загрузка XML, хранилище | **скиллы контура** (`db-*`, `skill-repo-workflow`) |
 | Dump XML / git→частичная загрузка | **скиллы** `db-dump-xml` / `db-load-git` |
 | Разбор / сборка EPF/ERF | **скиллы** `epf-dump`/`epf-build`, `erf-dump`/`erf-build` |
 

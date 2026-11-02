@@ -10,6 +10,7 @@ import { tmpdir, userInfo } from 'os';
 import {
   browser, page, sessionPrefix, seanceId, recorder, highlightMode,
   contexts, activeContextName, activeMode, persistentUserDataDir,
+  headless, viewport,
   setBrowser, setPage, setSessionPrefix, setSeanceId, setHighlightMode,
   setActiveContextName, setActiveMode, setPersistentUserDataDir,
   isConnected, LOAD_TIMEOUT, INIT_TIMEOUT, EXT_ID,
@@ -49,6 +50,12 @@ export function ensureWebClientLocale(url, locale = DEFAULT_WEB_LOCALE) {
 }
 
 const PW_LOCALE = 'ru-RU';
+
+// Window size comes from the configured viewport: an explicit size keeps screenshots
+// predictable instead of depending on the current screen resolution.
+function windowArgs() {
+  return ['--window-size=' + viewport.width + ',' + viewport.height];
+}
 
 /**
  * Find the 1C browser extension in Chrome/Edge user profiles.
@@ -226,13 +233,13 @@ export async function connect(url, { extensionPath } = {}) {
       setPersistentUserDataDir(pathJoin(tmpdir(), 'pw-1c-ext-' + Date.now()));
       mkdirSync(persistentUserDataDir, { recursive: true });
       const context = await launchWithDiagnosis(() => chromium.launchPersistentContext(persistentUserDataDir, {
-        headless: false,
+        headless,
         args: [
-          '--start-maximized',
+          ...windowArgs(),
           '--disable-extensions-except=' + extPath,
           '--load-extension=' + extPath,
         ],
-        viewport: null,
+        viewport,
         locale: PW_LOCALE,
         permissions: ['clipboard-read', 'clipboard-write'],
       }));
@@ -240,9 +247,9 @@ export async function connect(url, { extensionPath } = {}) {
       setPage(context.pages()[0] || await context.newPage());
     } else {
       // Fallback: launch without extension
-      setBrowser(await launchWithDiagnosis(() => chromium.launch({ headless: false, args: ['--start-maximized'] })));
+      setBrowser(await launchWithDiagnosis(() => chromium.launch({ headless, args: windowArgs() })));
       const context = await browser.newContext({
-        viewport: null,
+        viewport,
         locale: PW_LOCALE,
         permissions: ['clipboard-read', 'clipboard-write'],
       });
@@ -498,7 +505,7 @@ export async function createContext(name, url, { extensionPath, isolation = 'tab
   let isFirstContext = !browser;
   if (isFirstContext) {
     const extPath = findExtension(extensionPath);
-    const launchArgs = ['--start-maximized'];
+    const launchArgs = windowArgs();
     if (extPath) {
       launchArgs.push('--disable-extensions-except=' + extPath, '--load-extension=' + extPath);
     }
@@ -507,15 +514,15 @@ export async function createContext(name, url, { extensionPath, isolation = 'tab
       setPersistentUserDataDir(pathJoin(tmpdir(), 'pw-1c-test-' + Date.now()));
       mkdirSync(persistentUserDataDir, { recursive: true });
       setBrowser(await launchWithDiagnosis(() => chromium.launchPersistentContext(persistentUserDataDir, {
-        headless: false,
+        headless,
         args: launchArgs,
-        viewport: null,
+        viewport,
         locale: PW_LOCALE,
         permissions: ['clipboard-read', 'clipboard-write'],
       })));
     } else {
       // Window mode: separate BrowserContext per slot, full cookie isolation
-      setBrowser(await launchWithDiagnosis(() => chromium.launch({ headless: false, args: launchArgs })));
+      setBrowser(await launchWithDiagnosis(() => chromium.launch({ headless, args: launchArgs })));
     }
     setActiveMode(isolation);
   }
@@ -536,7 +543,7 @@ export async function createContext(name, url, { extensionPath, isolation = 'tab
   } else {
     // Window mode: each slot owns its BrowserContext + page
     newCtx = await browser.newContext({
-      viewport: null,
+      viewport,
       locale: PW_LOCALE,
       permissions: ['clipboard-read', 'clipboard-write'],
     });

@@ -7,7 +7,7 @@
 ## Жёсткие правила
 - 1С MCP — только в project `opencode.jsonc`, не в глобальном конфиге; секреты не коммитить.
 - Правки 1С — через профильные скиллы (`meta-*`, `form-*`, `cfe-*`, `skd-*`, ...), затем валидация и загрузка (`db-*`, `skill-repo-workflow`).
-- BSL: после правки — `diagnostics file`; CF — `skill-syntax-check`; CFE — `db-cfe-admin check`.
+- BSL: после правки — `diagnostics file`; CFE — `db-cfe-admin check`.
 - Перед загрузкой в ИБ — короткий summary изменений пользователю.
 - Конфигуратор/`1cv8` вручную не запускать.
 

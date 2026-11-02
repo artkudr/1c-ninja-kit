@@ -9,6 +9,7 @@
 // ── core ──────────────────────────────────────────────────────────────────
 export {
   isConnected, getPage, ensureConnected, setPreserveClipboard,
+  setHeadless, setViewport,
 } from './engine/core/state.mjs';
 export {
   pasteText, saveClipboard, restoreClipboard,
@@ -47,13 +48,14 @@ export { filterList, unfilterList } from './engine/table/filter.mjs';
 
 // ── recording / overlays ──────────────────────────────────────────────────
 export {
-  screenshot, wait, isRecording, startRecording, stopRecording,
+  screenshot, shotElement, wait, isRecording, startRecording, stopRecording,
 } from './engine/recording/capture.mjs';
 export {
   showCaption, hideCaption, getCaptions,
   showTitleSlide, hideTitleSlide,
   showImage, hideImage,
 } from './engine/recording/captions.mjs';
+export { annotate, clearAnnotation } from './engine/recording/annotation.mjs';
 export {
   highlight, unhighlight, setHighlight, isHighlightMode,
 } from './engine/recording/highlight.mjs';

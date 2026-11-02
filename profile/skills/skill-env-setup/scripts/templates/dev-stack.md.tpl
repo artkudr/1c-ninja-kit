@@ -3,7 +3,8 @@
 | Компонент | Где | Версия / заметка |
 |-----------|-----|------------------|
 | OneScript | OVM `%LOCALAPPDATA%\ovm\current` | ≥ 2.2.0 (движок MCP-серверов kit) |
-| Skills (kit) | `~/.config/opencode/skills/kit/` | профиль kit: `skill-*`, `rule-*`, `agent-*`; ставится `kit.ps1 apply` |
+| Skills (kit) | `C:\1C\projects\1c-ninja-kit\profile\skills`, `…\profile\rules` | пути в `~/.config/opencode/opencode.jsonc` (`skills`, `instructions`), ставит `kit.ps1 apply`; правка видна без копирования |
+| Каркас задачи | `~/.config/opencode/scripts/taskctl.ps1`, `~/.config/opencode/commands` | глобальные `/Задача`, `/Продолжить`, `/Статус`; состояние — `Задачи/` проекта |
 | Skills (cc-1c-skills) | `~/.config/opencode/skills/` | `db-*`, `meta-*`, `form-*`, `cfe-*`, `epf-*`, …; ставится `install/cc-skills.ps1` (обновление — `-Update`) |
 | MCP (user) | `~/.config/opencode/opencode.json(c)` | **без** 1С-серверов (`mcp.servers`); иначе дубли с проектом |
 | MCP (project) | `opencode.jsonc` (gitignore) | ninja live **этой** ИБ, bsl-analyzer reference+workspace, v8std, toolkit (fallback) |

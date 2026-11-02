@@ -3,7 +3,7 @@ name: skill-repo-workflow
 description: >-
   Хранилище расширений 1С (CFE с repository в .v8-project.json): захват, освобождение,
   загрузка в ИБ, помещение, получение из хранилища, создание пользователя. Гейты проверок
-  (diagnostics, cfe-validate, syntax-check, live, web). Используй когда пользователь
+  (diagnostics, cfe-validate, live, web). Используй когда пользователь
   просит захватить / lockrepo / ConfigurationRepositoryLock, освободить / unlockrepo,
   поместить / commit хранилища, загрузить расширение из файлов при хранилище
   (вместо compileext), получить из хранилища / loadrepo, создать пользователя
@@ -18,9 +18,9 @@ description: >-
 
 | Шаг | Скилл |
 |-----|-------|
-| Операции хранилища (lock / unlock / commit / update / connect / add-user) | `db-repo` — `{{SKILLS_ROOT}}\db-repo\scripts\db-repo.ps1` |
-| Загрузка правок в ИБ (частичная) | `db-load-xml` — `{{SKILLS_ROOT}}\db-load-xml\scripts\db-load-xml.ps1` |
-| Обновление конфигурации БД | `db-update` — `{{SKILLS_ROOT}}\db-update\scripts\db-update.ps1` |
+| Операции хранилища (lock / unlock / commit / update / connect / add-user) | `db-repo` — `%USERPROFILE%\.config\opencode\skills\db-repo\scripts\db-repo.ps1` |
+| Загрузка правок в ИБ (частичная) | `db-load-xml` — `%USERPROFILE%\.config\opencode\skills\db-load-xml\scripts\db-load-xml.ps1` |
+| Обновление конфигурации БД | `db-update` — `%USERPROFILE%\.config\opencode\skills\db-update\scripts\db-update.ps1` |
 | Гейты | bsl-analyzer `diagnostics file`, `cfe-validate`, `db-cfe-admin check`, `skill-web-test`, ninja live |
 
 Реквизиты хранилища берутся из `.v8-project.json` → `extensions[].repository` (`path`, `user`, `password`; `adminUser` — для `add-user`). Нет записи `repository` у расширения — операция не выполняется: сообщить и остановиться, путь не угадывать.
@@ -53,7 +53,7 @@ description: >-
 5. **Гейты после load** (до commit):
    - **`db-cfe-admin check -Name <Имя>`** — применимость + модули. Ошибки — стоп.
    - **Live-проверка** (ninja `live_check_syntax` / `live_eval` / `live_execute`) при доступности: дымовая проверка нового кода. Нет live — сообщить и не подменять «успехом»; для чисто структурных правок без BSL можно пропустить.
-   - **skill-web-test** короткий и **по смыслу правки** (открытие затронутой формы / точечный сценарий из `tools/web-test/scenarios/manual/` или inline). Не гонять полный UI-мастер, если доработка — серверный `&После`.
+   - **skill-web-test** короткий и **по смыслу правки**: открыть затронутую форму или команду и убедиться, что конфигурация встала. Сценарий — из папки задачи (`Проверки/`) или inline. Не гонять полный UI-мастер, если доработка — серверный `&После`. Полную проверку поведения делает Инквизитор, commit её не ждёт.
 6. **Помещение** (`db-repo commit -Objects … -Comment "<что и версия>"`) **только после успешных гейтов 3 и 6**.
 
 Нельзя: захват → правка XML → сразу помещение. Без load + гейтов в ИБ/хранилище уйдёт непроверенное.
@@ -87,7 +87,7 @@ flowchart TD
 Общий префикс команды:
 
 ```powershell
-powershell.exe -NoProfile -File "{{SKILLS_ROOT}}\db-repo\scripts\db-repo.ps1" -Command <подкоманда> <параметры>
+powershell.exe -NoProfile -File "%USERPROFILE%\.config\opencode\skills\db-repo\scripts\db-repo.ps1" -Command <подкоманда> <параметры>
 ```
 
 ### Рабочий цикл
@@ -147,7 +147,7 @@ powershell.exe -NoProfile -File "{{SKILLS_ROOT}}\db-repo\scripts\db-repo.ps1" -C
 
 ## skill-web-test
 
-Конфиг проекта: `tools/web-test/smoke.config.json` — `webUrl`, сценарии по расширению в `extensions`, `defaultScript`.
+Конфиг проекта: `tools/web-test/smoke.config.json` — `webUrl` и `defaultScript`. Новые сценарии и наборы — в папке задачи, `Задачи/<номер>/Проверки/`; каталог `tools/web-test/scenarios/` — старые проектные сценарии, новые туда не добавлять.
 
 | Когда | Что |
 |-------|-----|

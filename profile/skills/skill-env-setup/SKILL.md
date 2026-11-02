@@ -1,4 +1,4 @@
-﻿---
+---
 name: skill-env-setup
 description: >-
   Развёртывание окружения 1С в новой папке на той же машине.
@@ -10,7 +10,7 @@ argument-hint: "[-SourceProject path] [-Mode Init|Refresh|Check] [-Force]"
 
 # skill-env-setup — Развёртывание окружения 1С
 
-Личный скилл: `{{SKILLS_ROOT}}\kit\skills\skill-env-setup\`.
+Личный скилл: `C:\1C\projects\1c-ninja-kit\profile\skills\skill-env-setup\` — так OpenCode его и читает (`skills` в глобальном `opencode.jsonc` ведёт в репозиторий кита). Путь кита переопределяется `NINJA_KIT_ROOT`.
 
 Разворачивает **привычное** окружение в **новой папке** на **той же машине** (clone / копия / worktree). Софт уже установлен — скилл не ставит OVM/Apache/ripgrep; если чего-то нет, это `kit.ps1 deps` (см. `docs/MACHINE-BOOTSTRAP.md`). Набор cc-1c-skills ставится `install/cc-skills.ps1`.
 
@@ -21,7 +21,7 @@ argument-hint: "[-SourceProject path] [-Mode Init|Refresh|Check] [-Force]"
 | | `opencode` |
 |---|---|
 | MCP проекта | `opencode.jsonc` (`mcp.servers`, `type: local/remote`, `oauth: false` у streamable-http) |
-| Правила | глобальные always-on → `~/.config/opencode/AGENTS.md`, on-demand → `~/.config/opencode/skills/kit/rules/` (`kit.ps1 apply`); в проекте — только `AGENTS.md` как память проекта (создаётся setup, не перезаписывается) |
+| Правила | always-on и on-demand читаются прямо из кита по путям в `~/.config/opencode/opencode.jsonc` (`skills` + `instructions`); в проекте — только `AGENTS.md` как память проекта (создаётся setup, не перезаписывается) |
 | Проверка дублей | `~/.config/opencode/opencode.json(c)` → `mcp.servers` |
 
 `-WebPort <n>` — переопределить порт публикации (иначе 8083/8085 по версии платформы). Нужен, когда Apache на машине слушает один порт на все базы.
@@ -45,15 +45,16 @@ argument-hint: "[-SourceProject path] [-Mode Init|Refresh|Check] [-Force]"
 | `opencode.jsonc` + `.example` | полный MCP этой ИБ (gitignore) + эталон без секретов |
 | `.build/` | кеш bsl-analyzer (граф + поиск); передаётся как `--cache-dir`, в `.gitignore` |
 | `bsl-analyzer.toml` | диагностики / source roots |
+| `Задачи/` | состояние задач: `Состояние.json`, `Журнал.jsonl`, артефакты. Каркас глобальный — `%USERPROFILE%\.config\opencode\scripts\taskctl.ps1` (правило `rule-routes`) |
 
-Правила: always-on — глобальный `~/.config/opencode/AGENTS.md`, on-demand — `~/.config/opencode/skills/kit/rules/` (обновляет `kit.ps1 apply`). В проекте создаётся только корневой `AGENTS.md` — память проекта, не копия глобальных правил; setup его не перезаписывает.
+Правила: always-on и on-demand приходят из кита по путям в глобальном `~/.config/opencode/opencode.jsonc` (`kit.ps1 apply`). В проекте создаётся только корневой `AGENTS.md` — память проекта, не копия глобальных правил; setup его не перезаписывает.
 
 ## Жёсткие правила
 
 - **Не** отвечай «открой `.v8-project.json` и впиши сам» — это провал сценария.
 - **Не** используй реестр PT.
 - **Не** правь XML метаданных. В рамках setup в ИБ грузится **только** bootstrap CFE `NinjaLive` (скилл `db-load-xml -Extension`) — чтобы список расширений шёл по HTTP, без запуска Предприятия.
-- **Не** копируй и **не** мержи пользовательский `~/.config/opencode/opencode.json(c)` в проект. Эталон — шаблон скилла `scripts/templates/opencode.jsonc.tpl` → `{{PROJECT_MCP}}`.
+- **Не** копируй и **не** мержи пользовательский `~/.config/opencode/opencode.json(c)` в проект. Эталон — шаблон скилла `scripts/templates/opencode.jsonc.tpl` → `opencode.jsonc`.
 - **Не** клади 1С-серверы (`1c-ninja-mcp`, `1c-mcp-toolkit`, `bsl-analyzer-*`, `v8std`) в user-конфиг: одинаковые имена дают дубли с проектом. Live-URL только в project MCP **этой** ИБ.
 - `bsl-analyzer-workspace` в project MCP **всегда** с `--cache-dir "<корень>\.build"`: кеш живёт в проекте (`.build` в `.gitignore`), а не в профиле пользователя. Без этого флага анализатор пишет в `%LOCALAPPDATA%`.
 - `bsl-analyzer-workspace` запускается **не лаунчером**, а `%USERPROFILE%\.bsl-analyzer\bin\bsl-analyzer-app.exe` с `--mode broker` и `BSL_MCP_IDLE_TTL_SECS` / `BSL_MCP_ORPHAN_GRACE_SECS` = 86400. Лаунчер держит потомка в Windows Job с kill-on-close и убивает broker-backend вместе с прокси (upstream `itrous/bsl-analyzer#345`); после этого остаётся мёртвый `writer.lease`, и граф отвечает `graph busy ... used by another live process`. `bsl-analyzer-reference` остаётся на лаунчере — ему backend не нужен.
@@ -75,7 +76,7 @@ argument-hint: "[-SourceProject path] [-Mode Init|Refresh|Check] [-Force]"
 ### 3. Выбор базы (интерактив)
 
 ```powershell
-powershell.exe -NoProfile -File "{{SKILLS_ROOT}}\kit\skills\skill-env-setup\scripts\read-ibases.ps1"
+powershell.exe -NoProfile -File "C:\1C\projects\1c-ninja-kit\profile\skills\skill-env-setup\scripts\read-ibases.ps1"
 # или -Json
 ```
 
@@ -98,7 +99,7 @@ powershell.exe -NoProfile -File "{{SKILLS_ROOT}}\kit\skills\skill-env-setup\scri
 ### 5. Запись файлов
 
 ```powershell
-powershell.exe -NoProfile -File "$env:USERPROFILE\.config\opencode\skills\kit\skills\skill-env-setup\scripts\env-setup.ps1" `
+powershell.exe -NoProfile -File "C:\1C\projects\1c-ninja-kit\profile\skills\skill-env-setup\scripts\env-setup.ps1" `
   -Mode Init `
   -ProjectRoot "<корень>" `
   -SourceProject "<соседний>" `
@@ -110,7 +111,9 @@ powershell.exe -NoProfile -File "$env:USERPROFILE\.config\opencode\skills\kit\sk
   -AppName "<имя-публикации>"
 ```
 
-Скрипт создаёт каталоги, `.v8-project.json`, mcp example + `opencode.jsonc` **из шаблона скилла** (не из user settings), `AGENTS.md`, bsl-analyzer.toml, `.gitignore`, `.ignore`, docs, smoke.config; **копирует** `src/cfe/NinjaLive` с эталона (SourceProject → kit `project-scaffold/cfe/NinjaLive` → соседний проект); вызывает `sync-cfe.ps1` **без** опроса ИБ через Предприятие (пусто или `-ExtensionNames`, если агент уже снял список). Warn, если user-конфиг содержит те же имена серверов.
+Скрипт создаёт каталоги, `.v8-project.json`, mcp example + `opencode.jsonc` **из шаблона скилла** (не из user settings), `AGENTS.md`, bsl-analyzer.toml, `.gitignore`, `.ignore`, docs, smoke.config, пустой `Задачи/`; **копирует** `src/cfe/NinjaLive` с эталона (SourceProject → kit `project-scaffold/cfe/NinjaLive` → соседний проект); вызывает `sync-cfe.ps1` **без** опроса ИБ через Предприятие (пусто или `-ExtensionNames`, если агент уже снял список). Warn, если user-конфиг содержит те же имена серверов.
+
+Каркас задачи в проект **не** копируется: он глобальный (один на машину, `kit.ps1 apply`), а `Задачи/` — состояние этого проекта.
 
 В `opencode.jsonc` (и в `.example`) `bsl-analyzer-workspace` пишется с `--source-dir "<корень>"`, `--cache-dir "<корень>\.build"` и `--mode broker`, а запускается из `bsl-analyzer-app.exe` (не лаунчера) — кеш графа и поиска остаётся в проекте, backend переживает закрытие клиента. Каталог `.build` уже в gitignore-сниппете. Отдельного флага в `env-setup.ps1` нет: путь app-бинарника берётся из `Get-McpMachinePaths` (`%USERPROFILE%\.bsl-analyzer\bin\bsl-analyzer-app.exe`).
 
@@ -156,13 +159,13 @@ powershell.exe -NoProfile -File "$env:USERPROFILE\.config\opencode\skills\kit\sk
 
 ```powershell
 # Только список баз
-powershell.exe -NoProfile -File "{{SKILLS_ROOT}}\kit\skills\skill-env-setup\scripts\read-ibases.ps1" -Json
+powershell.exe -NoProfile -File "C:\1C\projects\1c-ninja-kit\profile\skills\skill-env-setup\scripts\read-ibases.ps1" -Json
 
 # Только sync CFE (имена с live_extensions_list; без Предприятия)
-powershell.exe -NoProfile -File "{{SKILLS_ROOT}}\kit\skills\skill-env-setup\scripts\sync-cfe.ps1" -ProjectRoot "." -ExtensionNames @("Имя1","Имя2")
+powershell.exe -NoProfile -File "C:\1C\projects\1c-ninja-kit\profile\skills\skill-env-setup\scripts\sync-cfe.ps1" -ProjectRoot "." -ExtensionNames @("Имя1","Имя2")
 
 # Check на текущем проекте
-powershell.exe -NoProfile -File "{{SKILLS_ROOT}}\kit\skills\skill-env-setup\scripts\env-setup.ps1" -Mode Check -ProjectRoot "."
+powershell.exe -NoProfile -File "C:\1C\projects\1c-ninja-kit\profile\skills\skill-env-setup\scripts\env-setup.ps1" -Mode Check -ProjectRoot "."
 ```
 
 ### Свойства расширения под базу (шаг 6.0)
@@ -191,6 +194,12 @@ powershell.exe -NoProfile -File "...\skill-env-setup\scripts\sync-ninja-properti
 
 Работает и для любого другого bootstrap-расширения: `-ExtensionName`, `-ConfigDir`, `-ExtensionDir`.
 
+### Каркас задачи
+
+Каркас глобальный, один на машину: `%USERPROFILE%\.config\opencode\scripts\taskctl.ps1` и команды `%USERPROFILE%\.config\opencode\commands\{Задача,Продолжить,Статус}.md`. Их ставит `kit.ps1 apply` из `profile/scripts` и `profile/commands`; в проект копий не кладут. `taskctl.ps1` запускается из корня проекта: корень он ищет вверх по каталогам (признак — `Задачи\` или `.v8-project.json`), а `--project <путь>` задаёт его явно.
+
+Состояние задачи живёт в проекте: папку `Задачи/` создаёт `taskctl.ps1 new`; шаблон `Задачи/_Шаблон` необязателен — без него скрипт берёт встроенный. Старые проекты с `.opencode/scripts/taskctl.ps1` продолжают работать, но дубль можно удалить.
+
 ## Связанные скиллы
 
 - `skill-project-context` — что читать после setup
@@ -198,6 +207,6 @@ powershell.exe -NoProfile -File "...\skill-env-setup\scripts\sync-ninja-properti
 - `1c-ninja-mcp` — live, в т.ч. **главный** список CFE: `live_extensions_list`
 - `skill-bsl-analyzer` — семантика кода
 - `skill-web-publish` — публикация `/hs/ninja-live`
-- `db-*` — операции с ИБ (load/dump/update/расширения); `skill-syntax-check` — синтакс-контроль конфигурации
+- `db-*` — операции с ИБ (load/dump/update/расширения)
 
 Подробности форматов: [reference.md](reference.md).

@@ -1,6 +1,6 @@
-# TEST GUIDE — OpenCode V2 (1c-ninja-kit v0.10)
+# TEST GUIDE — OpenCode V2 (1c-ninja-kit v0.11)
 
-Проверка доставки kit под **OpenCode**: глобальный профиль (`skills/kit/`, `agents/`, `AGENTS.md`) + project `opencode.jsonc`.
+Проверка доставки kit под **OpenCode**: пути скиллов/правил в `~/.config/opencode/opencode.jsonc`, копии `agents/`, `commands/`, `scripts/` + project `opencode.jsonc`.
 
 ## Цель
 
@@ -47,11 +47,12 @@ powershell -NoProfile -File .\install\kit.ps1 apply
 
 | Путь | Ожидание |
 |------|----------|
-| `~/.config/opencode/skills/kit/skills/` | столько же каталогов, сколько в `profile/skills` |
-| `~/.config/opencode/skills/kit/rules/` | on-demand правила `rule-*` |
-| `~/.config/opencode/agents/agent-*.md` | фронтматтер `mode: subagent` + `description`; **нет** `tools` / `allowParallel` / `model: inherit` |
-| `~/.config/opencode/skills\kit\rules/*.md` | по файлу на каждый `profile/rules/`, без фронтматтера |
-| `~/.config/opencode/AGENTS.md` | есть маркеры `<!-- 1c-ninja-kit:begin -->` / `<!-- 1c-ninja-kit:end -->`, внутри always-on `rule-*`; индекса on-demand нет |
+| `~/.config/opencode/opencode.jsonc` | `$schema`, `skills` = `<кит>/profile/skills` + `<кит>/profile/rules`, `instructions` = `<кит>/profile/rules/always/*.md`; пути существуют |
+| `~/.config/opencode/skills/` | внешние `cc-1c-skills` (`db-*`, …), без каталога `kit` |
+| `~/.config/opencode/agents/` | те же `*.md`, что в `profile/agents`, байт-в-байт |
+| `~/.config/opencode/commands/` | `Задача.md`, `Продолжить.md`, `Статус.md` |
+| `~/.config/opencode/scripts/taskctl.ps1` | совпадает с `profile/scripts/taskctl.ps1`, UTF-8 **с BOM** |
+| `~/.config/opencode/AGENTS.md` | без маркеров `1c-ninja-kit` (правила идут через `instructions`) |
 
 ### 3. Init project
 
@@ -59,7 +60,7 @@ powershell -NoProfile -File .\install\kit.ps1 apply
 
 ```powershell
 New-Item -ItemType Directory -Force -Path C:\1C\projects\ninja-kit-opencode-e2e | Out-Null
-powershell -NoProfile -File "$env:USERPROFILE\.config\opencode\skills\kit\skills\skill-env-setup\scripts\env-setup.ps1" `
+powershell -NoProfile -File "C:\1C\projects\1c-ninja-kit\profile\skills\skill-env-setup\scripts\env-setup.ps1" `
   -Mode Init `
   -ProjectRoot C:\1C\projects\ninja-kit-opencode-e2e `
   -AppName ninja-kit-opencode `
@@ -87,10 +88,10 @@ opencode mcp list
 
 1. «вызови скилл `skill-env-setup`» → tool `skill` с id `skill-env-setup`
 2. «вызови скилл `skill-repo-workflow`»
-3. «запусти субагента `agent-explorer`» → tool `subagent`
-4. «запусти субагента `rule-architect`»
+3. «запусти субагента `Коммандер`» → tool `subagent`
+4. «вызови правило `rule-architect`» → tool `skill`
 
-Негативная проверка: `agent-code-reviewer` не зовётся без явной просьбы.
+Негативная проверка: роль `Бард` не зовётся без задачи (`/Задача` → `next`/`start`).
 
 ### 6. Live (optional)
 
@@ -113,16 +114,16 @@ opencode mcp list
 - notes:
 
 ## apply
-- skills count:
-- agents count / frontmatter clean: yes/no
-- skills\kit\rules count:
-- AGENTS.md markers present: yes/no
-- always-on rules inlined (4): yes/no
+- global opencode.jsonc + $schema / skills paths / instructions: yes/no
+- skills\kit removed: yes/no
+- global AGENTS.md kit block removed: yes/no
+- agents count / commands count / scripts count:
+- skills paths point into kit repo: yes/no
 
 ## env-setup
 - path:
 - opencode.jsonc + example present:
-- .opencode/commands:
+- Задачи/ created:
 - AGENTS.md / .ignore / build/out/cfe:
 - NinjaLive source:
 
@@ -133,8 +134,8 @@ opencode mcp list
 ## skills / subagents
 - skill skill-env-setup: ok/fail
 - skill skill-repo-workflow: ok/fail
-- subagent agent-explorer: ok/fail
-- subagent agent-architect: ok/fail
+- subagent Коммандер: ok/fail
+- роль по `/Задача` (Коммандер → Колдун): ok/fail
 
 ## live
 - skipped / results:
@@ -149,4 +150,4 @@ opencode mcp list
 
 - **pass** — apply + init + MCP connected + скилл по id + субагент + live
 - **partial** — без живой ИБ (шаг 6)
-- **fail** — doctor `fail>0`, скиллы не в каталоге, MCP не подключается, `AGENTS.md` без always-on правил
+- **fail** — doctor `fail>0`, скиллы не в каталоге, MCP не подключается, в `instructions` нет always-on правил

@@ -1,14 +1,21 @@
+---
+name: rule-bsl-analyzer
+description: >-
+  Семантика BSL через bsl-analyzer workspace: search, graph, symbol_info, diagnostics file.
+  Load before editing an exported method or CFE, and when checking who calls what.
+---
+
 # bsl-analyzer workspace
 
 Если в проекте подключён MCP `bsl-analyzer-workspace` — используй его для **семантики кода**, не подменяй grep/live.
 
-Живые данные ИБ и static-поиск по выгрузке — `1c-ninja-mcp`. Гейты синтаксиса платформы и load — `rule-development-process` (скиллы контура).
+Живые данные ИБ и static-поиск по выгрузке — `1c-ninja-mcp`. Синтаксис платформы и load — скиллы контура (`rule-development-process`); проверки — `rule-verification-checklist`.
 
 ## Маршрут
 
 | Нужно | Инструмент |
 |-------|------------|
-| Поиск по имени/тексту в BSL | `search` `action=search_code` (см. всегда-он `rule-mcp-first-search`) |
+| Поиск по имени/тексту в BSL | `search` `action=search_code` (см. `rule-mcp-first-search`) |
 | Кто вызывает / влияние правки | `graph` (`resolve` → `callers`/`callees`) + `symbol_info` |
 | Сигнатура, doc, usages | `symbol_info` (`Модуль.Метод`) |
 | Замечания по модулю | `diagnostics` `file` (не весь workspace) |

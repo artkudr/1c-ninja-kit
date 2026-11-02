@@ -32,6 +32,14 @@ export let lastRecordingDuration = null; // wall-clock duration of the last reco
 export let highlightMode = false;
 export let persistentUserDataDir = null; // temp dir for launchPersistentContext, cleaned on disconnect
 
+// Launch mode and window size. Set once by run.mjs from CLI flags / env
+// (--headless / --headed, WEB_TEST_HEADLESS, WEB_TEST_VIEWPORT). The engine reads
+// these live bindings in every launch site.
+export let headless = false;
+export let viewport = { width: 1920, height: 1080 };
+export const setHeadless = (v) => { headless = !!v; };
+export const setViewport = (w, h) => { viewport = { width: w, height: h }; };
+
 // Clipboard preservation: save full clipboard contents (all MIME types) right
 // before each writeText+Ctrl+V pair, restore right after. Toggled via
 // setPreserveClipboard() from run.mjs.

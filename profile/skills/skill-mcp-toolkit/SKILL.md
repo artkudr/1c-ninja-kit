@@ -49,7 +49,7 @@ MCP-сервер **1c-mcp-toolkit** — доступ к **работающей**
 | Справка по BSL (сеанс toolkit открыт) | `get_bsl_syntax_help` |
 | Offline-справка / поиск по выгрузке | **1c-ninja-mcp** static |
 | Граф / symbol_info / diagnostics файла | **bsl-analyzer** → скилл `skill-bsl-analyzer` |
-| Загрузка CFE / update БД / синтакс-контроль | скиллы `db-*` / `skill-syntax-check`, не toolkit |
+| Загрузка CFE / update БД | скиллы `db-*`, не toolkit |
 
 **Workflow для запросов (toolkit):** `get_metadata` → составить запрос (`skill-query-composition`) → `execute_query`.
 

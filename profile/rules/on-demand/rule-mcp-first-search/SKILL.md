@@ -1,3 +1,10 @@
+---
+name: rule-mcp-first-search
+description: >-
+  Поиск по исходникам 1С — сначала индекс проекта (bsl-analyzer, ninja), grep последним
+  и с одной строкой причины. Load when searching BSL, metadata, forms, queries.
+---
+
 # Поиск по исходникам 1С: сначала индекс
 
 Любой поиск по исходникам 1С — BSL, метаданные, формы, запросы, usages — начинается с индекса проекта.

@@ -15,6 +15,9 @@ logs/*
 !logs/README.md
 !logs/.gitkeep
 
+# task state is per-machine: каркас задачи живёт в проекте, в kit не публикуется
+/Задачи/
+
 # caches / junk
 .build/
 **/__pycache__/

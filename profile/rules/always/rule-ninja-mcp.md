@@ -2,8 +2,8 @@
 
 ## Scope
 
-- **Project** `<репозиторий>\{{PROJECT_MCP}}` (gitignore) — полный MCP этой ИБ, в т.ч. ninja с `NINJA_URL` / `NINJA_USER` / `NINJA_PASSWORD`. Эталон: скилл `skill-env-setup` (там шаблон project-конфига для этого адаптера).
-- **User** `{{USER_MCP}}` — **без** `1c-ninja-mcp` и прочих 1С-серверов (иначе дубли с проектом). Live-URL в user не класть.
+- **Project** `<репозиторий>\opencode.jsonc` (gitignore) — полный MCP этой ИБ, в т.ч. ninja с `NINJA_URL` / `NINJA_USER` / `NINJA_PASSWORD`. Эталон: скилл `skill-env-setup` (там шаблон project-конфига для этого адаптера).
+- **User**-конфиг `~/.config/opencode/opencode.json(c)` — **без** `1c-ninja-mcp` и прочих 1С-серверов (иначе дубли с проектом). Live-URL в user не класть. Там живут только пути скиллов/правил (`skills`, `instructions`), которые ставит `kit.ps1 apply`.
 - Не подставляй URL другой базы «по умолчанию». Нет project env → явный `url` у тула или отказ, не угадывание.
 
 ## Живые данные ИБ (приоритет)
@@ -31,4 +31,6 @@
 
 `bsl_search`, `xml_search`, `config_list`, `read_module`, `syntax_help_search` — `path` = абсолютный путь **этого** проекта. Grep/Read — точечно или если MCP недоступен.
 
-Загрузка / хранилище / синтакс-контроль — скиллы контура (`db-*`, `skill-repo-workflow`, `skill-syntax-check`) по `rule-development-process`. Разбор EPF/ERF — скиллы `epf-dump` / `erf-dump`. Скиллы: `skill-ninja-mcp`, `skill-mcp-toolkit`.
+Загрузка / хранилище — скиллы контура (`db-*`, `skill-repo-workflow`) по `rule-development-process`. Разбор EPF/ERF — скиллы `epf-dump` / `erf-dump`. Скиллы: `skill-ninja-mcp`, `skill-mcp-toolkit`.
+
+Это карта инструментов, а не приказ роли: набор ограничен правами, и закрытый шаг выполняет ведущий агент или человек.

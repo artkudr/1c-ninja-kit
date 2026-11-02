@@ -21,8 +21,8 @@ Machine  →  Profile  →  Project
 | Слой | Что | Кто ставит |
 |------|-----|------------|
 | **Machine** | OVM/OneScript, bsl-analyzer, Apache tools, Toolkit EPF, cc-1c-skills | человек + `kit doctor` |
-| **Profile** | skills / rules / agents → OpenCode-пути | `kit apply` |
-| **Project** | `.v8-project.json`, MCP, NinjaLive, `AGENTS.md` | скилл `skill-env-setup` |
+| **Profile** | skills / rules — путями в `~/.config/opencode/opencode.jsonc`; agents / commands / `taskctl.ps1` — копией | `kit apply` |
+| **Project** | `.v8-project.json`, MCP, NinjaLive, `AGENTS.md`, `Задачи/` | скилл `skill-env-setup` |
 
 ## Инварианты
 
@@ -39,6 +39,7 @@ Machine  →  Profile  →  Project
 kit.ps1 doctor
 kit.ps1 verify
 kit.ps1 apply
+kit.ps1 lock        # пересобрать lock/profile.lock.json из profile/
 kit.ps1 deps        # внешние зависимости: ставит отсутствующее, версии — с upstream
 ```
 

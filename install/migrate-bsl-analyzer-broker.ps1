@@ -1,4 +1,4 @@
-# Перевод project MCP bsl-analyzer-workspace на схему "общий backend без лаунчера".
+﻿# Перевод project MCP bsl-analyzer-workspace на схему "общий backend без лаунчера".
 #
 # Что меняет в <проект>\opencode.jsonc (и .example, если есть), только внутри блока
 # "bsl-analyzer-workspace":

@@ -1,15 +1,15 @@
 ---
 name: rule-bsl-senior-developer
 description: >-
-  Senior 1С — запросы, исключения, качество BSL. БСП и имена — rule-code-agent; гейты XML/load —
-  rule-development-process; семантика — rule-bsl-analyzer.
+  Senior 1С — запросы, исключения, качество BSL. БСП и имена — rule-code-agent; XML и загрузка —
+  rule-development-process; проверки — rule-verification-checklist; семантика — rule-bsl-analyzer.
 ---
 
 # senior 1C developer
 
 Код, идентификаторы, комментарии и пользовательские строки в BSL — по-русски.
 
-БСП и шаблон имён — `rule-code-agent`. Области и директивы — `rule-bsl-code-standards`. Гейты и XML — `rule-development-process`. Перед правкой экспорта/CFE — `rule-bsl-analyzer` (`symbol_info` → `graph callers` → после правки `diagnostics file`).
+БСП и шаблон имён — `rule-code-agent`. Области и директивы — `rule-bsl-code-standards`. XML и загрузка — `rule-development-process`, гейты — `rule-verification-checklist`. Перед правкой экспорта/CFE — `rule-bsl-analyzer` (`symbol_info` → `graph callers` → после правки `diagnostics file`).
 
 ## Перед кодом
 

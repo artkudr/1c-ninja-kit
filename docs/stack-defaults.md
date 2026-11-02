@@ -26,7 +26,7 @@
 
 ## Rules
 
-- Always-on — глобальный `~/.config/opencode/AGENTS.md`, on-demand — `~/.config/opencode/skills/kit/rules/` (`kit.ps1 apply`). В проекте rules не создаются.
+- Always-on и on-demand правила — из `profile/rules/` по путям в глобальном `~/.config/opencode/opencode.jsonc` (`kit.ps1 apply`). В проекте rules не создаются.
 
 ## Live CFE list
 

@@ -14,7 +14,7 @@ allowed-tools:
 Удаляет блок из `httpd.conf` и каталог `publish/{appname}` в `%USERPROFILE%\tools\apache-83|85`.
 
 ```powershell
-powershell.exe -NoProfile -File "${CLAUDE_SKILL_DIR}/scripts/skill-web-unpublish.ps1" -AppName "<appName>"
+powershell.exe -NoProfile -File "C:\1C\projects\1c-ninja-kit\profile\skills/skill-web-unpublish/scripts/web-unpublish.ps1" -AppName "<appName>"
 # или -All
 ```
 

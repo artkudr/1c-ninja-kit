@@ -1,7 +1,7 @@
 ﻿#Requires -Version 5.1
 param(
   [Parameter(Position = 0)]
-  [ValidateSet('doctor', 'verify', 'apply', 'deps', 'help')]
+  [ValidateSet('doctor', 'verify', 'apply', 'deps', 'lock', 'help')]
   [string]$Command = 'help',
 
   [switch]$DryRun,
@@ -51,20 +51,6 @@ function Expand-EnvPath([string]$p) {
 # Машинный слой: установка внешних зависимостей и отчёт о их версиях.
 . (Join-Path $PSScriptRoot 'deps.ps1')
 
-function Invoke-Robo([string]$Src, [string]$Dst, [switch]$ListOnly, [switch]$Mirror) {
-  if (-not (Test-Path -LiteralPath $Src)) { throw "Source missing: $Src" }
-  New-Item -ItemType Directory -Force -Path $Dst | Out-Null
-  $roboArgs = @(
-    $Src, $Dst, $(if ($Mirror) { '/MIR' } else { '/E' }), '/NFL', '/NDL', '/NJH', '/NJS', '/nc', '/ns', '/np',
-    '/XD', '.git', '.build', 'node_modules', '__pycache__',
-    '/XF', '.browser-session.json', '*.bak', '*.log'
-  )
-  if ($ListOnly) { $roboArgs += '/L' }
-  & robocopy @roboArgs | Out-Null
-  if ($LASTEXITCODE -ge 8) { throw "robocopy failed $Src -> $Dst code=$LASTEXITCODE" }
-  return $LASTEXITCODE
-}
-
 function Set-FileContentUtf8([string]$Path, [string]$Content) {
   $dir = Split-Path -Parent $Path
   if ($dir) { New-Item -ItemType Directory -Force -Path $dir | Out-Null }
@@ -86,149 +72,335 @@ function Get-OpenCodeRoot() {
 # {{AGENTS_ROOT}}, {{COMMANDS_ROOT}}, {{PROJECT_MCP}}, {{USER_MCP}}.
 # apply resolves them for OpenCode, so no document ships stale absolute paths.
 
-function Get-OpenCodeRoots {
-  return @{
-    Skills      = '%USERPROFILE%\.config\opencode\skills'
-    Agents      = '%USERPROFILE%\.config\opencode\agents'
-    Commands    = '.opencode\commands'
-    ProjectMcp  = 'opencode.jsonc'
-    UserMcp     = '<не заводи 1С MCP в user-конфиг — держи только в проекте>'
-  }
+function Get-OpenCodeRoot() {
+  return (Join-Path $env:USERPROFILE '.config\opencode')
 }
 
-function Convert-RulePlaceholders([string]$Text) {
-  if ([string]::IsNullOrEmpty($Text)) { return $Text }
-  $r = Get-OpenCodeRoots
-  $map = [ordered]@{
-    '{{SKILLS_ROOT}}'  = $r.Skills
-    '{{AGENTS_ROOT}}'  = $r.Agents
-    '{{COMMANDS_ROOT}}' = $r.Commands
-    '{{PROJECT_MCP}}'  = $r.ProjectMcp
-    '{{USER_MCP}}'     = $r.UserMcp
-  }
-  foreach ($k in $map.Keys) { $Text = $Text.Replace($k, $map[$k]) }
-  return $Text
-}
-# SKILL.md / reference.md are robocopied verbatim, so resolve their placeholders
-# after the sync - otherwise users would read a literal {{SKILLS_ROOT}}.
-function Resolve-SkillPlaceholders([string]$SkillsRoot) {
-  if (-not (Test-Path -LiteralPath $SkillsRoot)) { return 0 }
-  $n = 0
-  Get-ChildItem $SkillsRoot -Recurse -File -Filter '*.md' -EA SilentlyContinue | ForEach-Object {
-    $t = Get-Content -LiteralPath $_.FullName -Raw -Encoding UTF8
-    if ($null -eq $t) { return }
-    $t2 = Convert-RulePlaceholders $t
-    if ($t2 -ne $t) {
-      [System.IO.File]::WriteAllText($_.FullName, $t2, (New-Object System.Text.UTF8Encoding($false)))
-      $n++
-    }
-  }
-  return $n
-}
-
-function New-OpenCodeGlobalAgentsBlock([string]$KitRoot) {
-  $alwaysRoot = Join-Path $KitRoot 'profile\rules\always'
-  $always = @(Get-ChildItem $alwaysRoot -File -Filter '*.md' -EA SilentlyContinue | Sort-Object Name)
-
-  $sb = New-Object System.Text.StringBuilder
-  [void]$sb.AppendLine('# 1c-ninja-kit — глобальные инструкции OpenCode')
-  [void]$sb.AppendLine('')
-  [void]$sb.AppendLine("<!-- managed by kit.ps1 apply; SoT = $KitRoot\profile\rules -->")
-  [void]$sb.AppendLine('Правь SoT (`profile/rules/always/*.md`) и запускай apply заново — этот блок перезаписывается.')
-  [void]$sb.AppendLine('')
-  [void]$sb.AppendLine('## Stack defaults')
-  [void]$sb.AppendLine('')
-  [void]$sb.AppendLine('- Платформа **8.3** → Apache **8083**, tools `%USERPROFILE%\tools\apache-83`; **8.5** → **8085**.')
-  [void]$sb.AppendLine('- Web-URL включают `/ru_RU/`.')
-  [void]$sb.AppendLine('- 1С MCP — **только** в project `opencode.jsonc`. Глобальный `~/.config/opencode/opencode.json(c)` без 1С-серверов и секретов.')
-  [void]$sb.AppendLine('- Ninja-пара: kit `components/1c-ninja-mcp` + project `src/cfe/NinjaLive` (`/hs/ninja-live`).')
-  [void]$sb.AppendLine('- Список расширений в ИБ: MCP `live_extensions_list` (не Предприятие).')
-  [void]$sb.AppendLine('- Запрещено: внешние MCP и реестры для операций с конфигурацией и ИБ; ручные вызовы Конфигуратора в обход скиллов контура; правка XML метаданных вручную.')
-  [void]$sb.AppendLine('- Отвечать пользователю на **русском**; при неоднозначности — `CONFUSION` (варианты A/B → вопрос), не молчаливый выбор.')
-  [void]$sb.AppendLine('')
-  [void]$sb.AppendLine('## Triage')
-  [void]$sb.AppendLine('')
-  [void]$sb.AppendLine('| Путь | Когда |')
-  [void]$sb.AppendLine('|------|-------|')
-  [void]$sb.AppendLine('| Quick-fix | Один файл/метод; ≲20 строк BSL; без транзакций, публичного API, adopted CFE, RLS |')
-  [void]$sb.AppendLine('| Docs-fix | Только Markdown / rules / docs |')
-  [void]$sb.AppendLine('| Full-cycle | Всё остальное; крупное — с явным планом до кода |')
-  [void]$sb.AppendLine('')
-  [void]$sb.AppendLine('## MCP routes')
-  [void]$sb.AppendLine('')
-  [void]$sb.AppendLine('| Нужно | Инструмент |')
-  [void]$sb.AppendLine('|--------|------------|')
-  [void]$sb.AppendLine('| Семантика / graph / diagnostics | `bsl-analyzer-workspace` |')
-  [void]$sb.AppendLine('| Live ИБ / static выгрузка | `1c-ninja-mcp` `live_*` |')
-  [void]$sb.AppendLine('| Список расширений ИБ | `1c-ninja-mcp` `live_extensions_list` |')
-  [void]$sb.AppendLine('| Load / dump / update / проверки / repo | скиллы `db-*`, `skill-repo-workflow`, `skill-syntax-check` |')
-  [void]$sb.AppendLine('| Стандарты ITS/v8 | `v8std`; reference `bsl-analyzer-reference` |')
-  [void]$sb.AppendLine('| Live fallback | `1c-mcp-toolkit` (выключен по умолчанию) |')
-  [void]$sb.AppendLine('')
-  [void]$sb.AppendLine('В OpenCode имена MCP-инструментов нормализованы: `1c-ninja-mcp` + `live_query` → `mcp_1c_ninja_mcp_live_query`.')
-  [void]$sb.AppendLine('')
-  [void]$sb.AppendLine('## Skills')
-  [void]$sb.AppendLine('')
-  [void]$sb.AppendLine('Kit skills: `~/.config/opencode/skills/kit/skills/<id>/SKILL.md`.')
-  [void]$sb.AppendLine('Kit rules on-demand: `~/.config/opencode/skills/kit/rules/<id>/SKILL.md`.')
-  [void]$sb.AppendLine('External skills (`cc-1c-skills`): `~/.config/opencode/skills/<id>/SKILL.md` — не переименовываются.')
-  [void]$sb.AppendLine('Вызывай tool `skill` по точному id.')
-  [void]$sb.AppendLine('Частые: `skill-env-setup`, `skill-project-context`, `skill-ninja-mcp`, `skill-bsl-analyzer`, `skill-repo-workflow`, `skill-web-test`, `skill-handoff`, `rule-anti-patterns`, `rule-forms`.')
-  [void]$sb.AppendLine('')
-  [void]$sb.AppendLine('## Subagents')
-  [void]$sb.AppendLine('')
-  [void]$sb.AppendLine('Агенты kit: `~/.config/opencode/agents/agent-*.md` (`mode: subagent`), запуск — tool `subagent`.')
-  [void]$sb.AppendLine('`agent-explorer`, `agent-analyst`, `agent-planner`, `agent-architect`, `agent-arch-reviewer`, `agent-developer`, `agent-refactoring`, `agent-performance-optimizer`, `agent-error-fixer`, `agent-code-reviewer`, `agent-doc-writer`, `agent-tester`.')
-  [void]$sb.AppendLine('Не зови субагента на замену строки. `agent-code-reviewer` — только по явной просьбе. Metadata/forms/CFE — через `meta-*` / `form-*` / `cfe-*`.')
-  [void]$sb.AppendLine('')
-  [void]$sb.AppendLine('## Kit CLI')
-  [void]$sb.AppendLine('')
-  [void]$sb.AppendLine('```text')
-  [void]$sb.AppendLine('kit.ps1 doctor')
-  [void]$sb.AppendLine('kit.ps1 verify')
-  [void]$sb.AppendLine('kit.ps1 apply')
-  [void]$sb.AppendLine('kit.ps1 deps')
-  [void]$sb.AppendLine('```')
-  [void]$sb.AppendLine('')
-  [void]$sb.AppendLine('Внешние зависимости машины (OneScript, bsl-analyzer, ripgrep, Node/Playwright, Apache, toolkit) ставит `kit.ps1 deps`; версии и адреса — `companions/pins.json`.')
-  [void]$sb.AppendLine('')
-  [void]$sb.AppendLine('Новый проект: `skill-env-setup` («разверни окружение») — он создаёт структуру, конфиги и `AGENTS.md`.')
-  [void]$sb.AppendLine('')
-  [void]$sb.AppendLine('## Always-on rules (из `profile/rules/always`)')
-  [void]$sb.AppendLine('')
-  foreach ($r in $always) {
-    [void]$sb.AppendLine("### $($r.BaseName)")
-    [void]$sb.AppendLine('')
-    $body = Convert-RulePlaceholders (Get-Content -LiteralPath $r.FullName -Raw -Encoding UTF8)
-    [void]$sb.AppendLine(($body -replace '\A(\r?\n)+', '').TrimEnd())
-    [void]$sb.AppendLine('')
-  }
-  return $sb.ToString()
-}
-function Write-OpenCodeGlobalAgents([string]$KitRoot) {
+function Get-OpenCodeConfigPath() {
+  # Канон — opencode.jsonc. Если на машине есть только opencode.json, правим его:
+  # два конкурирующих конфига в одном каталоге — это неопределённость, а не миграция.
   $ocRoot = Get-OpenCodeRoot
-  $path = Join-Path $ocRoot 'AGENTS.md'
+  $jsonc = Join-Path $ocRoot 'opencode.jsonc'
+  $json = Join-Path $ocRoot 'opencode.json'
+  if ((Test-Path -LiteralPath $json) -and -not (Test-Path -LiteralPath $jsonc)) { return $json }
+  return $jsonc
+}
+
+# --- JSONC: точечная правка двух ключей без потери остального файла -----------
+
+function Find-JsoncValueEnd([string]$Text, [int]$Start) {
+  # Конец значения JSON: запятая или закрывающая скобка родителя на нулевой глубине.
+  $length = $Text.Length
+  $index = $Start
+  $depth = 0
+  $inString = $false
+  $escaped = $false
+  while ($index -lt $length) {
+    $symbol = $Text[$index]
+    if ($inString) {
+      if ($escaped) { $escaped = $false }
+      elseif ($symbol -eq '\') { $escaped = $true }
+      elseif ($symbol -eq '"') { $inString = $false }
+      $index++
+      continue
+    }
+    if ($symbol -eq '"') { $inString = $true; $index++; continue }
+    if ($symbol -eq '/' -and $index + 1 -lt $length) {
+      if ($Text[$index + 1] -eq '/') {
+        $index += 2
+        while ($index -lt $length -and $Text[$index] -ne "`n" -and $Text[$index] -ne "`r") { $index++ }
+        continue
+      }
+      if ($Text[$index + 1] -eq '*') {
+        $index += 2
+        while ($index + 1 -lt $length -and -not ($Text[$index] -eq '*' -and $Text[$index + 1] -eq '/')) { $index++ }
+        $index += 2
+        continue
+      }
+    }
+    if ($symbol -eq '{' -or $symbol -eq '[') { $depth++; $index++; continue }
+    if ($symbol -eq '}' -or $symbol -eq ']') {
+      if ($depth -eq 0) { break }
+      $depth--
+      $index++
+      continue
+    }
+    if ($symbol -eq ',' -and $depth -eq 0) { break }
+    $index++
+  }
+  $end = $index
+  while ($end -gt $Start -and [char]::IsWhiteSpace($Text[$end - 1])) { $end-- }
+  return $end
+}
+
+function Find-JsoncTopLevelValue([string]$Text, [string]$Name) {
+  # Ищет свойство верхнего уровня по имени и возвращает границы его значения.
+  $length = $Text.Length
+  $index = 0
+  $depth = 0
+  $inString = $false
+  $escaped = $false
+  $stringStart = -1
+  while ($index -lt $length) {
+    $symbol = $Text[$index]
+    if ($inString) {
+      if ($escaped) { $escaped = $false }
+      elseif ($symbol -eq '\') { $escaped = $true }
+      elseif ($symbol -eq '"') {
+        $inString = $false
+        $literal = $Text.Substring($stringStart + 1, $index - $stringStart - 1)
+        if ($depth -eq 1 -and $literal -eq $Name) {
+          $next = $index + 1
+          while ($next -lt $length -and [char]::IsWhiteSpace($Text[$next])) { $next++ }
+          if ($next -lt $length -and $Text[$next] -eq ':') {
+            $valueStart = $next + 1
+            while ($valueStart -lt $length -and [char]::IsWhiteSpace($Text[$valueStart])) { $valueStart++ }
+            return [pscustomobject]@{ Found = $true; Start = $valueStart; End = (Find-JsoncValueEnd $Text $valueStart) }
+          }
+        }
+      }
+      $index++
+      continue
+    }
+    if ($symbol -eq '"') { $inString = $true; $stringStart = $index; $index++; continue }
+    if ($symbol -eq '/' -and $index + 1 -lt $length) {
+      if ($Text[$index + 1] -eq '/') {
+        $index += 2
+        while ($index -lt $length -and $Text[$index] -ne "`n" -and $Text[$index] -ne "`r") { $index++ }
+        continue
+      }
+      if ($Text[$index + 1] -eq '*') {
+        $index += 2
+        while ($index + 1 -lt $length -and -not ($Text[$index] -eq '*' -and $Text[$index + 1] -eq '/')) { $index++ }
+        $index += 2
+        continue
+      }
+    }
+    if ($symbol -eq '{' -or $symbol -eq '[') { $depth++; $index++; continue }
+    if ($symbol -eq '}' -or $symbol -eq ']') { $depth--; $index++; continue }
+    $index++
+  }
+  return [pscustomobject]@{ Found = $false; Start = -1; End = -1 }
+}
+
+function Set-JsoncTopLevelValue([string]$Text, [string]$Key, [string]$JsonValue) {
+  $span = Find-JsoncTopLevelValue $Text $Key
+  if ($span.Found) {
+    return $Text.Substring(0, $span.Start) + $JsonValue + $Text.Substring($span.End)
+  }
+  $close = $Text.LastIndexOf('}')
+  if ($close -lt 0) { throw "JSONC без закрывающей скобки: некуда вставить $Key" }
+  $head = $Text.Substring(0, $close).TrimEnd()
+  $tail = $Text.Substring($close)
+  $trimmed = $head.TrimStart()
+  $sep = if ($trimmed.EndsWith('{') -or $trimmed.EndsWith(',')) { '' } else { ',' }
+  return $head + $sep + "`n  `"$Key`": " + $JsonValue + "`n" + $tail
+}
+
+function Convert-JsoncToJson([string]$Text) {
+  # Комментарии и висячие запятые убираются только вне строк: иначе путь с «//» ломает разбор.
+  $length = $Text.Length
+  $sb = New-Object System.Text.StringBuilder
+  $index = 0
+  $inString = $false
+  $escaped = $false
+  while ($index -lt $length) {
+    $symbol = $Text[$index]
+    if ($inString) {
+      [void]$sb.Append($symbol)
+      if ($escaped) { $escaped = $false }
+      elseif ($symbol -eq '\') { $escaped = $true }
+      elseif ($symbol -eq '"') { $inString = $false }
+      $index++
+      continue
+    }
+    if ($symbol -eq '"') { $inString = $true; [void]$sb.Append($symbol); $index++; continue }
+    if ($symbol -eq '/' -and $index + 1 -lt $length) {
+      if ($Text[$index + 1] -eq '/') {
+        $index += 2
+        while ($index -lt $length -and $Text[$index] -ne "`n" -and $Text[$index] -ne "`r") { $index++ }
+        continue
+      }
+      if ($Text[$index + 1] -eq '*') {
+        $index += 2
+        while ($index + 1 -lt $length -and -not ($Text[$index] -eq '*' -and $Text[$index + 1] -eq '/')) { $index++ }
+        $index += 2
+        continue
+      }
+    }
+    [void]$sb.Append($symbol)
+    $index++
+  }
+
+  $plain = $sb.ToString()
+  $sb2 = New-Object System.Text.StringBuilder
+  $index = 0
+  $inString = $false
+  $escaped = $false
+  while ($index -lt $plain.Length) {
+    $symbol = $plain[$index]
+    if ($inString) {
+      [void]$sb2.Append($symbol)
+      if ($escaped) { $escaped = $false }
+      elseif ($symbol -eq '\') { $escaped = $true }
+      elseif ($symbol -eq '"') { $inString = $false }
+      $index++
+      continue
+    }
+    if ($symbol -eq '"') { $inString = $true; [void]$sb2.Append($symbol); $index++; continue }
+    if ($symbol -eq ',') {
+      $next = $index + 1
+      while ($next -lt $plain.Length -and [char]::IsWhiteSpace($plain[$next])) { $next++ }
+      if ($next -lt $plain.Length -and ($plain[$next] -eq '}' -or $plain[$next] -eq ']')) { $index++; continue }
+    }
+    [void]$sb2.Append($symbol)
+    $index++
+  }
+  return $sb2.ToString()
+}
+
+function Test-JsoncText([string]$Text) {
+  try {
+    $json = Convert-JsoncToJson $Text
+    if (-not $json.Trim()) { return [pscustomobject]@{ Ok = $false; Error = 'пустой текст' } }
+    $null = $json | ConvertFrom-Json
+    return [pscustomobject]@{ Ok = $true; Error = '' }
+  } catch {
+    return [pscustomobject]@{ Ok = $false; Error = $_.Exception.Message }
+  }
+}
+
+function Read-JsoncObject([string]$Path) {
+  $text = [System.IO.File]::ReadAllText($Path, [System.Text.Encoding]::UTF8)
+  $check = Test-JsoncText $text
+  if (-not $check.Ok) { throw "JSONC не разобран ($Path): $($check.Error)" }
+  return (Convert-JsoncToJson $text) | ConvertFrom-Json
+}
+
+function Write-JsoncAtomically([string]$Path, [string]$Content) {
+  # Битый глобальный конфиг ломает OpenCode целиком, поэтому: временный файл,
+  # проверка разбора, резервная копия рядом, только потом замена.
+  $dir = Split-Path -Parent $Path
+  if ($dir) { New-Item -ItemType Directory -Force -Path $dir | Out-Null }
+  $temp = $Path + '.tmp-' + [guid]::NewGuid().ToString('N')
+  try {
+    [System.IO.File]::WriteAllText($temp, $Content, [System.Text.UTF8Encoding]::new($false))
+    $check = Test-JsoncText ([System.IO.File]::ReadAllText($temp, [System.Text.Encoding]::UTF8))
+    if (-not $check.Ok) { throw "JSONC не разобран, файл не записан: $($check.Error)" }
+    if (Test-Path -LiteralPath $Path) {
+      $backup = $Path + '.bak-' + (Get-Date).ToString('yyyyMMdd-HHmmss')
+      Copy-Item -LiteralPath $Path -Destination $backup -Force
+      # Держим пять последних копий: apply запускают часто, каталог не должен пухнуть.
+      $old = @(Get-ChildItem -LiteralPath (Split-Path -Parent $Path) -File -EA SilentlyContinue |
+        Where-Object { $_.Name -like ((Split-Path -Leaf $Path) + '.bak-*') } |
+        Sort-Object LastWriteTime -Descending | Select-Object -Skip 5)
+      foreach ($item in $old) { Remove-Item -LiteralPath $item.FullName -Force -EA SilentlyContinue }
+      try { [System.IO.File]::Replace($temp, $Path, [NullString]::Value) }
+      catch { Move-Item -LiteralPath $temp -Destination $Path -Force }
+    } else {
+      Move-Item -LiteralPath $temp -Destination $Path -Force
+    }
+  } finally {
+    if (Test-Path -LiteralPath $temp) { Remove-Item -LiteralPath $temp -Force -EA SilentlyContinue }
+  }
+}
+
+function Format-JsoncArray([string[]]$Items) {
+  $lines = @(foreach ($item in $Items) { '    "' + (ConvertTo-JsonLiteral $item) + '"' })
+  return '[' + "`n" + ($lines -join ",`n") + "`n  ]"
+}
+
+function Get-KitSkillPaths([string]$KitRoot) {
+  # Источники, которые OpenCode читает напрямую из репозитория кита.
+  $skills = @(
+    ((Join-Path $KitRoot 'profile\skills') -replace '\\', '/')
+    ((Join-Path $KitRoot 'profile\rules') -replace '\\', '/')
+  )
+  $alwaysGlob = ((Join-Path $KitRoot 'profile\rules\always') -replace '\\', '/') + '/*.md'
+  return [pscustomobject]@{ Skills = $skills; Instructions = @($alwaysGlob) }
+}
+
+function Write-OpenCodeGlobalConfig([string]$KitRoot) {
+  $path = Get-OpenCodeConfigPath
+  $paths = Get-KitSkillPaths $KitRoot
+  $schemaJson = '"https://opencode.ai/config.json"'
+  $skillsJson = Format-JsoncArray $paths.Skills
+  $instructionsJson = Format-JsoncArray $paths.Instructions
+
+  $text = ''
+  if (Test-Path -LiteralPath $path) {
+    $text = [System.IO.File]::ReadAllText($path, [System.Text.Encoding]::UTF8)
+  }
+  if (-not $text.Trim()) {
+    $text = "{" + "`n" + '  "$schema": ' + $schemaJson + ',' + "`n" + '  "skills": ' + $skillsJson + ',' + "`n" + '  "instructions": ' + $instructionsJson + "`n" + '}' + "`n"
+  } else {
+    # Меняем только свои два ключа: остальные настройки пользователя остаются как были.
+    if (-not (Find-JsoncTopLevelValue $text '$schema').Found) {
+      $text = Set-JsoncTopLevelValue $text '$schema' $schemaJson
+    }
+    $text = Set-JsoncTopLevelValue $text 'skills' $skillsJson
+    $text = Set-JsoncTopLevelValue $text 'instructions' $instructionsJson
+    if (-not $text.EndsWith("`n")) { $text += "`n" }
+  }
+  Write-JsoncAtomically $path $text
+  return $path
+}
+
+function Remove-LegacyKitSkills {
+  # Старая модель: копия профиля в skills\kit. Удаляется только этот каталог.
+  $path = Join-Path (Get-OpenCodeRoot) 'skills\kit'
+  if (-not (Test-Path -LiteralPath $path)) { return $false }
+  Remove-Item -LiteralPath $path -Recurse -Force
+  return $true
+}
+
+function Clear-OpenCodeGlobalAgentsBlock {
+  # Правила приходят через instructions; управляемый блок в AGENTS.md — дубль.
+  $path = Join-Path (Get-OpenCodeRoot) 'AGENTS.md'
   $begin = '<!-- 1c-ninja-kit:begin -->'
   $end = '<!-- 1c-ninja-kit:end -->'
-  $block = $begin + "`n" + (New-OpenCodeGlobalAgentsBlock $KitRoot) + "`n" + $end + "`n"
+  if (-not (Test-Path -LiteralPath $path)) { return 'absent' }
+  $existing = Get-Content -LiteralPath $path -Raw -Encoding UTF8
+  if (-not $existing) { return 'absent' }
+  if (-not $existing.Contains($begin) -or -not $existing.Contains($end)) { return 'no-block' }
 
-  $existing = ''
-  if (Test-Path -LiteralPath $path) { $existing = Get-Content -LiteralPath $path -Raw -Encoding UTF8 }
-  if ($existing -and $existing.Contains($begin) -and $existing.Contains($end)) {
-    $pre = ($existing.Substring(0, $existing.IndexOf($begin)) -replace '\s+$', '')
-    $post = ($existing.Substring($existing.IndexOf($end) + $end.Length) -replace '^\s+', '')
-    $head = if ($pre) { $pre + "`n`n" } else { '' }
-    $tail = if ($post) { "`n" + $post } else { "`n" }
-    $content = $head + ($block -replace '\s+$', '') + $tail
+  $i = $existing.IndexOf($begin)
+  $j = $existing.IndexOf($end) + $end.Length
+  $before = $existing.Substring(0, $i).TrimEnd()
+  $after = $existing.Substring($j).TrimStart()
+  $rest = $before
+  if ($before -and $after) { $rest = $before + "`n`n" + $after }
+  elseif ($after) { $rest = $after }
+  $rest = $rest.Trim()
+
+  if (-not $rest) {
+    # Файл целиком был блоком кита — тогда и файла быть не должно.
+    Remove-Item -LiteralPath $path -Force
+    return 'removed'
   }
-  elseif ($existing) {
-    $content = ($existing -replace '\s+$', '') + "`n`n" + $block
+  Set-FileContentUtf8 $path ($rest + "`n")
+  return 'cleaned'
+}
+
+function Get-TextSha256([string]$Path) {
+  $sha = [System.Security.Cryptography.SHA256]::Create()
+  try {
+    $bytes = [System.IO.File]::ReadAllBytes($Path)
+    $hash = $sha.ComputeHash($bytes)
+  } finally { $sha.Dispose() }
+  return (@($hash | ForEach-Object { $_.ToString('x2') }) -join '')
+}
+
+function Copy-ProfileFiles([string]$Source, [string]$Destination, [string]$Filter) {
+  # Копия байт-в-байт: taskctl.ps1 сохранён в UTF-8 с BOM, иначе PowerShell 5.1
+  # читает кириллицу как ANSI. Чужие файлы в целевом каталоге не трогаем.
+  if (-not (Test-Path -LiteralPath $Source)) { throw "Source missing: $Source" }
+  New-Item -ItemType Directory -Force -Path $Destination | Out-Null
+  $files = @(Get-ChildItem -LiteralPath $Source -File -Filter $Filter)
+  foreach ($file in $files) {
+    Copy-Item -LiteralPath $file.FullName -Destination (Join-Path $Destination $file.Name) -Force
   }
-  else {
-    $content = $block
-  }
-  Set-FileContentUtf8 $path $content
-  return $path
+  return $files.Count
 }
 
 function Install-LeaseCleanTask {
@@ -296,53 +468,67 @@ function Invoke-ApplyOpenCode {
   $skillsSrc = Join-Path $KitRoot 'profile\skills'
   $rulesSrc = Join-Path $KitRoot 'profile\rules\on-demand'
   $agentsSrc = Join-Path $KitRoot 'profile\agents'
-  $skillsRoot = Join-Path $ocRoot 'skills'
-  $kitSkillsRoot = Join-Path $skillsRoot 'kit'
-  $kitSkillsDst = Join-Path $kitSkillsRoot 'skills'
-  $kitRulesDst = Join-Path $kitSkillsRoot 'rules'
+  $commandsSrc = Join-Path $KitRoot 'profile\commands'
+  $scriptsSrc = Join-Path $KitRoot 'profile\scripts'
   $agentsDst = Join-Path $ocRoot 'agents'
+  $commandsDst = Join-Path $ocRoot 'commands'
+  $scriptsDst = Join-Path $ocRoot 'scripts'
 
   $skillCount = @(Get-ChildItem $skillsSrc -Directory -EA SilentlyContinue).Count
   $ruleCount = @(Get-ChildItem $rulesSrc -Directory -EA SilentlyContinue).Count
   $agentCount = @(Get-ChildItem $agentsSrc -File -Filter '*.md' -EA SilentlyContinue).Count
+  $commandCount = @(Get-ChildItem $commandsSrc -File -Filter '*.md' -EA SilentlyContinue).Count
+  $scriptCount = @(Get-ChildItem $scriptsSrc -File -EA SilentlyContinue).Count
   Write-Status 'INFO' "kit skills=$skillCount, on-demand rules=$ruleCount, agents=$agentCount"
 
+  $paths = Get-KitSkillPaths $KitRoot
+  $configPath = Get-OpenCodeConfigPath
+  Write-Status 'INFO' ("config skills: " + ($paths.Skills -join ', '))
+  Write-Status 'INFO' ("config instructions: " + ($paths.Instructions -join ', '))
+
   if ($DryRun) {
-    Write-Status 'INFO' "would mirror $skillsSrc -> $kitSkillsDst"
-    Write-Status 'INFO' "would mirror $rulesSrc -> $kitRulesDst"
-    Write-Status 'INFO' "would copy $agentsSrc -> $agentsDst (agent-*.md)"
+    Write-Status 'INFO' "would write $configPath (skills + instructions only; other keys kept)"
+    Write-Status 'INFO' "would copy agents=$agentCount, commands=$commandCount, scripts=$scriptCount -> $ocRoot"
+    Write-Status 'INFO' "would remove legacy $(Join-Path $ocRoot 'skills\kit') if present"
+    Write-Status 'INFO' "would strip managed block from $(Join-Path $ocRoot 'AGENTS.md')"
     Write-Status 'WARN' 'DryRun - no files written'
     return 0
   }
 
-  $stage = Join-Path ([System.IO.Path]::GetTempPath()) ('1c-ninja-kit-stage-' + [guid]::NewGuid().ToString('N'))
-  $stageSkills = Join-Path $stage 'skills'
-  $stageRules = Join-Path $stage 'rules'
-  try {
-    [void](Invoke-Robo $skillsSrc $stageSkills)
-    [void](Invoke-Robo $rulesSrc $stageRules)
+  # 1. Скиллы и правила OpenCode читает по путям из конфига, а агентов, команды и
+  #    скрипт каркаса — только копией: ссылку на файл по пути он не понимает.
+  [void](Copy-ProfileFiles $agentsSrc $agentsDst '*.md')
+  [void](Copy-ProfileFiles $commandsSrc $commandsDst '*.md')
+  [void](Copy-ProfileFiles $scriptsSrc $scriptsDst '*')
+  Write-Status 'OK' "agents -> $agentsDst ($agentCount), commands -> $commandsDst ($commandCount), scripts -> $scriptsDst ($scriptCount)"
 
-    [void](Invoke-Robo $stageSkills $kitSkillsDst -Mirror)
-    [void](Invoke-Robo $stageRules $kitRulesDst -Mirror)
-    $skN = Resolve-SkillPlaceholders $kitSkillsRoot
-    if ($skN) { Write-Status 'INFO' "resolved placeholders in kit skills ($skN files)" }
+  # 2. Старая модель копировала профиль в skills\kit — сносим только этот каталог.
+  if (Remove-LegacyKitSkills) { Write-Status 'OK' "removed legacy $(Join-Path $ocRoot 'skills\kit')" }
+  else { Write-Status 'INFO' 'no legacy skills\kit' }
 
-    New-Item -ItemType Directory -Force -Path $agentsDst | Out-Null
-    Get-ChildItem $agentsSrc -File -Filter '*.md' | ForEach-Object {
-      Copy-Item -LiteralPath $_.FullName -Destination (Join-Path $agentsDst $_.Name) -Force
-    }
-    Write-Status 'INFO' "copied agents -> $agentsDst ($agentCount files, native mode: subagent)"
+  # 3. Машинная задача lease-clean: скрипт теперь лежит в репозитории кита.
+  Install-LeaseCleanTask -SkillsDst $skillsSrc
 
-    $agentsPath = Write-OpenCodeGlobalAgents $KitRoot
-    Write-Status 'OK' "global instructions -> $agentsPath"
-    Install-LeaseCleanTask -SkillsDst $kitSkillsDst
-
-    $skillsMissing = @(Get-ChildItem $skillsSrc -Directory | Where-Object { -not (Test-Path (Join-Path $_.FullName 'SKILL.md')) })
-    foreach ($s in $skillsMissing) { Write-Status 'WARN' "skill without SKILL.md (skipped by OpenCode): $($s.Name)" }
+  # 4. Always-on правила теперь приходят через instructions — блок в AGENTS.md дубль.
+  $agentsState = Clear-OpenCodeGlobalAgentsBlock
+  switch ($agentsState) {
+    'removed' { Write-Status 'OK' "removed $(Join-Path $ocRoot 'AGENTS.md') (it was the kit block only)" }
+    'cleaned' { Write-Status 'OK' "stripped managed block from $(Join-Path $ocRoot 'AGENTS.md')" }
+    default { Write-Status 'INFO' 'global AGENTS.md: no kit block' }
   }
-  finally {
-    if (Test-Path -LiteralPath $stage) { Remove-Item -LiteralPath $stage -Recurse -Force -EA SilentlyContinue }
-  }
+
+  $configPath = Write-OpenCodeGlobalConfig $KitRoot
+  Write-Status 'OK' "global config -> $configPath (skills, instructions)"
+
+  $backups = @(Get-ChildItem -LiteralPath (Split-Path -Parent $configPath) -File -EA SilentlyContinue |
+    Where-Object { $_.Name -like ((Split-Path -Leaf $configPath) + '.bak-*') } |
+    Sort-Object LastWriteTime -Descending)
+  if ($backups.Count -gt 0) { Write-Status 'INFO' "backup: $($backups[0].FullName)" }
+
+  $skillsMissing = @(Get-ChildItem $skillsSrc -Directory | Where-Object { -not (Test-Path (Join-Path $_.FullName 'SKILL.md')) })
+  foreach ($s in $skillsMissing) { Write-Status 'WARN' "skill without SKILL.md (skipped by OpenCode): $($s.Name)" }
+  $rulesMissing = @(Get-ChildItem $rulesSrc -Directory | Where-Object { -not (Test-Path (Join-Path $_.FullName 'SKILL.md')) })
+  foreach ($s in $rulesMissing) { Write-Status 'WARN' "rule without SKILL.md (skipped by OpenCode): $($s.Name)" }
 
   foreach ($name in @('opencode.json', 'opencode.jsonc')) {
     $cfg = Join-Path $ocRoot $name
@@ -358,8 +544,10 @@ function Invoke-ApplyOpenCode {
       }
     }
   }
+  Write-Status 'INFO' 'перезапусти OpenCode: конфиг читается при старте'
   return 0
 }
+
 function Invoke-Doctor {
   $kitVersion = (Get-Content (Join-Path $KitRoot 'VERSION') -Raw).Trim()
   Write-Host "=== kit doctor ($kitVersion) KitRoot=$KitRoot ===" -ForegroundColor Cyan
@@ -438,11 +626,50 @@ function Invoke-Doctor {
       Write-Status 'OK' "global opencode $name has no 1C MCP server names"
     }
   }
-  if (Test-Path (Join-Path $ocRoot 'skills')) {
-    $n = @(Get-ChildItem (Join-Path $ocRoot 'skills') -Recurse -File -Filter 'SKILL.md' -EA SilentlyContinue).Count
-    Write-Status 'INFO' "opencode profile installed: skills=$n (apply to refresh)"
+  # Доставка профиля: скиллы и правила читаются по путям из открытого конфига,
+  # агенты/команды/скрипт каркаса — копией. Сверяем то, что реально увидит OpenCode.
+  $configPath = Get-OpenCodeConfigPath
+  if (Test-Path -LiteralPath $configPath) {
+    Write-Status 'OK' "global config: $configPath"
+    try {
+      $cfgData = Read-JsoncObject $configPath
+      $skillPaths = @($cfgData.skills)
+      if ($skillPaths.Count -eq 0) {
+        Write-Status 'WARN' "global $((Split-Path -Leaf $configPath)) has no skills paths - run: kit.ps1 apply"
+        $warn++
+      } else {
+        $missing = @($skillPaths | Where-Object { -not (Test-Path -LiteralPath ([string]$_)) })
+        if ($missing.Count -gt 0) {
+          Write-Status 'WARN' ("skills paths missing: " + ($missing -join ', ') + ' - run: kit.ps1 apply')
+          $warn++
+        } else {
+          Write-Status 'OK' ("skills paths: " + ($skillPaths -join ', '))
+        }
+      }
+    } catch {
+      Write-Status 'WARN' "global config unreadable: $($_.Exception.Message)"
+      $warn++
+    }
   } else {
-    Write-Status 'INFO' 'opencode profile absent (ok) - run: kit.ps1 apply'
+    Write-Status 'INFO' 'global config absent (ok) - run: kit.ps1 apply'
+  }
+  $n = @(Get-ChildItem (Join-Path $ocRoot 'skills') -Recurse -File -Filter 'SKILL.md' -EA SilentlyContinue).Count
+  Write-Status 'INFO' "external skills in $ocRoot\skills: $n"
+  if (Test-Path (Join-Path $ocRoot 'skills\kit')) {
+    Write-Status 'WARN' 'legacy skills\kit still present - run: kit.ps1 apply'
+    $warn++
+  }
+  foreach ($pair in @(@('agents', 'profile\agents', '*.md'), @('commands', 'profile\commands', '*.md'), @('scripts', 'profile\scripts', '*'))) {
+    $dst = Join-Path $ocRoot $pair[0]
+    $src = Join-Path $KitRoot $pair[1]
+    $srcFiles = @(Get-ChildItem -LiteralPath $src -File -Filter $pair[2] -EA SilentlyContinue)
+    $missing = @($srcFiles | Where-Object { -not (Test-Path -LiteralPath (Join-Path $dst $_.Name)) })
+    if ($missing.Count -gt 0) {
+      Write-Status 'WARN' ("$($pair[0]): not installed: " + ($missing.Name -join ', ') + ' - run: kit.ps1 apply')
+      $warn++
+    } else {
+      Write-Status 'OK' "$($pair[0]): $($srcFiles.Count) files -> $dst"
+    }
   }
   if (Test-Path (Join-Path $ocRoot 'skills\db-list\SKILL.md')) {
     Write-Status 'OK' 'cc-1c-skills installed (db-* present)'
@@ -478,6 +705,101 @@ function Invoke-Doctor {
   return 0
 }
 
+function Get-ProfileNames {
+  # Фактический состав профиля: agents (*.md), skills (каталог с SKILL.md),
+  # rules = always (*.md) + on-demand (каталог с SKILL.md). Порядок — ординарный,
+  # чтобы namesHashSha256 не зависел от локали машины.
+  $agents = @(Get-ChildItem (Join-Path $KitRoot 'profile\agents') -File -Filter '*.md' -EA SilentlyContinue |
+    ForEach-Object { $_.BaseName })
+  $skills = @(Get-ChildItem (Join-Path $KitRoot 'profile\skills') -Directory -EA SilentlyContinue |
+    Where-Object { Test-Path (Join-Path $_.FullName 'SKILL.md') } | ForEach-Object { $_.Name })
+  $rules = @(
+    @(Get-ChildItem (Join-Path $KitRoot 'profile\rules\always') -File -Filter '*.md' -EA SilentlyContinue |
+      ForEach-Object { $_.BaseName })
+    @(Get-ChildItem (Join-Path $KitRoot 'profile\rules\on-demand') -Directory -EA SilentlyContinue |
+      Where-Object { Test-Path (Join-Path $_.FullName 'SKILL.md') } | ForEach-Object { $_.Name })
+  )
+  $result = @{}
+  foreach ($pair in @(@('agents', $agents), @('skills', $skills), @('rules', $rules))) {
+    [string[]]$names = @($pair[1])
+    [Array]::Sort($names, [System.StringComparer]::Ordinal)
+    $result[$pair[0]] = $names
+  }
+  return $result
+}
+
+function Get-NamesHash([hashtable]$Names) {
+  # Канон namesHashSha256 (docs/versioning.md): одна строка JSON без пробелов,
+  # ключи по алфавиту (agents, rules, skills), имена ординарно отсортированы,
+  # кириллица сырым UTF-8, LF в конце. Хеш — SHA-256, hex в нижнем регистре.
+  $parts = @('agents', 'rules', 'skills') | ForEach-Object {
+    $list = @($Names[$_]) | ForEach-Object { '"' + ($_ -replace '\\', '\\\\').Replace('"', '\"') + '"' }
+    '"' + $_ + '":[' + ($list -join ',') + ']'
+  }
+  $canonical = '{' + ($parts -join ',') + '}' + "`n"
+  $sha = [System.Security.Cryptography.SHA256]::Create()
+  try {
+    $bytes = [System.Text.Encoding]::UTF8.GetBytes($canonical)
+    $hash = $sha.ComputeHash($bytes)
+  } finally { $sha.Dispose() }
+  return (@($hash | ForEach-Object { $_.ToString('x2') }) -join '')
+}
+
+function Invoke-Lock {
+  Write-Host '=== kit lock ===' -ForegroundColor Cyan
+  $names = Get-ProfileNames
+  $counts = @{
+    agents = @($names.agents).Count
+    skills = @($names.skills).Count
+    rules  = @($names.rules).Count
+  }
+  $lock = [ordered]@{
+    version         = (Get-Content (Join-Path $KitRoot 'VERSION') -Raw).Trim()
+    profile         = $ProfileName
+    capturedAt      = (Get-Date).ToString('yyyy-MM-ddTHH:mm:sszzz')
+    counts          = [ordered]@{ agents = $counts.agents; skills = $counts.skills; rules = $counts.rules }
+    namesHashSha256 = (Get-NamesHash $names)
+    skills          = @($names.skills)
+    rules           = @($names.rules)
+    agents          = @($names.agents)
+  }
+
+  $sb = New-Object System.Text.StringBuilder
+  [void]$sb.AppendLine('{')
+  $scalars = @('version', 'profile', 'capturedAt')
+  foreach ($key in $scalars) {
+    [void]$sb.AppendLine("  `"$key`": `"$($lock[$key])`",")
+  }
+  [void]$sb.AppendLine('  "counts": {')
+  [void]$sb.AppendLine("    `"agents`": $($counts.agents),")
+  [void]$sb.AppendLine("    `"skills`": $($counts.skills),")
+  [void]$sb.AppendLine("    `"rules`": $($counts.rules)")
+  [void]$sb.AppendLine('  },')
+  [void]$sb.AppendLine("  `"namesHashSha256`": `"$($lock.namesHashSha256)`",")
+  foreach ($key in @('skills', 'rules', 'agents')) {
+    [void]$sb.AppendLine("  `"$key`": [")
+    $list = @($lock[$key])
+    for ($i = 0; $i -lt $list.Count; $i++) {
+      $comma = if ($i -lt $list.Count - 1) { ',' } else { '' }
+      [void]$sb.AppendLine("    `"$($list[$i])`"$comma")
+    }
+    $closing = if ($key -eq 'agents') { '  ]' } else { '  ],' }
+    [void]$sb.AppendLine($closing)
+  }
+  [void]$sb.AppendLine('}')
+  $text = $sb.ToString()
+
+  $path = Join-Path $KitRoot 'lock\profile.lock.json'
+  if ($DryRun) {
+    Write-Status 'INFO' ("would write {0} (agents={1} skills={2} rules={3})" -f $path, $counts.agents, $counts.skills, $counts.rules)
+    return 0
+  }
+  Set-FileContentUtf8 $path $text
+  Write-Status 'OK' ("lock -> {0}" -f $path)
+  Write-Status 'INFO' ("agents={0} skills={1} rules={2} hash={3}" -f $counts.agents, $counts.skills, $counts.rules, $lock.namesHashSha256)
+  return 0
+}
+
 function Invoke-Verify {
   Write-Host '=== kit verify ===' -ForegroundColor Cyan
   $skills = @(Get-ChildItem (Join-Path $KitRoot 'profile\skills') -Directory -EA SilentlyContinue |
@@ -488,14 +810,134 @@ function Invoke-Verify {
   $rules = $always + $ondemand
   $agents = @(Get-ChildItem (Join-Path $KitRoot 'profile\agents') -File -Filter '*.md' -EA SilentlyContinue).Count
   Write-Status 'OK' "profile skills=$skills rules=$rules (always=$always, on-demand=$ondemand) agents=$agents"
-  if (-not (Test-Path (Join-Path $KitRoot 'lock\profile.lock.json'))) {
-    Write-Status 'FAIL' 'lock/profile.lock.json missing'; return 1
+
+  # Маршруты и роли — единственный источник rule-routes.md. Копия в другом правиле
+  # или в промпте разъедется при следующей правке, поэтому ловим её здесь.
+  $routeRows = @(Get-ChildItem (Join-Path $KitRoot 'profile\rules') -Recurse -File -Filter '*.md' -EA SilentlyContinue |
+    Select-String -SimpleMatch '| `полный` |' -List)
+  if ($routeRows.Count -ne 1) {
+    Write-Status 'FAIL' ("route table must live in exactly one rule file, found: " + $(if ($routeRows.Count) { ($routeRows.Path -join ', ') } else { 'none' }))
+    return 1
   }
-  Write-Status 'OK' 'lock present'
+  if ((Split-Path -Leaf $routeRows[0].Path) -ne 'rule-routes.md') {
+    Write-Status 'FAIL' "route table lives in $($routeRows[0].Path); move it to profile\rules\always\rule-routes.md"
+    return 1
+  }
+  Write-Status 'OK' 'route table: single source rule-routes.md'
+
+  if (-not (Test-Path (Join-Path $KitRoot 'lock\profile.lock.json'))) {
+    Write-Status 'FAIL' 'lock/profile.lock.json missing - run: kit.ps1 lock'; return 1
+  }
+  # Lock — снимок профиля. Расхождение значит, что его забыли пересобрать
+  # после правки profile/: сам файл никто не читает, сверяет только verify.
+  try {
+    $lockData = Get-Content (Join-Path $KitRoot 'lock\profile.lock.json') -Raw -Encoding UTF8 | ConvertFrom-Json
+    $actual = Get-ProfileNames
+    $drift = @()
+    foreach ($key in @('agents', 'skills', 'rules')) {
+      $a = @($actual[$key])
+      $l = @($lockData.$key)
+      if ($a.Count -ne $l.Count -or (Compare-Object -ReferenceObject $a -DifferenceObject $l -CaseSensitive)) {
+        $drift += "$key lock=$($l.Count) profile=$($a.Count)"
+      }
+    }
+    $hash = Get-NamesHash $actual
+    if ($lockData.namesHashSha256 -ne $hash) { $drift += "namesHashSha256=$($lockData.namesHashSha256) profile=$hash" }
+    if ($drift.Count -gt 0) {
+      Write-Status 'FAIL' ("lock/profile.lock.json is stale (" + ($drift -join '; ') + ") - run: kit.ps1 lock")
+      return 1
+    }
+    Write-Status 'OK' "lock matches profile (agents=$($actual.agents.Count) skills=$($actual.skills.Count) rules=$($actual.rules.Count))"
+  } catch {
+    Write-Status 'FAIL' "lock/profile.lock.json unreadable: $($_.Exception.Message) - run: kit.ps1 lock"; return 1
+  }
   if (-not (Test-Path (Join-Path $KitRoot 'profile\profiles\1c-ninja-kit.yaml'))) {
     Write-Status 'FAIL' 'profile aggregate missing'; return 1
   }
   Write-Status 'OK' 'aggregate profile 1c-ninja-kit.yaml'
+
+  # Доставка в глобальный профиль. Проверяем ровно то, что увидит OpenCode:
+  # пути скиллов/правил в конфиге, отсутствие старой копии и байт-в-байт копии
+  # агентов, команд и скрипта каркаса.
+  $fail = 0
+  $ocRoot = Get-OpenCodeRoot
+  $skillsSrc = Join-Path $KitRoot 'profile\skills'
+  $rulesSrc = Join-Path $KitRoot 'profile\rules'
+  foreach ($dir in @($skillsSrc, $rulesSrc)) {
+    if (Test-Path -LiteralPath $dir -PathType Container) { Write-Status 'OK' "skills source: $dir" }
+    else { Write-Status 'FAIL' "skills source missing: $dir"; $fail++ }
+  }
+
+  $configPath = Get-OpenCodeConfigPath
+  if (-not (Test-Path -LiteralPath $configPath)) {
+    Write-Status 'FAIL' "global config missing: $configPath - run: kit.ps1 apply"; $fail++
+  } else {
+    try {
+      $cfgData = Read-JsoncObject $configPath
+      $configured = @($cfgData.skills | ForEach-Object { [string]$_ })
+      foreach ($expected in @($skillsSrc, $rulesSrc)) {
+        $norm = ($expected -replace '\\', '/').TrimEnd('/')
+        $hit = @($configured | Where-Object { ($_ -replace '\\', '/').TrimEnd('/') -eq $norm })
+        if ($hit.Count -gt 0) { Write-Status 'OK' "config skills -> $expected" }
+        else { Write-Status 'FAIL' "global config skills has no $expected - run: kit.ps1 apply"; $fail++ }
+      }
+      $broken = @($configured | Where-Object { -not (Test-Path -LiteralPath $_) })
+      if ($broken.Count -gt 0) {
+        Write-Status 'FAIL' ("config skills paths missing: " + ($broken -join ', ') + ' - run: kit.ps1 apply'); $fail++
+      }
+      $instr = @($cfgData.instructions | ForEach-Object { [string]$_ })
+      if ($instr.Count -eq 0) {
+        Write-Status 'FAIL' 'global config has no instructions - run: kit.ps1 apply'; $fail++
+      } else {
+        Write-Status 'OK' ("config instructions: " + ($instr -join ', '))
+      }
+    } catch {
+      Write-Status 'FAIL' "global config is not valid JSONC: $($_.Exception.Message)"; $fail++
+    }
+  }
+
+  $legacy = Join-Path $ocRoot 'skills\kit'
+  if (Test-Path -LiteralPath $legacy) {
+    Write-Status 'FAIL' "legacy skills\kit still present: $legacy - run: kit.ps1 apply"; $fail++
+  } else {
+    Write-Status 'OK' 'no legacy skills\kit'
+  }
+
+  $globalAgents = Join-Path $ocRoot 'AGENTS.md'
+  if (Test-Path -LiteralPath $globalAgents) {
+    $rawAgents = Get-Content -LiteralPath $globalAgents -Raw -Encoding UTF8
+    if ($rawAgents -and $rawAgents.Contains('<!-- 1c-ninja-kit:begin -->')) {
+      Write-Status 'FAIL' 'global AGENTS.md still carries the kit block - run: kit.ps1 apply'; $fail++
+    } else {
+      Write-Status 'OK' 'global AGENTS.md has no kit block'
+    }
+  }
+
+  $copies = @(
+    @('agents', 'profile\agents', '*.md'),
+    @('commands', 'profile\commands', '*.md'),
+    @('scripts', 'profile\scripts', '*')
+  )
+  foreach ($pair in $copies) {
+    $layer = $pair[0]
+    $src = Join-Path $KitRoot $pair[1]
+    $dst = Join-Path $ocRoot $layer
+    $srcFiles = @(Get-ChildItem -LiteralPath $src -File -Filter $pair[2] -EA SilentlyContinue)
+    $problems = @()
+    foreach ($file in $srcFiles) {
+      $target = Join-Path $dst $file.Name
+      if (-not (Test-Path -LiteralPath $target)) { $problems += "нет $($file.Name)"; continue }
+      if ((Get-TextSha256 $file.FullName) -ne (Get-TextSha256 $target)) { $problems += "разошёлся $($file.Name)" }
+    }
+    if ($srcFiles.Count -eq 0) { $problems += 'в профиле нет файлов' }
+    if ($problems.Count -gt 0) {
+      Write-Status 'FAIL' ("{0}: {1} - run: kit.ps1 apply" -f $dst, ($problems -join ', ')); $fail++
+    } else {
+      Write-Status 'OK' ("{0}: {1} files match profile" -f $dst, $srcFiles.Count)
+    }
+  }
+
+  if ($fail -gt 0) { return 1 }
   Write-Status 'INFO' ("VERSION=" + (Get-Content (Join-Path $KitRoot 'VERSION') -Raw).Trim())
   return 0
 }
@@ -512,6 +954,7 @@ function Invoke-Apply {
 switch ($Command) {
   'doctor' { exit (Invoke-Doctor) }
   'verify' { exit (Invoke-Verify) }
+  'lock' { exit (Invoke-Lock) }
   'apply' { exit (Invoke-Apply) }
   'deps' {
     exit (Invoke-Deps -KitRoot $KitRoot -What $What -Update:$Update -All:$All -Offline:$Offline `
@@ -522,7 +965,8 @@ switch ($Command) {
     Write-Host "1c-ninja-kit CLI $kitVersion"
     Write-Host '  kit.ps1 doctor [-Strict]'
     Write-Host '  kit.ps1 verify'
-    Write-Host '  kit.ps1 apply [-DryRun]'
+    Write-Host '  kit.ps1 lock [-DryRun]      # пересобрать lock/profile.lock.json из profile\'
+    Write-Host '  kit.ps1 apply [-DryRun]     # пути скиллов/правил в opencode.jsonc + копия агентов/команд/скрипта'
     Write-Host '  kit.ps1 deps [-What all|required|oscript|bsl-analyzer|ripgrep|web-test|apache|toolkit]'
     Write-Host '                [-Update] [-All] [-Offline] [-Platform 8.3|8.5] [-DryRun]'
     Write-Host 'Project bootstrap: skill-env-setup ("разверни окружение")'

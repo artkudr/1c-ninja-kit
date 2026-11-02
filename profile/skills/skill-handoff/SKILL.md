@@ -25,13 +25,13 @@ Use this skill when the user says:
 
 ## Where to write
 
-1. Default directory: `handoffs/` at the project root. Create it if missing.
+1. Default directory: the task folder if the session belongs to a task (`Задачи/<номер - дата>/`), otherwise `handoffs/` at the project root. Create it if missing.
 2. Default file name: `handoff-<YYYYMMDD-HHMMSS>.md` (local time).
 3. If the user provided a path, use it (overwrite without confirmation).
 4. **Before writing**, read the target file through Read. The expected "does not exist" error is fine; this is protection against overwriting an unrelated existing file with the same name.
-5. If the project has `.gitignore` and `handoffs/` is not mentioned there, **offer** to add it (handoffs are session artifacts, not code), but **do not add it automatically**.
+5. If the project has `.gitignore` and the target folder is not mentioned there, **offer** to add it (handoffs are session artifacts, not code), but **do not add it automatically**.
 
-PowerShell conventions (`\` in paths, quotes around paths with spaces) — see the `powershell-windows` skill.
+PowerShell: `\` in paths, quotes around paths with spaces.
 
 ## Document structure
 
@@ -60,8 +60,8 @@ Which gates from `rule-verification-checklist` passed / failed / were skipped. L
 1-5 imperative items ("Check movements for `РегистрНакопления.<Имя>`", "Finish `ОбработкаПроведения` for document `<Имя>`").
 
 ## What To Load Next Session
-- **Subagents**: `agent-<name>` when the task matches their role (see `rule-orchestrator`).
-- **On-demand rules**: `rule-<name>` skills based on the task trigger (see `rule-orchestrator → Skills`).
+- **Subagents**: the role whose prompt matches the work — `Оракул`, `Часовщик`, `Колдун`, `Инквизитор`, `Бард`, `Телепат` (see the kit context, `agents/`).
+- **On-demand rules**: `rule-<name>` skills based on the task trigger (see the kit context section `Skills`).
 - **MCP tools**: especially relevant tools (`metadata object` for X, `graph neighbors`/`callers` before refactoring Y, `search search_code` over the БСП modules for topic Z).
 - **Slash commands**: cf dump via `db-dump-xml` / 1c-ninja-mcp for metadata re-export, etc.
 
@@ -86,11 +86,11 @@ Which gates from `rule-verification-checklist` passed / failed / were skipped. L
    - a rule or non-inferable fact for `AGENTS.md`;
    - a dated decision for `docs/decisions.md`;
    - a detail for `docs/<topic>.md`.
-   Do not save automatically — `AGENTS.md` stays short and curated (`rule-orchestrator → Память проекта`).
+   Do not save automatically — `AGENTS.md` stays short and curated (memory rules in the kit context, `rule-workspace → Память проекта`).
 
 ## Boundaries
 
 - Handoff is a session artifact, not configuration and not code. Do not run `diagnostics file` / `check_1c_code` / `review_1c_code` against it.
 - Handoff **does not replace** a plan or design note. If the task needs a plan that does not exist yet, suggest writing it in the handoff itself or in `docs/`.
-- Handoff **does not duplicate** `AGENTS.md` or `docs/decisions.md`. Memory and handoff are different channels (see `rule-orchestrator → Память проекта`).
+- Handoff **does not duplicate** `AGENTS.md` or `docs/decisions.md`. Memory and handoff are different channels (see `rule-workspace → Память проекта`).
 - Handoff is written in normal grammar, not caveman style, so the next agent can read it without ambiguity.

@@ -31,7 +31,7 @@ Apache **не в проекте**. Два профиля на машине:
 3. Реестр PT не используем.
 
 ```powershell
-powershell.exe -NoProfile -File "${CLAUDE_SKILL_DIR}/scripts/skill-web-publish.ps1" `
+powershell.exe -NoProfile -File "C:\1C\projects\1c-ninja-kit\profile\skills/skill-web-publish/scripts/web-publish.ps1" `
   -InfoBaseServer "k-server" -InfoBaseRef "my-ib-ref" `
   -UserName "..." -Password "..."
 ```

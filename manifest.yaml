@@ -1,6 +1,6 @@
 # 1c-ninja-kit manifest
 name: 1c-ninja-kit
-version: 0.10.0
+version: 0.11.0
 platform: windows
 harness: opencode
 assumesMachineSoft: false
@@ -13,7 +13,7 @@ layers:
 
 profile:
   default: 1c-ninja-kit
-  target: "%USERPROFILE%\\.config\\opencode (skills/kit/ agents/ AGENTS.md)"
+  target: "%USERPROFILE%\\.config\\opencode (opencode.jsonc paths; agents/ commands/ scripts/ copies)"
 
 components:
   1c-ninja-mcp:
@@ -36,12 +36,12 @@ stackDefaults:
 naming:
   skills: skill-
   rules: rule-
-  agents: agent-
+  agents: роли без префикса (Бард, Колдун, …)
   externalSkills: unchanged
 
 cli:
   entry: install/kit.ps1
-  commands: [doctor, verify, apply, deps]
+  commands: [doctor, verify, apply, lock, deps]
 
 tests:
   opencode: docs/TEST-GUIDE-opencode.md

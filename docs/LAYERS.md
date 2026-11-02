@@ -9,11 +9,11 @@ Machine  →  Profile  →  Project
 | Слой | Что | Кто ставит |
 |------|-----|------------|
 | **Machine** | OVM/OneScript, bsl-analyzer, Apache tools, Toolkit EPF, cc-1c-skills | человек + `kit doctor` |
-| **Profile** | skills / rules / agents | `kit apply` |
-| **Project** | `.v8-project.json`, mcp, NinjaLive, `AGENTS.md` | скилл `skill-env-setup` |
+| **Profile** | skills / rules — путями в `~/.config/opencode/opencode.jsonc` (`skills`, `instructions`); agents / commands / `taskctl.ps1` — копией в `~/.config/opencode/` | `kit apply` |
+| **Project** | `.v8-project.json`, mcp, NinjaLive, `AGENTS.md`, `Задачи/` | скилл `skill-env-setup` |
 
-Харнесс один — **OpenCode V2**. Куда именно раскладываются skills/rules/agents и как
-собирается `AGENTS.md`, описано в `docs/opencode.md`; контракт имён — `docs/NAMING.md`.
+Профиль один на машину: агенты, команды и скрипт каркаса задачи (`/Задача`,
+`/Продолжить`, `/Статус`) лежат глобально, а состояние задачи — в проекте. Харнесс один — **OpenCode V2**. Куда именно раскладываются skills/rules/agents и почему пути, а не симлинки, описано в `docs/opencode.md`; контракт имён — `docs/NAMING.md`.
 
 ## Пара Ninja
 

@@ -27,7 +27,7 @@ $OutputEncoding = [System.Text.Encoding]::UTF8
 # ones instead of hardcoding a single client layout.
 $_resolver = $null
 foreach ($_sr in @(
-    (Join-Path $env:USERPROFILE '.config\opencode\skills\kit\skills'),
+    (Split-Path -Parent (Split-Path -Parent $PSScriptRoot)),
     (Join-Path $env:USERPROFILE '.config\opencode\skills')
   )) {
   $_probe = Join-Path $_sr 'skill-web-publish\scripts\Resolve-1cWebTargets.ps1'
