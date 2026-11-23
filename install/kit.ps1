@@ -979,10 +979,11 @@ function Invoke-Doctor {
     Write-Status 'OK' "global config: $configPath"
     try {
       $cfgData = Read-JsoncObject $configPath
-      $skillPaths = @($cfgData.skills)
+      # Модель проектная: скиллы и правила живут в проекте, в глобальном конфиге их нет.
+      # Ключ отсутствует или пуст — это норма; пути проверяем только если они прописаны.
+      $skillPaths = @($cfgData.skills | Where-Object { $_ })
       if ($skillPaths.Count -eq 0) {
-        Write-Status 'WARN' "global $((Split-Path -Leaf $configPath)) has no skills paths - run: kit.ps1 apply"
-        $warn++
+        Write-Status 'INFO' "global $((Split-Path -Leaf $configPath)): скиллы не прописаны (проектная модель, ок)"
       } else {
         $missing = @($skillPaths | Where-Object { -not (Test-Path -LiteralPath ([string]$_)) })
         if ($missing.Count -gt 0) {
