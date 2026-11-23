@@ -102,14 +102,21 @@ export function usage() {
 Commands:
   start <url>              Launch browser and connect to 1C web client
   run <url> <file|->       Autonomous: connect, execute script, disconnect
-  exec <file|-> [options]  Execute script (file path or - for stdin)
+  exec <file|-> [options]  Execute script (file path or - for stdin; 180 s step budget)
   shot [file]              Take screenshot (default: shot.png)
   stop                     Logout and close browser
-  status                   Check session status
+  status                   Check session liveness (server + browser)
+  ready [--timeout=ms]     Wait until the base is usable (publication, login, desktop)
   test <dir|file>...       Run regression tests (*.test.mjs); accepts multiple paths
 
 Options for exec:
   --no-record              Skip video recording (record() becomes no-op)
+  --timeout=ms             Step budget (default: 180000)
+  --timeout-min=N          Same budget in minutes; only exec reads this flag
+
+Session options (exec/shot/stop/status/ready):
+  --session=<slug>         Pick a session when several bases are open.
+                           Without it the last-started session is used.
 
 Global options (any command):
   --no-preserve-clipboard  Don't save/restore OS clipboard around action calls.
@@ -124,8 +131,10 @@ Options for test:
   --tags=smoke,crud        Filter tests by tags
   --grep=pattern           Filter tests by name (regex)
   --bail                   Stop on first failure
-  --retry=N                Retry failed tests N times
-  --timeout=ms             Per-test timeout (default: 30000)
+  --retry=N                Retry failed tests N times (default: 1; a test that passes on a
+                           retry is reported as flaky and fails the run)
+  --timeout=ms             Per-test timeout (default: 120000; use 300000 for posting/reports)
+  --timeout-min            Not supported by test — use --timeout=ms
   --report=path            Write machine report (JSON/JUnit) to file
   --report=-               Write machine report to stdout (progress moves to stderr)
   --report-dir=path        Directory for screenshots and other artifacts

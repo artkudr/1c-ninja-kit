@@ -81,9 +81,9 @@ node $RUN run <url> script.js   # exits when done, no session
 
 ```bash
 # 1. Start session in the background — `start` stays running as the server, so don't wait on
-#    its stdout. Poll `status` instead: it exits 0 only once the session is loaded and live.
+#    its stdout. `ready` waits for publication + login + desktop (up to 30 s).
 node $RUN start <url>            # run_in_background=true
-until node $RUN status >/dev/null 2>&1; do sleep 2; done   # exit 0 = ready
+node $RUN ready                  # exit 0 = the base is usable; status only checks liveness
 
 # 2. Execute scripts against running session
 cat <<'SCRIPT' | node $RUN exec -
@@ -94,11 +94,11 @@ SCRIPT
 # 2b. Execute without video recording (for debugging/testing)
 cat script.js | node $RUN exec - --no-record
 
-# 2c. Override exec HTTP timeout (default 30 min). Use for long scripts
-#     such as multi-block recordings + addNarration.
-cat script.js | node $RUN exec - --timeout-min=120
-cat script.js | node $RUN exec - --timeout=7200000
-WEB_TEST_EXEC_TIMEOUT_MS=7200000 node $RUN exec script.js
+# 2c. Step budget: 180 s — the default (30 min) is too long for one step.
+cat script.js | node $RUN exec - --timeout=180000
+#     Only genuinely long scenarios (posting, reports, mass processing) get more.
+cat script.js | node $RUN exec - --timeout-min=10
+WEB_TEST_EXEC_TIMEOUT_MS=600000 node $RUN exec script.js
 
 # 3. Screenshot
 node $RUN shot result.png
@@ -108,6 +108,21 @@ node $RUN stop
 ```
 
 `start` runs an HTTP server in background. Use `exec`/`shot`/`stop` from other shells.
+
+### Budget and session (kit convention)
+
+- Один `start` на задачу на базу. Дальше только `exec`; `run` — одиночная проверка вне задачи или на другой базе; `stop` в конце задачи.
+- Бюджет шага `exec` — 180 с по умолчанию. `--timeout=MS` — только для заведомо долгих сценариев (проведение, отчёты, массовая обработка). Зависание дольше бюджета — сбой окружения, не дефект: сообщи, не повторяй.
+- `test`: `--timeout=MS` на тест (`--timeout=120000`; `--timeout=300000` для проведения и отчётов), `--retry=1` по умолчанию; тест, прошедший со второй попытки, помечается `flaky` и не считается зелёным. `--timeout-min` действует только в `exec`; `--timeout` в `run` не передаётся — об ignored-флагах раннер предупреждает.
+- `status` проверяет живость сервера, `ready` — готовность базы: публикация, авторизация, рабочий стол. После `start` вызывай `ready` один раз, до сценария.
+- Сессия на базу: `.browser-session.<slug>.json`. Второй `start` для той же базы переиспользует живую сессию; для другой — заводит свою. Когда открыто несколько, команде нужен `--session=<slug>`.
+- `wait(N)` — только для первичной загрузки, не дольше 2 с; остальное — `waitFor(cond, {timeoutMs, pollMs})`, `waitForForm(name)`, `waitForTableRows(n, {table})`.
+
+### Модальные окна и подтверждения
+
+Обёртка действий бросает исключение при `errors.modal` / `errors.balloon`, снимает скриншот и тянет стек — это результат проверки, а не повод продолжать.
+
+Подтверждение (`Да`/`Нет`) ошибкой не считается: `getFormState()` вернёт `confirmation` и `hint`; ответ — `clickElement('Да')` или `clickElement('Нет')`. Продолжать сценарий с открытым модальным окном запрещено: следующие шаги недостоверны.
 
 ### Writing exec scripts
 
@@ -491,7 +506,7 @@ Clear filters. Without arguments clears all, with `{ field }` clears specific ba
 #### `shotElement(selector, path?, { padding?, timeout? })` → PNG path (Buffer when `path` is omitted)
 Screenshot of one element's box — a form, field group, button, report row — instead of the whole window. The element is scrolled into view, the clip is padded and kept inside the viewport, and a relative `path` is resolved from the project root (directories are created).
 ```js
-const file = await shotElement('form1_Шапка_container', 'Задачи/001/Артефакты/Бард/шаг-2.png');
+const file = await shotElement('form1_Шапка_container', 'Задачи/003 - 2026-11-17/шаг-2.png');
 ```
 
 #### `annotate([{ selector | rect, label }], { path?, padding?, color? })` → `{ file, boxes }` (`{ buffer, boxes }` without `path`)
@@ -500,9 +515,20 @@ Draws semi-transparent frames with readable numbered badges over page areas, tak
 await annotate([
   { selector: 'form1_СтавкаНДС', label: 'Ставка НДС' },
   { rect: { x: 40, y: 300, width: 320, height: 120 }, label: 'Итог' },
-], { path: 'Задачи/001/Артефакты/Бард/шаг-2.png' });
+], { path: 'Задачи/003 - 2026-11-17/шаг-2.png' });
 ```
 #### `wait(seconds)` → form state
+Fixed pause. Use it only for the initial load, never longer than 2 s.
+#### `waitFor(condition, { timeoutMs = 10000, pollMs = 200, label })` → the truthy value
+Polls a sync/async condition and throws `waitFor(...): condition not met` on timeout. This is the default way to wait for anything that is not the initial load.
+```js
+const state = await waitFor(() => getFormState().title === 'Ставки НДС');
+const rows = await waitFor(() => readTable({ table: 'Товары' }).then(t => t.rows.length >= 3 ? t : false));
+```
+#### `waitForForm(name, { timeoutMs, pollMs })` → form state
+Waits for a form caption or open tab. A modal/balloon fails fast instead of waiting for a title that cannot appear.
+#### `waitForTableRows(n, { table, maxRows, timeoutMs, pollMs })` → table read
+Waits until the grid has at least `n` rows and returns the table, so the caller does not read it twice.
 #### `getPage()` → Playwright Page (raw, for advanced scripting)
 #### `startRecording(path, opts?)` / `stopRecording()` → MP4 video recording (`{ force: true }` to restart if already recording)
 #### `showCaption(text, opts?)` / `hideCaption()` → text overlay on page
@@ -552,8 +578,10 @@ await unfilterList();                                          // restore hierar
 // Fill report filters using readable labels
 await fillFields({ 'Склад': 'Основной склад' });
 await clickElement('Сформировать');
-await wait(5);
-const report = await readSpreadsheet();
+const report = await waitFor(
+  () => readSpreadsheet().then(r => (r.data?.length ? r : false)),
+  { timeoutMs: 30000, label: 'report rows' },
+);
 console.log('Title:', report.title);
 console.log('Data rows:', report.data?.length);
 ```
@@ -563,16 +591,20 @@ console.log('Data rows:', report.data?.length);
 ```js
 // Generate report
 await clickElement('Сформировать');
-await wait(5);
-const report = await readSpreadsheet();
+const report = await waitFor(
+  () => readSpreadsheet().then(r => (r.data?.length ? r : false)),
+  { timeoutMs: 30000, label: 'report rows' },
+);
 
 // Double-click cell to open drill-down (uses coordinates from readSpreadsheet)
 await clickElement({ row: 0, column: 'К6' }, { dblclick: true });
 // Modal dialog "Выбор поля" opens
 await clickElement('Регистратор');
 await clickElement('Выбрать');
-await wait(10);
-const drilldown = await readSpreadsheet();
+const drilldown = await waitFor(
+  () => readSpreadsheet().then(r => (r.data?.length ? r : false)),
+  { timeoutMs: 30000, label: 'drilldown rows' },
+);
 ```
 
 ### Work with multi-grid forms
@@ -662,4 +694,4 @@ On error (auto-screenshot taken):
 
 When the user asks to cover a 1C solution with automated regression — multi-file test suites with assertions, hooks, tags, retries, Allure/JUnit reports, multi-user process tests — switch to the `test` mode. See [regress.md](regress.md) for authoring discipline, recon flow (metadata + live walkthrough via `exec`), per-application folder layout, ready-to-paste templates, and failure triage. Default to ad-hoc `run`/`exec` for single-script automation — `test` is the specialised mode for project-wide coverage.
 
-**Kit convention overrides the default `tests/` root:** чеки и наборы живут в папке задачи — `Задачи/<номер>/Проверки/` (`webtest.config.mjs`, `_hooks.mjs`, `*.test.mjs`, отчёты). В корень проекта и в `src/` ничего не складывать; всё, что вне задачи, — только `src/` и `build/`.
+**Kit convention:** постоянный реестр — `tests/web-test/` в корне проекта (`webtest.config.mjs`, `_hooks.mjs`, `*.test.mjs`, отчёты). Задача добавляет туда тест с тегами; `Задачи/<номер>/Проверки/` — только одноразовые черновики круга. В корень проекта и в `src/` ничего не складывать.

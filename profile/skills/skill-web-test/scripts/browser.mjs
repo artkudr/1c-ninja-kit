@@ -32,7 +32,7 @@ export {
 // ── navigation ────────────────────────────────────────────────────────────
 export {
   getPageState, getSections, navigateSection, getCommands,
-  openCommand, switchTab, openFile, navigateLink,
+  openCommand, switchTab, openFile, navigateLink, getReadyState,
 } from './engine/nav/navigation.mjs';
 
 // ── forms ─────────────────────────────────────────────────────────────────
@@ -50,6 +50,11 @@ export { filterList, unfilterList } from './engine/table/filter.mjs';
 export {
   screenshot, shotElement, wait, isRecording, startRecording, stopRecording,
 } from './engine/recording/capture.mjs';
+
+// ── condition waits ───────────────────────────────────────────────────────
+// wait(N) is for the initial load only; everything else waits for a condition.
+export { waitFor } from './engine/core/wait.mjs';
+export { waitForForm, waitForTableRows } from './engine/core/wait-for.mjs';
 export {
   showCaption, hideCaption, getCaptions,
   showTitleSlide, hideTitleSlide,

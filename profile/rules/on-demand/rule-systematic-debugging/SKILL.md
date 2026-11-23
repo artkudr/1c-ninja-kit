@@ -133,6 +133,6 @@ Reproduce ──► Hypothesize ──► Experiment ──► Fix
 ## Companion rules
 
 - `rule-verification-checklist` — the post-fix gate.
-- `rule-subagent-pipeline` — when to delegate the bug to Колдун vs. handle it directly.
+- `rule-routes` — when to delegate the bug to Колдун vs. handle it directly.
 - `rule-tooling-playbooks → Error Fixing` — concrete MCP tool sequence for each phase.
 - `rule-anti-patterns` — to recognize anti-patterns that produce bugs in the first place.

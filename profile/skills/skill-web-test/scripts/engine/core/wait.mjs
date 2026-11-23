@@ -1,7 +1,7 @@
 // web-test core/wait v1.18 — Smart wait helpers: DOM stability polling, JS-expression polling, CDP network monitor.
 // Source: https://github.com/Nikolay-Shirokov/cc-1c-skills
 
-import { page, MAX_WAIT, BUSY_MAX_WAIT, POLL_INTERVAL, STABLE_CYCLES } from './state.mjs';
+import { page, ensureConnected, MAX_WAIT, BUSY_MAX_WAIT, POLL_INTERVAL, STABLE_CYCLES } from './state.mjs';
 import { detectFormScript } from '../../dom.mjs';
 
 /**
@@ -139,4 +139,55 @@ export async function waitForCondition(evalScript, timeout = 2000) {
     await page.waitForTimeout(100);
   }
   return null;
+}
+
+/**
+ * Poll a caller-supplied condition until it is truthy, or throw after `timeoutMs`.
+ *
+ * Fixed pauses are a choice between slow and flaky, and the model always picks "slow".
+ * A condition can be an action result, a form state read, or any DOM fact:
+ *
+ *   await waitFor(() => getFormState().title === 'Ставки НДС');
+ *   await waitFor(() => readTable({ table: 'Товары' }).rows.length >= 3, { timeoutMs: 5000 });
+ *
+ * @param {Function} condition — sync or async; truthy result ends the wait
+ * @param {{timeoutMs?: number, pollMs?: number, label?: string, description?: string}} [options]
+ * @returns {*} the truthy value the condition returned
+ * @throws {Error} with `.timeout = true` when the condition never became truthy
+ */
+export async function waitFor(condition, options = {}) {
+  ensureConnected();
+  if (typeof condition !== 'function') {
+    throw new Error('waitFor(condition): expected a function that returns a truthy value');
+  }
+  const timeoutMs = Math.max(0, Number(options.timeoutMs ?? options.timeout ?? 10000));
+  const pollMs = Math.max(20, Number(options.pollMs ?? 200));
+  const label = String(options.label || options.description || 'condition');
+  const start = Date.now();
+  let last = null;
+  let lastError = null;
+
+  while (true) {
+    try {
+      last = await condition();
+      lastError = null;
+    } catch (e) {
+      if (e?.fatal) throw e;
+      // A read can legitimately fail mid-transition ("no form found" while the next one
+      // is still painting). Keep polling; report the last error if the wait times out.
+      last = null;
+      lastError = e;
+    }
+    if (last) return last;
+    if (Date.now() - start >= timeoutMs) break;
+    await page.waitForTimeout(pollMs);
+  }
+
+  const detail = lastError ? ` (last error: ${lastError.message})` : '';
+  const err = new Error(`waitFor(${label}): condition not met in ${timeoutMs} ms${detail}`);
+  err.timeout = true;
+  err.elapsed = Date.now() - start;
+  err.last = last;
+  err.lastError = lastError;
+  throw err;
 }

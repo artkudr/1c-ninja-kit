@@ -13,7 +13,8 @@
  *   node src/run.mjs exec <file|->          — run script against existing session
  *   node src/run.mjs shot [file]            — take screenshot
  *   node src/run.mjs stop                   — logout + close browser
- *   node src/run.mjs status                 — check session
+ *   node src/run.mjs status                 — check session liveness
+ *   node src/run.mjs ready                  — wait until the base is usable
  *   node src/run.mjs test <dir|file>... [--url]  — run regression tests
  *
  * Внутренности живут в cli/: util, session, exec-context, server,
@@ -27,6 +28,7 @@ import { cmdExec } from './cli/commands/exec.mjs';
 import { cmdShot } from './cli/commands/shot.mjs';
 import { cmdStop } from './cli/commands/stop.mjs';
 import { cmdStatus } from './cli/commands/status.mjs';
+import { cmdReady } from './cli/commands/ready.mjs';
 import { cmdTest } from './cli/commands/test.mjs';
 
 // Headless default is fixed by a live check on the 1C web client (devtools, 8.5, web 8085):
@@ -35,9 +37,12 @@ import { cmdTest } from './cli/commands/test.mjs';
 const HEADLESS_DEFAULT = true;
 
 const [,, cmd, ...rawArgs] = process.argv;
+const sessionFlag = rawArgs.find(a => a.startsWith('--session='));
 const flags = {
   noRecord: rawArgs.includes('--no-record'),
   execTimeoutMs: parseExecTimeoutMs(rawArgs),
+  readyTimeoutMs: parseReadyTimeoutMs(rawArgs),
+  session: sessionFlag ? sessionFlag.slice('--session='.length) : null,
 };
 const args = rawArgs.filter(a => !a.startsWith('--'));
 
@@ -54,7 +59,7 @@ const preserveClipboard = !rawArgs.includes('--no-preserve-clipboard')
 browser.setPreserveClipboard(preserveClipboard);
 
 function parseExecTimeoutMs(argv) {
-  const DEFAULT_MS = 30 * 60 * 1000;
+  const DEFAULT_MS = 3 * 60 * 1000;
   const flagMs = argv.find(a => a.startsWith('--timeout='));
   if (flagMs) return Math.max(1, Number(flagMs.slice('--timeout='.length))) || DEFAULT_MS;
   const flagMin = argv.find(a => a.startsWith('--timeout-min='));
@@ -62,6 +67,34 @@ function parseExecTimeoutMs(argv) {
   const env = process.env.WEB_TEST_EXEC_TIMEOUT_MS;
   if (env) return Math.max(1, Number(env)) || DEFAULT_MS;
   return DEFAULT_MS;
+}
+
+function parseReadyTimeoutMs(argv) {
+  const DEFAULT_MS = 30 * 1000;
+  const flagMs = argv.find(a => a.startsWith('--timeout='));
+  if (flagMs) return Math.max(1, Number(flagMs.slice('--timeout='.length))) || DEFAULT_MS;
+  return DEFAULT_MS;
+}
+
+// Flags that a command does not read. Keep this table next to the parse code: the SKILL
+// documents it, and a mismatch between the two is how "I set a timeout" became a no-op.
+const IGNORED_FLAGS = {
+  run: ['--timeout', '--timeout-min', '--retry', '--grep', '--tags', '--bail'],
+  test: ['--timeout-min'],
+  exec: ['--retry', '--grep', '--tags', '--bail', '--report', '--format', '--screenshot'],
+  start: ['--timeout', '--timeout-min', '--retry'],
+  status: ['--timeout', '--timeout-min', '--retry'],
+  stop: ['--timeout', '--timeout-min', '--retry'],
+  shot: ['--timeout', '--timeout-min', '--retry'],
+  ready: ['--timeout-min', '--retry'],
+};
+
+function warnWrongFlags(command, argv) {
+  for (const prefix of IGNORED_FLAGS[command] || []) {
+    if (argv.some(a => a === prefix || a.startsWith(prefix + '='))) {
+      process.stderr.write(`web-test: warning: ${prefix} is ignored by "${command}"\n`);
+    }
+  }
 }
 
 function parseHeadless(argv) {
@@ -80,13 +113,18 @@ function parseViewport() {
     : { width: 1920, height: 1080 };
 }
 
+// A flag that the command ignores used to be dropped in silence: the model "fixed" a timeout
+// with a flag that did nothing and the steps kept burning. Say it out loud on stderr.
+warnWrongFlags(cmd, rawArgs);
+
 switch (cmd) {
   case 'start':  await cmdStart(args[0]); break;
   case 'run':    await cmdRun(args[0], args[1]); break;
   case 'exec':   await cmdExec(args[0], flags); break;
-  case 'shot':   await cmdShot(args[0]); break;
-  case 'stop':   await cmdStop(); break;
-  case 'status': await cmdStatus(); break;
+  case 'shot':   await cmdShot(args[0], flags); break;
+  case 'stop':   await cmdStop(flags); break;
+  case 'status': await cmdStatus(flags); break;
+  case 'ready':  await cmdReady(flags); break;
   case 'test':   await cmdTest(rawArgs); break;
   default:       usage();
 }

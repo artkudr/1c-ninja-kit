@@ -14,6 +14,8 @@ Positional args are test paths (files and/or dirs, multiple allowed). URL is NOT
 
 Tests live next to the project they cover (not inside the skill). Convention: `tests/` at the project root, with `_hooks.mjs` and `webtest.config.mjs` at the suite root. Tests are ES modules with `*.test.mjs` suffix.
 
+**Kit projects:** permanent suites live in `tests/web-test/` at the project root; `Задачи/<номер>/Проверки/` is only for one-off round drafts. The `tests/` layout below applies to that registry.
+
 ## When to choose `test` over `exec`
 
 | Goal | Mode |

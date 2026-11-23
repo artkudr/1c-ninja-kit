@@ -33,7 +33,7 @@ If the impact-analysis MCPs are not exposed in the session, follow the graceful-
 
 - `search` action `find_code` (lexical / FTS, raise the result limit) → `search_code` (semantic) for behavioural matches; drill into a full body via `graph` action `node` `detail=bodies` using the returned `graph_id` — confirm no remaining references to the old names / patterns.
 - Full closing gate — `rule-verification-checklist` (every gate, no skipping).
-- If the refactor is large enough to enter the subagent pipeline — `rule-subagent-pipeline` (делегируй Колдуну внутри задачи, не сам).
+- If the refactor is large enough to enter the subagent pipeline — `rule-routes` (делегируй Колдуну внутри задачи, не сам).
 
 ## What this file is **not**
 

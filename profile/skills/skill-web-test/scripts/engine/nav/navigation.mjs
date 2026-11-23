@@ -32,6 +32,32 @@ export async function getPageState() {
   return { activeSection, activeTab, sections, tabs };
 }
 
+/**
+ * Readiness probe for the `ready` command: publication reached, login passed, desktop drawn.
+ * `sections` is the section panel (works in icon-only mode too — the cells exist, names may be
+ * empty). `#funcPanel_container` is the fallback when the panel is hidden entirely.
+ */
+export async function getReadyState() {
+  ensureConnected();
+  return await page.evaluate(`(() => {
+    const auth = document.querySelector('#authWindow');
+    const authVisible = !!(auth && auth.offsetWidth > 0);
+    const sections = document.querySelectorAll('[id^="themesCell_theme_"]').length;
+    const desktop = !!document.querySelector('#funcPanel_container') || sections > 0;
+    const forms = document.querySelectorAll('input.editInput[id], a.press[id]').length;
+    return {
+      ready: !authVisible && desktop,
+      auth: authVisible,
+      desktop,
+      sections,
+      forms,
+      readyState: document.readyState,
+      url: location.href,
+      title: document.title || null,
+    };
+  })()`);
+}
+
 /** Read section panel + commands in a single evaluate call. */
 export async function getSections() {
   ensureConnected();

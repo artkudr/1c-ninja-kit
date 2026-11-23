@@ -13,10 +13,12 @@ export async function cmdExec(fileOrDash, flags = {}) {
     ? await readStdin()
     : readFileSync(resolve(fileOrDash), 'utf-8');
 
-  const sess = loadSession();
+  const sess = loadSession(flags.session);
   const headers = {};
   if (flags.noRecord) headers['x-no-record'] = '1';
-  const timeoutMs = flags.execTimeoutMs ?? 30 * 60 * 1000;
+  // 180 s is the kit budget for one step. The old 30-minute default turned one wedged
+  // action into an hour of silence (two attempts) with no signal to the agent.
+  const timeoutMs = flags.execTimeoutMs ?? 3 * 60 * 1000;
   const result = await new Promise((resolveP, reject) => {
     const req = http.request({
       hostname: '127.0.0.1', port: sess.port, path: '/exec',

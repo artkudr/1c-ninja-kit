@@ -15,7 +15,7 @@ description: >-
 2. `src/cf`, `src/cfe` — состав конфигурации и расширений.
 3. `docs/dev-stack.md` — если есть.
 4. `bsl-analyzer.toml` — если есть: семантика MCP workspace / диагностики.
-5. `tools/web-test/smoke.config.json` — UI smoke; новые сценарии и наборы — в папке задачи (`Задачи/<номер>/Проверки/`), каталог `tools/web-test/scenarios/` — старые проектные сценарии.
+5. `tools/web-test/smoke.config.json` — UI smoke; постоянные наборы — `tests/web-test/`, черновики круга — в папке задачи (`Задачи/<номер>/Проверки/`), каталог `tools/web-test/scenarios/` — старые проектные сценарии.
 
 Реестр PT не используем.
 

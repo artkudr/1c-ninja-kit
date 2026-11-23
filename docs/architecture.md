@@ -21,7 +21,7 @@ Machine  →  Profile  →  Project
 | Слой | Что | Кто ставит |
 |------|-----|------------|
 | **Machine** | OVM/OneScript, bsl-analyzer, Apache tools, Toolkit EPF, cc-1c-skills | человек + `kit doctor` |
-| **Profile** | skills / rules — путями в `~/.config/opencode/opencode.jsonc`; agents / commands / `taskctl.ps1` — копией | `kit apply` |
+| **Profile** | skills / rules — путями в `~/.config/opencode/opencode.jsonc`; agents / commands / `run.ps1` — копией | `kit apply` |
 | **Project** | `.v8-project.json`, MCP, NinjaLive, `AGENTS.md`, `Задачи/` | скилл `skill-env-setup` |
 
 ## Инварианты

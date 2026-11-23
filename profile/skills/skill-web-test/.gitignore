@@ -1,4 +1,6 @@
 scripts/node_modules/
 .browser-session.json
+.browser-session.*.json
+.browser-session.*.lock
 *.png
 *.mp4

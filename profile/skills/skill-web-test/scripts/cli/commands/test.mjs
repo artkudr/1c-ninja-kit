@@ -43,7 +43,7 @@ export async function cmdTest(rawArgs) {
   };
 
   // Parse flags
-  const opts = { bail: false, retry: 0, timeout: 30000, globalTimeout: 0, report: null, format: 'json', screenshot: null, reportDir: null, record: false };
+  const opts = { bail: false, retry: 1, timeout: 120000, globalTimeout: 0, report: null, format: 'json', screenshot: null, reportDir: null, record: false };
   let tags = null, grep = null, urlFlag = null;
   const positional = [];
   for (const a of ownArgs) {
@@ -52,7 +52,7 @@ export async function cmdTest(rawArgs) {
     else if (a.startsWith('--url='))   urlFlag = a.slice(6);
     else if (a === '--bail')           opts.bail = true;
     else if (a.startsWith('--retry=')) opts.retry = parseInt(a.slice(8)) || 0;
-    else if (a.startsWith('--timeout=')) opts.timeout = parseInt(a.slice(10)) || 30000;
+    else if (a.startsWith('--timeout=')) opts.timeout = parseInt(a.slice(10)) || 120000;
     else if (a.startsWith('--global-timeout=')) opts.globalTimeout = parseInt(a.slice(17)) || 0;
     else if (a.startsWith('--report=')) opts.report = a.slice(9);
     else if (a.startsWith('--format=')) opts.format = a.slice(9);
@@ -161,9 +161,9 @@ export async function cmdTest(rawArgs) {
 
   // Apply config defaults (CLI flags override)
   if (!tags && config.tags) tags = config.tags;
-  opts.timeout = ownArgs.some(a => a.startsWith('--timeout=')) ? opts.timeout : (config.timeout || opts.timeout);
-  opts.retry = ownArgs.some(a => a.startsWith('--retry=')) ? opts.retry : (config.retries || opts.retry);
-  opts.globalTimeout = ownArgs.some(a => a.startsWith('--global-timeout=')) ? opts.globalTimeout : (config.globalTimeout || opts.globalTimeout);
+  opts.timeout = ownArgs.some(a => a.startsWith('--timeout=')) ? opts.timeout : (config.timeout ?? opts.timeout);
+  opts.retry = ownArgs.some(a => a.startsWith('--retry=')) ? opts.retry : (config.retries ?? opts.retry);
+  opts.globalTimeout = ownArgs.some(a => a.startsWith('--global-timeout=')) ? opts.globalTimeout : (config.globalTimeout ?? opts.globalTimeout);
 
   // Per-key deadline overrides. Defaults suit a light stand; a heavy application may honestly
   // need longer (a big form's resetState, a slow close). Unknown keys are a typo, not a wish —
@@ -278,7 +278,7 @@ export async function cmdTest(rawArgs) {
 
   const startedAt = new Date().toISOString();
   const results = [];
-  let passCount = 0, failCount = 0, skipCount = 0;
+  let passCount = 0, failCount = 0, skipCount = 0, flakyCount = 0;
 
   // Per-test diagnostics are BUFFERED and flushed right after that test's ✓/✗ line.
   // A test's cleanup runs before its result is printed, so writing straight to the stream put
@@ -366,7 +366,7 @@ export async function cmdTest(rawArgs) {
       runner: 'web-test', url, startedAt, finishedAt: new Date().toISOString(),
       state,
       duration: totalDuration,
-      summary: { total: results.length, passed: passCount, failed: failCount, skipped: skipCount },
+      summary: { total: results.length, passed: passCount, failed: failCount, skipped: skipCount, flaky: flakyCount },
       tests: results,
     };
   }
@@ -661,7 +661,7 @@ export async function cmdTest(rawArgs) {
             await bounded(browser.stopRecording(), D.stopRecording, 'stopRecording');
           }
           const dur = elapsed(t0);
-          testResult = { name: t.name, file: t.file, tags: t.tags, contexts: testContextNames, severity: t.severity, status: 'passed', duration: dur, attempts: attempt, start: t0, stop: Date.now(), steps, output: output.join('\n'), error: null, screenshot: null, video: videoFile };
+          testResult = { name: t.name, file: t.file, tags: t.tags, contexts: testContextNames, severity: t.severity, status: 'passed', duration: dur, attempts: attempt, flaky: attempt > 1, start: t0, stop: Date.now(), steps, output: output.join('\n'), error: null, screenshot: null, video: videoFile };
           lastError = null;
           break;
 
@@ -785,8 +785,15 @@ export async function cmdTest(rawArgs) {
       recordResult(testResult);
 
       if (testResult.status === 'passed') {
-        passCount++;
-        W.write(`  ✓ ${t.name} (${testResult.duration}s)\n`);
+        if (testResult.flaky) {
+          // A retry that saved the day is not green: it hides a real timing/selector defect.
+          // Count it apart and fail the run so the flake is named in the report, not buried.
+          flakyCount++;
+          W.write(`  ⚠ ${t.name} (${testResult.duration}s, попытка ${testResult.attempts}/${maxAttempts}) — flaky\n`);
+        } else {
+          passCount++;
+          W.write(`  ✓ ${t.name} (${testResult.duration}s)\n`);
+        }
       } else {
         failCount++;
         W.write(`  ✗ ${t.name} (${testResult.duration}s)\n`);
@@ -838,11 +845,11 @@ export async function cmdTest(rawArgs) {
   }
 
   const totalDuration = results.reduce((s, r) => s + r.duration, 0);
-  W.write(`\n${passCount} passed, ${failCount} failed, ${skipCount} skipped (${formatDuration(totalDuration)})\n\n`);
+  W.write(`\n${passCount} passed, ${flakyCount} flaky, ${failCount} failed, ${skipCount} skipped (${formatDuration(totalDuration)})\n\n`);
 
   writeFinalReport('complete');
 
-  if (failCount > 0) process.exit(1);
+  if (failCount > 0 || flakyCount > 0) process.exit(1);
 
   /**
    * Allure results are already on disk (recordResult writes each test as it finishes), so this

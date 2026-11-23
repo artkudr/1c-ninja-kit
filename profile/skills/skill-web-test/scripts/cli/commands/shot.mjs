@@ -1,11 +1,11 @@
-// web-test cli/commands/shot v1.0 — take screenshot via server
+// web-test cli/commands/shot v1.1 — take screenshot via server
 // Source: https://github.com/Nikolay-Shirokov/cc-1c-skills
 import { writeFileSync } from 'fs';
 import { out, die } from '../util.mjs';
 import { loadSession } from '../session.mjs';
 
-export async function cmdShot(file) {
-  const sess = loadSession();
+export async function cmdShot(file, flags = {}) {
+  const sess = loadSession(flags.session);
   const resp = await fetch(`http://127.0.0.1:${sess.port}/shot`);
   if (!resp.ok) {
     const err = await resp.text();
