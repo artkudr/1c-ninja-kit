@@ -403,9 +403,30 @@ function Install-ScaffoldFile {
 }
 
 function Sync-ProjectRulesFromProfile {
-    # Kit rules and skills are not copied: the global opencode.jsonc points at the
-    # kit repository (kit.ps1 apply). The project keeps only its own AGENTS.md.
-    Add-Report "rules" "n/a" "opencode: global config points into kit (kit.ps1 apply)"
+    # Скиллы и правила — проектные: kit.ps1 stage копирует профиль в .opencode.
+    # Отдельным процессом: kit.ps1 завершает работу через exit.
+    $kitRoot = Get-KitRoot
+    $kit = Join-Path $kitRoot "install\kit.ps1"
+    if (-not (Test-Path -LiteralPath $kit)) {
+        Add-Report "rules" "fail" "install\kit.ps1 not found"
+        return
+    }
+    if ($dryRun) {
+        Add-Report "rules" "would-stage" ".opencode (skills + rules)"
+        return
+    }
+    $shell = (Get-Command pwsh -ErrorAction SilentlyContinue).Source
+    if (-not $shell) { $shell = (Get-Command powershell -ErrorAction SilentlyContinue).Source }
+    if (-not $shell) {
+        Add-Report "rules" "fail" "pwsh/powershell not found"
+        return
+    }
+    & $shell -NoProfile -ExecutionPolicy Bypass -File $kit stage -ProjectRoot $ProjectRoot | Out-Host
+    if ($LASTEXITCODE -ne 0) {
+        Add-Report "rules" "fail" "kit.ps1 stage"
+        return
+    }
+    Add-Report "rules" "staged" ".opencode (skills + rules)"
 }
 function Write-V8Project {
     $path = Join-Path $ProjectRoot ".v8-project.json"
@@ -817,5 +838,5 @@ Write-Host "Manual next steps:" -ForegroundColor Yellow
     Write-Host "  3. Warm bsl-analyzer graph (metadata/graph status -> ready)"
     Write-Host "  4. toolkit :6003 only as fallback (server is disabled in opencode.jsonc by default)"
     Write-Host "  5. Global %USERPROFILE%\.config\opencode\opencode.json(c) must NOT repeat 1C MCP server names"
-    Write-Host "  6. Rules/skills come from kit.ps1 apply (global opencode.jsonc paths); task framework is global"
-    Write-Host "     Task state lives in .\Задачи\: taskctl.ps1 next --task <номер> from the project root"
+    Write-Host "  6. Skills and rules are staged into this project: .opencode\skills + .opencode\rules (kit.ps1 stage); task framework is global"
+    Write-Host "     Task state lives in PiPa (MCP pipa, PIPA_KEY); project keeps only task files under .\Задачи\"

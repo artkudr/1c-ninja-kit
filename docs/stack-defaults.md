@@ -26,7 +26,7 @@
 
 ## Rules
 
-- Always-on и on-demand правила — из `profile/rules/` по путям в глобальном `~/.config/opencode/opencode.jsonc` (`kit.ps1 apply`). В проекте rules не создаются.
+- Always-on и on-demand правила ставятся в проект: `kit.ps1 stage -ProjectRoot <проект>` копирует их в `.opencode\skills` и `.opencode\rules\always`, `instructions` — в проектном `opencode.jsonc`. Глобальный конфиг rules не раздаёт.
 
 ## Live CFE list
 

@@ -10,7 +10,7 @@ argument-hint: "[-SourceProject path] [-Mode Init|Refresh|Check] [-Force]"
 
 # skill-env-setup — Развёртывание окружения 1С
 
-Личный скилл: `C:\1C\projects\1c-ninja-kit\profile\skills\skill-env-setup\` — так OpenCode его и читает (`skills` в глобальном `opencode.jsonc` ведёт в репозиторий кита). Путь кита переопределяется `NINJA_KIT_ROOT`.
+Скилл ставится в проект копией: `<проект>\.opencode\skills\skill-env-setup\`. Второй экземпляр — в репозитории кита (`profile\skills\skill-env-setup\`); скрипты и шаблоны запускаются из кита, путь переопределяется `NINJA_KIT_ROOT`.
 
 Разворачивает **привычное** окружение в **новой папке** на **той же машине** (clone / копия / worktree). Софт уже установлен — скилл не ставит OVM/Apache/ripgrep; если чего-то нет, это `kit.ps1 deps` (см. `docs/MACHINE-BOOTSTRAP.md`). Набор cc-1c-skills ставится `install/cc-skills.ps1`.
 
@@ -21,7 +21,7 @@ argument-hint: "[-SourceProject path] [-Mode Init|Refresh|Check] [-Force]"
 | | `opencode` |
 |---|---|
 | MCP проекта | `opencode.jsonc` (`mcp.servers`, `type: local/remote`, `oauth: false` у streamable-http) |
-| Правила | always-on и on-demand читаются прямо из кита по путям в `~/.config/opencode/opencode.jsonc` (`skills` + `instructions`); в проекте — только `AGENTS.md` как память проекта (создаётся setup, не перезаписывается) |
+| Правила | always-on и on-demand ставятся **в проект**: `kit.ps1 stage` копирует скиллы в `.opencode/skills`, always-правила — в `.opencode/rules/always`, в `opencode.jsonc` пишется `instructions`. Глобальный конфиг скиллы и правила не раздаёт; в проекте ещё `AGENTS.md` как память проекта (создаётся setup, не перезаписывается) |
 | Проверка дублей | `~/.config/opencode/opencode.json(c)` → `mcp.servers` |
 
 `-WebPort <n>` — переопределить порт публикации (иначе 8083/8085 по версии платформы). Нужен, когда Apache на машине слушает один порт на все базы.
@@ -45,9 +45,9 @@ argument-hint: "[-SourceProject path] [-Mode Init|Refresh|Check] [-Force]"
 | `opencode.jsonc` + `.example` | полный MCP этой ИБ (gitignore) + эталон без секретов |
 | `.build/` | кеш bsl-analyzer (граф + поиск); передаётся как `--cache-dir`, в `.gitignore` |
 | `bsl-analyzer.toml` | диагностики / source roots |
-| `Задачи/` | состояние задач: `Состояние.json`, `Журнал.jsonl`, артефакты. Каркас глобальный — `%USERPROFILE%\.config\opencode\scripts\taskctl.ps1` (правило `rule-routes`) |
+| `Задачи/` | файлы задач: скриншоты, PDF, выгрузки, черновики. Состояние — в сервисе PiPa, MCP `pipa` (правило `rule-routes`, скилл `skill-pipa`) |
 
-Правила: always-on и on-demand приходят из кита по путям в глобальном `~/.config/opencode/opencode.jsonc` (`kit.ps1 apply`). В проекте создаётся только корневой `AGENTS.md` — память проекта, не копия глобальных правил; setup его не перезаписывает.
+Правила: always-on и on-demand ставятся в проект командой `kit.ps1 stage -ProjectRoot <корень>` — скиллы и on-demand правила копируются в `.opencode/skills`, always-правила в `.opencode/rules/always`, в `opencode.jsonc` добавляется `instructions`. В проекте ещё корневой `AGENTS.md` — память проекта, не копия глобальных правил; setup его не перезаписывает.
 
 ## Жёсткие правила
 
@@ -196,9 +196,9 @@ powershell.exe -NoProfile -File "...\skill-env-setup\scripts\sync-ninja-properti
 
 ### Каркас задачи
 
-Каркас глобальный, один на машину: `%USERPROFILE%\.config\opencode\scripts\taskctl.ps1` и команды `%USERPROFILE%\.config\opencode\commands\{Задача,Продолжить,Статус}.md`. Их ставит `kit.ps1 apply` из `profile/scripts` и `profile/commands`; в проект копий не кладут. `taskctl.ps1` запускается из корня проекта: корень он ищет вверх по каталогам (признак — `Задачи\` или `.v8-project.json`), а `--project <путь>` задаёт его явно.
+Задачи ведутся в сервисе PiPa (PithosPandoras), один сервис на машину: MCP `pipa`, доска `http://127.0.0.1:8787/`, ключ в `PIPA_KEY`. Команды `/Задача`, `/Продолжить`, `/Статус` глобальные — их ставит `kit.ps1 apply` из `profile/commands`; в проект копий не кладут.
 
-Состояние задачи живёт в проекте: папку `Задачи/` создаёт `taskctl.ps1 new`; шаблон `Задачи/_Шаблон` необязателен — без него скрипт берёт встроенный. Старые проекты с `.opencode/scripts/taskctl.ps1` продолжают работать, но дубль можно удалить.
+Состояние задачи живёт в сервисе. В проекте — только папка `Задачи/` с файлами задачи: скриншоты, PDF, выгрузки, черновики сценариев. Папку создаёт сервис при `task_create`, путь приходит в `folder_path`. Контракт вызовов — скилл `skill-pipa`, маршруты и роли — правило `rule-routes`.
 
 ## Связанные скиллы
 

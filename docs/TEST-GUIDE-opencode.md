@@ -36,23 +36,27 @@ powershell -NoProfile -File .\install\kit.ps1 verify
 
 Ожидается `opencode profile installed: skills=<N>`.
 
-### 2. Apply
+### 2. Apply и stage
 
 ```powershell
 powershell -NoProfile -File .\install\kit.ps1 apply -DryRun
 powershell -NoProfile -File .\install\kit.ps1 apply
+powershell -NoProfile -File .\install\kit.ps1 stage -ProjectRoot <проект>
 ```
 
 Проверь руками:
 
 | Путь | Ожидание |
 |------|----------|
-| `~/.config/opencode/opencode.jsonc` | `$schema`, `skills` = `<кит>/profile/skills` + `<кит>/profile/rules`, `instructions` = `<кит>/profile/rules/always/*.md`; пути существуют |
+| `~/.config/opencode/opencode.jsonc` | `$schema`; в `skills`/`instructions` нет путей кита (прежняя модель убрана) |
 | `~/.config/opencode/skills/` | внешние `cc-1c-skills` (`db-*`, …), без каталога `kit` |
 | `~/.config/opencode/agents/` | те же `*.md`, что в `profile/agents`, байт-в-байт |
 | `~/.config/opencode/commands/` | `Задача.md`, `Продолжить.md`, `Статус.md` |
-| `~/.config/opencode/scripts/taskctl.ps1` | совпадает с `profile/scripts/taskctl.ps1`, UTF-8 **с BOM** |
+| `~/.config/opencode/scripts/run.ps1` | совпадает с `profile/scripts/run.ps1` |
 | `~/.config/opencode/AGENTS.md` | без маркеров `1c-ninja-kit` (правила идут через `instructions`) |
+| `<проект>/.opencode/skills` | 49 каталогов `skill-*`/`rule-*`, у каждого `SKILL.md`; без `node_modules` |
+| `<проект>/.opencode/rules/always` | 8 файлов `rule-*.md` |
+| `<проект>/opencode.jsonc` | `instructions` содержит `.opencode/rules/always/*.md`, MCP не тронут |
 
 ### 3. Init project
 
@@ -113,11 +117,12 @@ opencode mcp list
 - fail/warn:
 - notes:
 
-## apply
-- global opencode.jsonc + $schema / skills paths / instructions: yes/no
+## apply / stage
+- global opencode.jsonc: $schema yes/no; kit paths removed yes/no
 - skills\kit removed: yes/no
 - global AGENTS.md kit block removed: yes/no
 - agents count / commands count / scripts count:
+- project: skills count / always rules count / instructions in opencode.jsonc: yes/no
 - skills paths point into kit repo: yes/no
 
 ## env-setup

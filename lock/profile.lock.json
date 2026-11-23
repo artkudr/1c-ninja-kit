@@ -1,13 +1,13 @@
 {
-  "version": "0.11.0",
+  "version": "0.12.0",
   "profile": "1c-ninja-kit",
-  "capturedAt": "2026-11-02T11:35:20+05:00",
+  "capturedAt": "2026-11-23T13:09:14+05:00",
   "counts": {
-    "agents": 7,
+    "agents": 6,
     "skills": 22,
-    "rules": 34
+    "rules": 35
   },
-  "namesHashSha256": "086b979b9f3be74f641d6d6a66b442d8752d9772eccb71ff1a689193377fdae4",
+  "namesHashSha256": "f76d624b87f6c7e877178ecae7b02c6a3b7fa3746060076fee6b14127a4ef091",
   "skills": [
     "skill-bsl-analyzer",
     "skill-env-setup",
@@ -19,6 +19,7 @@
     "skill-mcp-toolkit",
     "skill-move-predefined",
     "skill-ninja-mcp",
+    "skill-pipa",
     "skill-project-context",
     "skill-query-composition",
     "skill-reference-data",
@@ -29,8 +30,7 @@
     "skill-web-stop",
     "skill-web-test",
     "skill-web-unpublish",
-    "Конвенции-1С",
-    "Формат-ответа"
+    "Конвенции-1С"
   ],
   "rules": [
     "rule-anti-patterns",
@@ -41,6 +41,7 @@
     "rule-bsl-senior-developer",
     "rule-bsp-developer",
     "rule-code-agent",
+    "rule-communication",
     "rule-dcs-design",
     "rule-dev-standards-architecture",
     "rule-development-process",
@@ -57,12 +58,12 @@
     "rule-module-structure",
     "rule-ninja-mcp",
     "rule-platform-solutions",
+    "rule-print-forms",
     "rule-refactor-add",
     "rule-registers-design",
     "rule-routes",
     "rule-skills",
     "rule-stack",
-    "rule-subagent-pipeline",
     "rule-systematic-debugging",
     "rule-tooling-playbooks",
     "rule-verification-checklist",
@@ -74,7 +75,6 @@
     "Колдун",
     "Коммандер",
     "Оракул",
-    "Телепат",
-    "Часовщик"
+    "Телепат"
   ]
 }

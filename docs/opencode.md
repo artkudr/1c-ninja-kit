@@ -14,36 +14,48 @@ Kit собирается только под **OpenCode V2**. Ядро — `prof
 
 ## Куда что ставится
 
-Модель раздачи: **скиллы и правила — путями в конфиге, остальное — копией.**
+Модель раздачи: **скиллы и правила — в проект копией, агенты и команды — глобально.**
 
 | Слой kit | OpenCode V2 |
 |----------|-------------|
-| Kit skills | `profile/skills/<id>/SKILL.md` → путь `profile/skills` в `skills` глобального `~/.config/opencode/opencode.jsonc` |
-| On-demand rules | `profile/rules/on-demand/rule-*/SKILL.md` → путь `profile/rules` в том же `skills` |
-| Always-on rules | `profile/rules/always/rule-*.md` → `instructions` (`<кит>/profile/rules/always/*.md`) |
+| Kit skills | `profile/skills/<id>/SKILL.md` → `<проект>\.opencode\skills\<id>\` (копия, `kit.ps1 stage`) |
+| On-demand rules | `profile/rules/on-demand/rule-*/SKILL.md` → `<проект>\.opencode\skills\rule-*\` (копия, `kit.ps1 stage`) |
+| Always-on rules | `profile/rules/always/rule-*.md` → `<проект>\.opencode\rules\always\` + `instructions` в проектном `opencode.jsonc` |
 | Agents | `profile/agents/*.md` → `~/.config/opencode/agents/*.md` (копия: OpenCode берёт их только из каталога) |
 | Commands | `profile/commands/*.md` → `~/.config/opencode/commands/*.md` (копия) |
-| Task framework | `profile/scripts/taskctl.ps1` → `~/.config/opencode/scripts/taskctl.ps1` (копия) |
+| Task framework | `profile/scripts/run.ps1` → `~/.config/opencode/scripts/run.ps1` (копия) |
 | MCP | `profile/skills/skill-env-setup/scripts/templates/opencode.jsonc.tpl` → project `opencode.jsonc` |
 | Project context | `profile/skills/skill-env-setup/scripts/templates/AGENTS.md.tpl` → project `AGENTS.md` |
 | External skills | `cc-1c-skills` → `~/.config/opencode/skills/<id>/` (не переименовываются) |
 
-Почему так: `skills` в OpenCode V2 — массив путей, `SKILL.md` ищется до 6 уровней, id — имя каталога; `instructions` — массив глобов, грузится после `AGENTS.md`. Агентов и команды OpenCode принимает только из каталогов профиля либо инлайном — ссылки на файл по пути нет. Симлинки в git на Windows не годятся (`core.symlinks=false`, Dev Mode выключен: клон получает текстовый файл с путём), junction не версионируется — поэтому именно пути, а не ссылки в репозитории.
+Почему так: проектный `.opencode/skills` OpenCode находит сам (id — имя каталога,
+`SKILL.md` до 6 уровней), а `instructions` из проектного конфига грузятся после
+`AGENTS.md`. Глобальный конфиг скиллы и правила больше не раздаёт — иначе проект
+не видит своей версии набора. Агентов и команды OpenCode принимает только из
+каталогов профиля либо инлайном — ссылки на файл по пути нет, поэтому они
+остаются глобальными (один набор ролей на машину).
 
-## Apply
+## Apply и stage
 
 ```powershell
 powershell -NoProfile -File .\install\kit.ps1 apply
+powershell -NoProfile -File .\install\kit.ps1 stage -ProjectRoot C:\1C\projects\<проект>
 ```
 
-Что делает:
+`apply` держит машинный слой:
 
-1. Пишет/мержит глобальный `~/.config/opencode/opencode.jsonc`: `$schema`, `skills` = `<кит>/profile/skills` + `<кит>/profile/rules`, `instructions` = `<кит>/profile/rules/always/*.md`. Остальные ключи файла сохраняются, старый файл копируется рядом в `.bak-<метка>`, запись идёт через временный файл с проверкой разбора JSONC.
-2. Копирует `profile/agents/*.md` → `~/.config/opencode/agents`, `profile/commands/*.md` → `~/.config/opencode/commands`, `profile/scripts/*` → `~/.config/opencode/scripts` байт-в-байт (`taskctl.ps1` — UTF-8 с BOM, иначе PowerShell 5.1 читает кириллицу как ANSI).
-3. Удаляет устаревшую копию `~/.config/opencode/skills/kit` (только её) и вырезает управляемый блок из `~/.config/opencode/AGENTS.md` между маркерами `1c-ninja-kit` — правила теперь идут через `instructions`.
+1. Копирует `profile/agents/*.md` → `~/.config/opencode/agents`, `profile/commands/*.md` → `~/.config/opencode/commands`, `profile/scripts/*` → `~/.config/opencode/scripts` байт-в-байт.
+2. Убирает из глобального `opencode.jsonc` пути кита в `skills`/`instructions`, если они остались от прежней модели; остальные настройки и записи пользователя не трогает.
+3. Удаляет устаревшую копию `~/.config/opencode/skills/kit` и вырезает управляемый блок из `~/.config/opencode/AGENTS.md`.
 4. Проверяет, что в глобальном `opencode.json(c)` нет 1С MCP-серверов.
 
-`-DryRun` показывает план без записи. Правка `profile/rules/always/*.md` видна сразу после перезапуска OpenCode — копии нет. Изменения в `profile/` после правки подтверждает `kit.ps1 verify` (пути, отсутствие старой копии, совпадение агентов/команд/скрипта с профилем).
+`stage -ProjectRoot` ставит скиллы и правила в проект:
+
+1. Копирует `profile/skills/*` и `profile/rules/on-demand/*` в `<проект>\.opencode\skills`, always-правила — в `<проект>\.opencode\rules\always`.
+2. Пишет `<проект>\.opencode\kit-stage.json` — манифест: что поставлено. При следующем `stage` удалённые из профиля скиллы убираются из проекта.
+3. Добавляет в проектный `opencode.jsonc` `instructions: [".opencode/rules/always/*.md"]`, не трогая MCP и прочие ключи.
+
+`-DryRun` показывает план без записи. `verify` без аргументов сверяет машинный слой и отсутствие путей кита в глобальном конфиге; `verify -ProjectRoot <проект>` — совпадение проектной копии с профилем файл за файлом.
 
 ## Новый проект
 
@@ -56,14 +68,19 @@ powershell -NoProfile -File "C:\1C\projects\1c-ninja-kit\profile\skills\skill-en
 ```
 
 Скрипт создаёт структуру каталогов, `.v8-project.json`, `AGENTS.md`, `opencode.jsonc`
-(+ `.example`), `.ignore`, `docs/dev-stack.md`, smoke-config, пустую `Задачи/`
-и копирует `NinjaLive` из `SourceProject` / kit-эталона / соседнего проекта.
-Каркаса задачи в проекте нет: `taskctl.ps1` и команды `Задача`/`Продолжить`/`Статус`
-глобальные (`kit.ps1 apply`).
+(+ `.example`), `.ignore`, `docs/dev-stack.md`, smoke-config, пустую `Задачи/`,
+копирует `NinjaLive` из `SourceProject` / kit-эталона / соседнего проекта и
+вызывает `kit.ps1 stage` — в проект приезжают скиллы и правила. Каркаса задачи в
+проекте нет: команды `Задача`/`Продолжить`/`Статус` глобальные (`kit.ps1 apply`),
+состояние задач — в сервисе PiPa.
 
 ## Каркас задачи
 
-Один на машину: `~/.config/opencode/scripts/taskctl.ps1` + `~/.config/opencode/commands/{Задача,Продолжить,Статус}.md` → слэш-команды `/Задача`, `/Продолжить`, `/Статус`. Корень проекта скрипт ищет вверх по текущему каталогу (признак — `Задачи\` или `.v8-project.json`), `--project <путь>` задаёт его явно. Старая раскладка `.opencode\scripts\taskctl.ps1` внутри проекта тоже работает, но дублирует глобальную и подлежит удалению.
+Один на машину: команды `~/.config/opencode/commands/{Задача,Продолжить,Статус}.md`
+→ слэш-команды `/Задача`, `/Продолжить`, `/Статус`. Состояние задачи живёт в
+сервисе **PiPa** (PithosPandoras) и читается через MCP `pipa`; в проекте остаётся
+только папка `Задачи/` с файлами. Имя проекта для сервиса — раздел «Сервис задач»
+в `AGENTS.md`. Контракт вызовов — скилл `skill-pipa`, маршруты — `rule-routes`.
 
 ## Что OpenCode умеет нативно
 
@@ -102,8 +119,9 @@ mode: subagent
 
 - В OpenCode нет автоматического подключения правила по glob. Path-scoped правила —
   только вложенный `AGENTS.md` в нужной папке.
-- Глобальный `opencode.jsonc` правится `kit.ps1 apply` только в двух ключах (`skills`, `instructions`); остальные настройки пользователь держит сам.
+- Глобальный `opencode.jsonc` не содержит скиллов и правил: `kit.ps1 apply` только убирает из него пути кита, если они остались от прежней модели. Настройки пользователя не трогаются.
 - MCP Resources/Prompts как контент для агента не используются.
+- `browse` (живой Chrome) выключен в глобальном конфиге (`disabled: true`): GitLab и трекеры — `glab`/API, проверка 1С — `skill-web-test`. Включать под задачу, где человек прямо просит посмотреть живую страницу.
 - Глобальные 1С MCP-серверы не поддерживаются: только project `opencode.jsonc`.
 
 ## Секреты

@@ -93,10 +93,9 @@ bsl-analyzer, ninja-пара). Apache, ripgrep и toolkit — `WARN`.
   релиза в `%LOCALAPPDATA%\ovm\<ver>`, переключить junction `current` (или `ovm install` +
   `ovm use`, если OVM под рукой), затем `deps -What oscript`.
 - **Node / Playwright.** `deps -What web-test` ставит Node LTS portable и делает `npm ci`
-  в каталоге скилла `skill-web-test`, затем `playwright install chromium`. `node_modules`
-  кладётся в глобальную копию скилла — она появляется после `kit.ps1 apply`. Если `deps`
-  запускали до `apply`, он поставит пакет в исходники кита и попросит повторить команду
-  после `apply` (это быстро, повторно ничего не качает).
+  в каталоге скилла в репозитории кита (`profile\skills\skill-web-test\scripts`), затем
+  `playwright install chromium`. Это единственная копия с `node_modules`: в проекты
+  `kit.ps1 stage` переносит содержимое скилла без локальных установок.
 - **MCP Toolkit EPF** необязателен: он fallback live, если NinjaLive недоступен.
 
 ## 6. Дальше по харнессу

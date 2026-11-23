@@ -2,7 +2,7 @@
 
 Агентная обвязка разработки 1С: skills (kit + cc-1c-skills), rules, MCP (**1c-ninja-mcp** + CFE **NinjaLive**), bsl-analyzer, харнесс **OpenCode**.
 
-**VERSION:** 0.11.0
+**VERSION:** 0.12.0
 
 ## Quick start
 
@@ -13,21 +13,26 @@ cd 1c-ninja-kit
 powershell -NoProfile -ExecutionPolicy Bypass -File .\install\kit.ps1 deps
 powershell -NoProfile -File .\install\kit.ps1 doctor
 powershell -NoProfile -File .\install\kit.ps1 apply
+# скиллы и правила в конкретный проект:
+powershell -NoProfile -File .\install\kit.ps1 stage -ProjectRoot C:\1C\projects\<проект>
 ```
 
 Подробности машинного слоя: `docs/MACHINE-BOOTSTRAP.md`.
 
 ## Harness
 
-Харнесс один — **OpenCode V2**. Скиллы и правила подключаются путями в глобальном
-`~/.config/opencode/opencode.jsonc`, агенты/команды/`taskctl.ps1` — копией; почему так
-и что проверяет `verify` — `docs/opencode.md`. Проверка доставки: `docs/TEST-GUIDE-opencode.md`.
+Харнесс один — **OpenCode V2**. Скиллы и правила ставятся **в проект** командой
+`kit.ps1 stage -ProjectRoot <проект>` (копия в `.opencode`, `instructions` в
+проектном `opencode.jsonc`); глобально копируются только агенты, команды и
+`run.ps1`. Почему так и что проверяет `verify` — `docs/opencode.md`. Проверка
+доставки: `docs/TEST-GUIDE-opencode.md`.
 
 ## Каркас задачи
 
-Один на машину, глобальный: `~/.config/opencode/scripts/taskctl.ps1`, команды
-`/Задача`, `/Продолжить`, `/Статус` — `~/.config/opencode/commands`. Состояние задачи
-живёт в проекте (`Задачи/`), корень скрипт ищет вверх по каталогам или берёт из `--project`.
+Один на машину, глобальный: команды `/Задача`, `/Продолжить`, `/Статус` в
+`~/.config/opencode/commands`. Состояние задачи живёт в сервисе **PiPa**
+(PithosPandoras, MCP `pipa`), в проекте — только папка `Задачи/` с файлами.
+Имя проекта агент берёт из `AGENTS.md`.
 
 ## What is inside
 
@@ -37,7 +42,7 @@ powershell -NoProfile -File .\install\kit.ps1 apply
 | `components/1c-ninja-mcp/` | MCP server (part of kit) |
 | `project-scaffold/cfe/NinjaLive/` | Live CFE pair |
 | `install/kit.ps1` | doctor / verify / apply / lock / deps |
-| `profile/scripts/taskctl.ps1` | глобальный каркас задачи (`apply` копирует в `~/.config/opencode/scripts`) |
+| `profile/scripts/run.ps1` | единая точка запуска скриптов скиллов (`apply` копирует в `~/.config/opencode/scripts`) |
 | `profile/commands/` | глобальные команды `/Задача`, `/Продолжить`, `/Статус` |
 | `install/deps.ps1` | установка внешних зависимостей (OneScript, bsl-analyzer, ripgrep, Node/Playwright, Apache, toolkit) |
 | `docs/opencode.md` | единственный харнесс: пути в конфиге, копии, MCP, ограничения |
