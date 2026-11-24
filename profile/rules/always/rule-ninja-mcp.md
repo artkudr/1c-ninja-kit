@@ -2,8 +2,8 @@
 
 ## Scope
 
-- **Project** `<репозиторий>\opencode.jsonc` (gitignore) — полный MCP этой ИБ, в т.ч. ninja с `NINJA_URL` / `NINJA_USER` / `NINJA_PASSWORD`. Эталон: скилл `skill-env-setup` (там шаблон project-конфига для этого адаптера).
-- **User**-конфиг `~/.config/opencode/opencode.json(c)` — **без** `1c-ninja-mcp` и прочих 1С-серверов (иначе дубли с проектом). Live-URL в user не класть. Скиллы и правила там не прописываются: они лежат в проекте (`.opencode`, ставит `kit.ps1 stage`).
+- **Project** — `{{PROJECT_MCP}}` в корне проекта (gitignore): полный MCP этой ИБ, в т.ч. ninja с `NINJA_URL` / `NINJA_USER` / `NINJA_PASSWORD`. Эталон: скилл `skill-env-setup` (там шаблон project-конфига для этого адаптера).
+- **User**-конфиг `{{USER_MCP}}` — **без** `1c-ninja-mcp` и прочих 1С-серверов (иначе дубли с проектом). Live-URL в user не класть. Скиллы и правила там не прописываются: они лежат в проекте (`.opencode`, ставит `kit.ps1 stage`).
 - Не подставляй URL другой базы «по умолчанию». Нет project env → явный `url` у тула или отказ, не угадывание.
 
 ## Живые данные ИБ (приоритет)

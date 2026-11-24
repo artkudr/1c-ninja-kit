@@ -21,20 +21,20 @@
 
 Преобразование в запись базы `.v8-project.json`:
 
-- file → `"type": "file"`, `"path": "C:\\Bases\\MyDb"`
+- file → `"type": "file"`, `"path": "<корень>\\Bases\\MyDb"`
 - server → `"type": "server"`, `"server": "srv"`, `"ref": "base"`
 
 ## .v8-project.json
 
 ```jsonc
 {
-  "v8path": "C:\\Program Files\\1cv8\\8.3.27.2130\\bin",
+  "v8path": "%ProgramFiles%\\1cv8\\<версия>\\bin",
   "databases": [
     {
       "id": "main",
       "name": "<appName>",
       "type": "file",
-      "path": "C:\\Bases\\MyDb",
+      "path": "<корень>\\Bases\\MyDb",
       "user": "…",
       "password": "…",
       "configSrc": "src\\cf",
@@ -42,7 +42,7 @@
         {
           "name": "…",
           "src": "src\\cfe\\…",
-          "repository": { "path": "Z:\\Хранилища\\…", "user": "…", "password": "", "adminUser": "Администратор" }
+          "repository": { "path": "<хранилище>\\…", "user": "…", "password": "", "adminUser": "Администратор" }
         }
       ]
     }
@@ -98,7 +98,7 @@ AGENTS.md            # память проекта: правила + невыв�
 docs/dev-stack.md
 ```
 
-Каркас задачи в проект **не** копируется: команды `Задача`/`Продолжить`/`Статус` живут в `%USERPROFILE%\.config\opencode\commands` (ставит `kit.ps1 apply`). Состояние задач — в сервисе PiPa (MCP `pipa`), в проекте только папка `Задачи/` с файлами. Имя проекта для сервиса пишется в `AGENTS.md`, раздел «Сервис задач».
+Каркас задачи в проект **не** копируется: команды `Задача`/`Продолжить`/`Статус` живут в `{{COMMANDS_ROOT}}` (ставит `kit.ps1 apply`). Состояние задач — в сервисе PiPa (MCP `pipa`), в проекте только папка `Задачи/` с файлами. Имя проекта для сервиса пишется в `AGENTS.md`, раздел «Сервис задач».
 
 Правила: always-on и on-demand читаются прямо из кита по путям в глобальном `~/.config/opencode/opencode.jsonc` (`skills` + `instructions`, обновляет `kit.ps1 apply`). В проекте создаётся только корневой `AGENTS.md` — память проекта, не копия глобальных правил; setup его не перезаписывает.
 
@@ -115,7 +115,7 @@ docs/dev-stack.md
 
 Порядок:
 
-1. Init копирует `src/cfe/NinjaLive` с эталона: SourceProject `src/cfe/NinjaLive`, иначе kit `project-scaffold/cfe/NinjaLive` (поиск через `NINJA_KIT_ROOT` / `C:\1C\projects\1c-ninja-kit`), иначе соседний проект.
+1. Init копирует `src/cfe/NinjaLive` с эталона: SourceProject `src/cfe/NinjaLive`, иначе kit `project-scaffold/cfe/NinjaLive` (поиск через `NINJA_KIT_ROOT`), иначе соседний проект.
 2. Проверка входа = загрузка bootstrap: `db-load-xml -ConfigDir "src\cfe\NinjaLive" -Mode Full -Extension "NinjaLive"` + `db-cfe-admin set-properties -Name NinjaLive -Active on -SafeMode off`. Auth-ошибка → не оставлять битый пароль в `.v8-project.json`.
 3. `skill-web-publish`. Project mcp: `NINJA_URL=…/hs/ninja-live`.
 4. Smoke: `live_version`. **Список ИБ:** `live_extensions_list`.

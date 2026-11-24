@@ -75,7 +75,7 @@ function Find-PlatformBinByVersion([string]$versionSpec) {
     if (-not $versionSpec) { return $null }
     $exes = @()
     $exes += Get-ChildItem "C:\Program Files\1cv8\*\bin\1cv8.exe" -ErrorAction SilentlyContinue
-    $exes += Get-ChildItem "C:\Program Files (x86)\1cv8\*\bin\1cv8.exe" -ErrorAction SilentlyContinue
+    $exes += Get-ChildItem "${env:ProgramFiles(x86)}\1cv8\*\bin\1cv8.exe" -ErrorAction SilentlyContinue
     if (-not $exes) { return $null }
 
     $matched = foreach ($exe in $exes) {
@@ -154,15 +154,12 @@ if (-not (Test-Path $httpdExe)) {
 
     # Версии и адрес загрузки Apache держит кит (companions/pins.json + kit.ps1 deps),
     # чтобы на разных машинах не приезжали разные сборки и версии.
+    # Корень кита — только из NINJA_KIT_ROOT (его ставит kit.ps1 apply): угадывать
+    # чужой путь нельзя, иначе на другой машине команда молча уйдёт не туда.
     $kitRoot = $env:NINJA_KIT_ROOT
     if (-not $kitRoot -or -not (Test-Path (Join-Path $kitRoot 'install\kit.ps1'))) {
-        foreach ($candidate in @('C:\1C\projects\1c-ninja-kit')) {
-            if (Test-Path (Join-Path $candidate 'install\kit.ps1')) { $kitRoot = $candidate; break }
-        }
-    }
-    if (-not $kitRoot -or -not (Test-Path (Join-Path $kitRoot 'install\kit.ps1'))) {
         Write-Host "Apache не найден: $ApachePath" -ForegroundColor Yellow
-        Write-Host "Кит не найден (NINJA_KIT_ROOT или C:\1C\projects\1c-ninja-kit)." -ForegroundColor Yellow
+        Write-Host "Кит не найден: NINJA_KIT_ROOT пуст или неверен. Задайте переменную (kit.ps1 apply) и повторите." -ForegroundColor Yellow
         Write-Host "Поставьте Apache из кита: install\kit.ps1 deps -What apache -Platform $($targets.ApacheLabel)" -ForegroundColor Cyan
         exit 1
     }

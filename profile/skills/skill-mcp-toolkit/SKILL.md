@@ -23,7 +23,7 @@ MCP-сервер **1c-mcp-toolkit** — доступ к **работающей**
 |-----|------|
 | Upstream / скачать EPF | https://github.com/ROCTUP/1c-mcp-toolkit/releases → asset **`MCP_Toolkit.epf`** |
 | Рекомендуемый локальный путь | `%USERPROFILE%\tools\1c-mcp-toolkit\MCP_Toolkit.epf` |
-| Альтернативный путь | `C:\1C\soft\MCP_Toolkit.epf` — только если уже так заведено на машине |
+| Альтернативный путь | постоянный каталог, выбранный на этой машине — в профиле он не прописан |
 | MCP (project) | `opencode.jsonc` → `http://127.0.0.1:6003/mcp` (не дублировать в user-конфиг) |
 | Namespace MCP | `1c-mcp-toolkit` |
 

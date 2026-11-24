@@ -66,11 +66,10 @@ def v8_version_from_path(v8path):
 
 def detected_v8_version_mask():
     candidates = []
-    for pattern in (
-        r"C:\Program Files\1cv8\*\bin\1cv8.exe",
-        r"C:\Program Files (x86)\1cv8\*\bin\1cv8.exe",
-    ):
-        candidates.extend(glob.glob(pattern))
+    for root in (os.environ.get("ProgramFiles"), os.environ.get("ProgramFiles(x86)")):
+        if not root:
+            continue
+        candidates.extend(glob.glob(os.path.join(root, "1cv8", "*", "bin", "1cv8.exe")))
     if not candidates:
         return None
 

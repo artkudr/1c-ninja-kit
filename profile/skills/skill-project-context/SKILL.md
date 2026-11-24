@@ -33,8 +33,8 @@ description: >-
 ## Жёстко
 
 - ИБ и исходники — **только** корень открытого проекта.
-- Skills: kit — из репозитория кита по путям в `%USERPROFILE%\.config\opencode\opencode.jsonc` (`skills`); внешние cc-1c-skills — `%USERPROFILE%\.config\opencode\skills\`. Набор cc-1c-skills — `install/cc-skills.ps1`; пути kit — `kit.ps1 apply`.
-- Rules: канон в ките — `profile/rules/` (читается по `instructions` из того же конфига); править SoT и запускать `kit.ps1 apply`.
+- Skills: kit — из репозитория кита (скрипты запускаются из `{{KIT_ROOT}}`), в проект копия едет через `kit.ps1 stage`; внешние cc-1c-skills — `{{CC_SKILLS_ROOT}}\`. Набор cc-1c-skills — `install/cc-skills.ps1`; агенты, команды и `run.ps1` — `kit.ps1 apply`.
+- Rules: канон в ките — `profile/rules/`; в проект копия едет через `kit.ps1 stage` (`instructions` в проектном `opencode.jsonc`). Править SoT и повторять `stage`.
 - MCP: все 1С-серверы **только** в `<репозиторий>\opencode.jsonc` (эталон — скилл `skill-env-setup`). User-конфиг — без `1c-ninja-mcp` / `1c-mcp-toolkit` / `bsl-analyzer-*` / `v8std` (иначе дубли); там только `skills` и `instructions`.
 - Платформенные операции **без фаллбека на другой скилл/CLI**: скиллы контура недоступны → стоп, сообщить.
 

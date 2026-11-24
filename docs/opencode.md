@@ -39,19 +39,20 @@ Kit собирается только под **OpenCode V2**. Ядро — `prof
 
 ```powershell
 powershell -NoProfile -File .\install\kit.ps1 apply
-powershell -NoProfile -File .\install\kit.ps1 stage -ProjectRoot C:\1C\projects\<проект>
+powershell -NoProfile -File .\install\kit.ps1 stage -ProjectRoot <корень>\<проект>
 ```
 
 `apply` держит машинный слой:
 
-1. Копирует `profile/agents/*.md` → `~/.config/opencode/agents`, `profile/commands/*.md` → `~/.config/opencode/commands`, `profile/scripts/*` → `~/.config/opencode/scripts` байт-в-байт.
+1. Копирует `profile/agents/*.md` → `~/.config/opencode/agents`, `profile/commands/*.md` → `~/.config/opencode/commands`, `profile/scripts/*` → `~/.config/opencode/scripts` с подстановкой плейсхолдеров пути (`{{USER_MCP}}`, `{{AGENTS_ROOT}}`, …); файлы без плейсхолдеров — байт-в-байт.
+   Ставит `NINJA_KIT_ROOT` в user env (значение — своё расположение; неверное исправляет с `[WARN]`): без переменной `stage` печатает `[FAIL]` и ничего не копирует. Новую переменную видят только новые процессы.
 2. Убирает из глобального `opencode.jsonc` пути кита в `skills`/`instructions`, если они остались от прежней модели; остальные настройки и записи пользователя не трогает.
 3. Удаляет устаревшую копию `~/.config/opencode/skills/kit` и вырезает управляемый блок из `~/.config/opencode/AGENTS.md`.
 4. Проверяет, что в глобальном `opencode.json(c)` нет 1С MCP-серверов.
 
 `stage -ProjectRoot` ставит скиллы и правила в проект:
 
-1. Копирует `profile/skills/*` и `profile/rules/on-demand/*` в `<проект>\.opencode\skills`, always-правила — в `<проект>\.opencode\rules\always`.
+1. Копирует `profile/skills/*` и `profile/rules/on-demand/*` в `<проект>\.opencode\skills`, always-правила — в `<проект>\.opencode\rules\always`, подставляя плейсхолдеры (`docs/MCP-PLACEHOLDERS.md`).
 2. Пишет `<проект>\.opencode\kit-stage.json` — манифест: что поставлено. При следующем `stage` удалённые из профиля скиллы убираются из проекта.
 3. Добавляет в проектный `opencode.jsonc` `instructions: [".opencode/rules/always/*.md"]`, не трогая MCP и прочие ключи.
 
@@ -101,8 +102,8 @@ powershell -NoProfile -File "C:\1C\projects\1c-ninja-kit\profile\skills\skill-en
   и загружает тело через `skill`; другого on-demand механизма в OpenCode нет.
 - Kit skills — `skill-*`; внешние `cc-1c-skills` (`db-*`, `meta-*`, `form-*`, `cfe-*`, …)
   остаются с прежними ID.
-- Пути в `skills` абсолютные и ведут в репозиторий кита: правка `profile/skills/**` и
-  `profile/rules/**` видна без копирования, нужен только перезапуск OpenCode.
+- Скиллы и правила живут в проекте (копия из профиля после `kit.ps1 stage`); правка
+  `profile/skills/**` и `profile/rules/**` доезжает повторным `stage` и перезапуском OpenCode.
 
 ## Агенты
 

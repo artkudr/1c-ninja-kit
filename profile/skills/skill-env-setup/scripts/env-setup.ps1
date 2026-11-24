@@ -10,7 +10,7 @@
 .EXAMPLE
     .\env-setup.ps1 -Mode Check
 .EXAMPLE
-    .\env-setup.ps1 -Mode Init -SourceProject C:\1C\projects\my-project -IbConnection '/S"srv/db"' -DbUser Admin -DbPwd secret
+    .\env-setup.ps1 -Mode Init -SourceProject <проект> -IbConnection '/S"srv/db"' -DbUser Admin -DbPwd secret
 #>
 
 [CmdletBinding()]
@@ -168,11 +168,10 @@ function Copy-FromSource {
 }
 
 function Get-KitRoot {
-    # Kit reference for NinjaLive. Installed skill lives outside the kit, so probe
-    # env override, the canonical machine path, then siblings of the project.
+    # Kit reference for NinjaLive. Skills live in the kit, not in the project:
+    # probe env override, then siblings of the project.
     $candidates = New-Object System.Collections.Generic.List[string]
     if ($env:NINJA_KIT_ROOT) { [void]$candidates.Add($env:NINJA_KIT_ROOT) }
-    [void]$candidates.Add("C:\1C\projects\1c-ninja-kit")
     $parent = Split-Path -Parent $ProjectRoot
     if ($parent -and (Test-Path -LiteralPath $parent)) {
         Get-ChildItem -LiteralPath $parent -Directory -Force -ErrorAction SilentlyContinue |
@@ -289,7 +288,7 @@ function Find-SiblingSource {
 function Get-DetectedV8Version {
     $found = Get-ChildItem @(
         "C:\Program Files\1cv8\*\bin\1cv8.exe",
-        "C:\Program Files (x86)\1cv8\*\bin\1cv8.exe"
+        "${env:ProgramFiles(x86)}\1cv8\*\bin\1cv8.exe"
     ) -ErrorAction SilentlyContinue |
         Sort-Object { try { [version]$_.Directory.Parent.Name } catch { [version]"0.0.0.0" } } -Descending |
         Select-Object -First 1
@@ -570,7 +569,7 @@ function Get-McpMachinePaths {
     # Ninja MCP main.os: env override, then the 1c-ninja-kit component.
     $roots = @()
     if ($env:NINJA_MCP_ROOT) { $roots += $env:NINJA_MCP_ROOT }
-    $roots += "C:\1C\projects\1c-ninja-kit\components\1c-ninja-mcp"
+    if ($env:NINJA_KIT_ROOT) { $roots += "$env:NINJA_KIT_ROOT\components\1c-ninja-mcp" }
     $ninjaRoot = $null
     foreach ($r in $roots) {
         if (Test-Path -LiteralPath (Join-Path $r "main.os")) { $ninjaRoot = $r; break }
@@ -686,7 +685,7 @@ Write-Host "Project: $ProjectRoot"
 # Sanity: платформа + скиллы контура
 $v8exe = Get-ChildItem @(
     "C:\Program Files\1cv8\*\bin\1cv8.exe",
-    "C:\Program Files (x86)\1cv8\*\bin\1cv8.exe"
+    "${env:ProgramFiles(x86)}\1cv8\*\bin\1cv8.exe"
 ) -ErrorAction SilentlyContinue | Select-Object -First 1
 if ($v8exe) {
     Add-Report "1cv8" "ok" $v8exe.FullName
@@ -699,13 +698,13 @@ if ($v8exe) {
     }
 }
 
-$ccSkillsRoot = Join-Path $env:USERPROFILE ".config\opencode\skills"
+$ccSkillsRoot = if ($env:CC_SKILLS_ROOT) { $env:CC_SKILLS_ROOT } else { Join-Path $env:USERPROFILE ".config\opencode\skills" }
 if (Test-Path -LiteralPath (Join-Path $ccSkillsRoot "db-list\SKILL.md")) {
     Add-Report "cc-1c-skills" "ok" "installed"
 } else {
     Add-Report "cc-1c-skills" "fail" "missing - run install\cc-skills.ps1"
     if ($Mode -ne "Check") {
-        Write-Host "Error: cc-1c-skills not installed. Run: C:\1C\projects\1c-ninja-kit\install\cc-skills.ps1" -ForegroundColor Red
+        Write-Host "Error: cc-1c-skills not installed. Run: {{KIT_ROOT}}\install\cc-skills.ps1" -ForegroundColor Red
         $report | Format-Table -AutoSize
         exit 1
     }

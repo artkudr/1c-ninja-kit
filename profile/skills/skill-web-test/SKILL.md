@@ -16,33 +16,35 @@ Automates user interactions with 1C:Enterprise web client via Playwright — nav
 
 ## Quick start
 
-```bash
-RUN="C:\1C\projects\1c-ninja-kit\profile\skills/skill-web-test/scripts/run.mjs"
+```powershell
+$RUN = "{{KIT_ROOT}}\profile\skills/skill-web-test/scripts/run.mjs"
 
 # One-shot: opens browser → runs script → closes browser → exits
 node $RUN run http://localhost:8083/app/ru_RU/ test-scenario.js
 
-# Or pipe inline:
-cat <<'SCRIPT' | node $RUN run http://localhost:8083/app/ru_RU/ -
+# Or pipe inline (PowerShell here-string):
+@'
 await navigateSection('Продажи');
 await openCommand('Заказы клиентов');
 await clickElement('Создать');
 await fillFields({ 'Клиент': 'Альфа' });
 await clickElement('Провести и закрыть');
-SCRIPT
+'@ | node $RUN run http://localhost:8083/app/ru_RU/ -
 ```
 
 ## Setup (first time)
 
-```bash
-powershell -NoProfile -ExecutionPolicy Bypass -File <kit>\install\kit.ps1 deps -What web-test
+```powershell
+powershell -NoProfile -ExecutionPolicy Bypass -File "{{KIT_ROOT}}\install\kit.ps1" deps -What web-test
 ```
 
 Это ставит Node.js (если нет), зависимости Playwright в каталог скилла и браузер Chromium.
 Вручную, если кита нет рядом:
 
-```bash
-cd "C:\1C\projects\1c-ninja-kit\profile\skills/skill-web-test/scripts" && npm install && npx playwright install chromium
+```powershell
+Set-Location "{{KIT_ROOT}}\profile\skills/skill-web-test/scripts"
+npm install
+npx playwright install chromium
 ```
 
 Requires Node.js 18+.
@@ -158,8 +160,7 @@ await navigateLink('Справочник.Контрагенты');
 #### `openFile(path)` → form state
 Open an external data processor or report (EPF/ERF) via File → Open. Handles the security confirmation dialog automatically.
 ```js
-const form = await openFile('C:\\WS\\build\\МояОбработка.epf');
-const form = await openFile('build/МояОбработка.epf'); // relative paths work too
+const form = await openFile('build/МояОбработка.epf'); // путь от корня проекта или абсолютный
 ```
 
 #### `switchTab(name)` → form state

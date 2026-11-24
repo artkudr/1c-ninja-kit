@@ -7,12 +7,13 @@
 
 | Что | Значение |
 |---|---|
-| Адрес MCP | `http://127.0.0.1:8787/mcp` |
+| Адрес MCP | `{{PIPA_URL}}` (переопределяет переменная `PIPA_URL`) |
 | Транспорт | Streamable HTTP, stateless, ответ JSON |
 | Заголовок | `Authorization: Bearer <ключ>` |
-| Ключ | файл `pithos-pandoras.key` рядом с базой; создаётся при первом `serve` |
+| Ключ | `PIPA_KEY_FILE`; дефолт — `{{PIPA_KEY_FILE}}`; в env удобнее `PIPA_KEY` |
 | Порт | `PITHOS_PORT`, по умолчанию `8787` |
-| Проверка | `GET /health` → `ok` |
+| Проверка | `GET /health` → `ok` (версии у него нет) |
+| Версия | только `pithos-pandoras.exe --version` из `PIPA_HOME` |
 
 Сервис поднимается вместе с приложением или треем. Имя проекта агент берёт
 только из `AGENTS.md`; инструмента «покажи все проекты» у агента нет.

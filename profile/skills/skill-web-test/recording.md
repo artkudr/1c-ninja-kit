@@ -23,7 +23,7 @@ tools/ffmpeg/
 
 ### Вариант 2: глобально (один раз на машину)
 
-Скачать, распаковать в любой каталог (напр. `C:\tools\ffmpeg`), добавить `bin/` в системный PATH.
+Скачать, распаковать в любой каталог на этой машине, добавить `bin/` в системный PATH.
 После этого ffmpeg доступен во всех проектах.
 
 ### Вариант 3: явный путь (общий на машину)
@@ -32,7 +32,7 @@ tools/ffmpeg/
 
 ```js
 await startRecording('recordings/demo.mp4', {
-  ffmpegPath: 'C:\\tools\\ffmpeg\\bin\\ffmpeg.exe'
+  ffmpegPath: '<каталог ffmpeg на этой машине>\\bin\\ffmpeg.exe'
 });
 ```
 

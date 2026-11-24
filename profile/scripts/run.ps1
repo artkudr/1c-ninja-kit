@@ -1,7 +1,7 @@
 ﻿<#
 run.ps1 — единая точка запуска скриптов скиллов из ролей.
 
-  powershell -NoProfile -ExecutionPolicy Bypass -File "%USERPROFILE%\.config\opencode\scripts\run.ps1" <script.ps1> [args...]
+  powershell -NoProfile -ExecutionPolicy Bypass -File "$env:USERPROFILE\.config\opencode\scripts\run.ps1" <script.ps1> [args...]
 
 Разрешены только скрипты контура: <...>\skills\<скилл>\scripts\*.ps1 — и в профиле кита,
 и в установленной копии. Всё остальное отклоняется с кодом 2.

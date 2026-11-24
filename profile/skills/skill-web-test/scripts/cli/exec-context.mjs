@@ -119,7 +119,7 @@ export async function executeScript(code, { noRecord } = {}) {
     const ctx = buildContext({ noRecord });
 
     // Normalize Windows backslash paths to prevent JS parse errors
-    // (e.g. C:\Users\... → \u triggers "Invalid Unicode escape sequence")
+    // (e.g. <user dir>\... → \u triggers "Invalid Unicode escape sequence")
     code = code.replace(/[A-Za-z]:\\[^\s'"`;\n)}\]]+/g, m => m.replace(/\\/g, '/'));
 
     const AsyncFunction = Object.getPrototypeOf(async function(){}).constructor;

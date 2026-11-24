@@ -58,8 +58,7 @@
     "nodeToolsDir": "%USERPROFILE%\\tools\\node",
     "minNodeVersion": "18.0.0",
     "browsers": ["chromium"],
-    "skillScriptsRelative": ".config\\opencode\\skills\\kit\\skills\\skill-web-test\\scripts",
-    "note": "Веб-прогон — обязательная часть разработки. deps ставит Node.js portable (latest LTS) в %USERPROFILE%\\tools\\node, затем npm ci в каталоге скилла skill-web-test и браузеры playwright (chromium) в %LOCALAPPDATA%\\ms-playwright. node_modules ставится в глобальную копию скилла после kit.ps1 apply; если её ещё нет — в кит, и после apply нужно повторить deps -What web-test."
+    "note": "Веб-прогон — обязательная часть разработки. deps ставит Node.js portable (latest LTS) в %USERPROFILE%\\tools\\node, затем npm ci в каталоге скилла skill-web-test (каталог кита) и браузеры playwright (chromium) в %LOCALAPPDATA%\\ms-playwright."
   },
   "oneScript": {
     "site": "https://oscript.io/",

@@ -3,7 +3,7 @@
 | Компонент | Где | Версия / заметка |
 |-----------|-----|------------------|
 | OneScript | OVM `%LOCALAPPDATA%\ovm\current` | ≥ 2.2.0 (движок MCP-серверов kit) |
-| Skills (kit) | `<проект>\.opencode\skills`, `<проект>\.opencode\rules\always` | копия профиля кита, ставит `kit.ps1 stage`; `instructions` — в проектном `opencode.jsonc`. Скрипты скиллов запускаются из кита (`C:\1C\projects\1c-ninja-kit\profile\skills`, переопределяется `NINJA_KIT_ROOT`) |
+| Skills (kit) | `<проект>\.opencode\skills`, `<проект>\.opencode\rules\always` | копия профиля кита, ставит `kit.ps1 stage`; `instructions` — в проектном `opencode.jsonc`. Скрипты скиллов запускаются из кита (`$env:NINJA_KIT_ROOT\profile\skills`; переменную ставит `kit.ps1 apply`) |
 | Каркас задачи | `~/.config/opencode/commands`, сервис PiPa (MCP `pipa`) | глобальные `/Задача`, `/Продолжить`, `/Статус`; состояние — в сервисе, в проекте только файлы `Задачи/` |
 | Skills (cc-1c-skills) | `~/.config/opencode/skills/` | `db-*`, `meta-*`, `form-*`, `cfe-*`, `epf-*`, …; ставится `install/cc-skills.ps1` (обновление — `-Update`) |
 | MCP (user) | `~/.config/opencode/opencode.json(c)` | **без** 1С-серверов (`mcp.servers`); иначе дубли с проектом |

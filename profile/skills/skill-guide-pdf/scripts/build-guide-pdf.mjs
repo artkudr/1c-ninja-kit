@@ -496,11 +496,14 @@ async function loadPlaywright() {
 
 function findBrowserExe() {
   const local = process.env.LOCALAPPDATA || '';
+  // Пути к браузерам — только из env машины: буква диска в коде не переносится.
+  const pf = process.env.ProgramFiles || '';
+  const pf86 = process.env['ProgramFiles(x86)'] || '';
   const candidates = [
     path.join(local, 'ms-playwright'),
-    path.join(process.env['ProgramFiles(x86)'] || 'C:\\Program Files (x86)', 'Microsoft', 'Edge', 'Application'),
-    path.join(process.env.ProgramFiles || 'C:\\Program Files', 'Microsoft', 'Edge', 'Application'),
-    path.join(process.env.ProgramFiles || 'C:\\Program Files', 'Google', 'Chrome', 'Application')
+    pf86 && path.join(pf86, 'Microsoft', 'Edge', 'Application'),
+    pf && path.join(pf, 'Microsoft', 'Edge', 'Application'),
+    pf && path.join(pf, 'Google', 'Chrome', 'Application')
   ];
   const exes = ['msedge.exe', 'chrome.exe'];
   for (const dir of candidates) {

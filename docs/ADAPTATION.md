@@ -13,10 +13,33 @@
 | 1.5 | Ripgrep | doctor; `kit.ps1 deps -What ripgrep` → `%USERPROFILE%\tools\ripgrep` + PATH | auto |
 | 1.6 | Node.js + Playwright + Chromium | doctor; `kit.ps1 deps -What web-test` (Node LTS portable, `npm ci` скилла, `playwright install chromium`) | auto |
 | 1.7 | Toolkit EPF (optional) | doctor; `kit.ps1 deps -What toolkit` | auto |
+| 1.8 | Сервис задач PiPa (PithosPandoras) | `GET http://127.0.0.1:8787/health` → `ok`; версия — `& "$env:PIPA_HOME\pithos-pandoras.exe" --version` (у `/health` версии нет). Ставится не из кита | needs-human |
 
-Всё, кроме платформы 1С, ставит `kit.ps1 deps` (версии — latest с upstream, откуда брать —
+Всё, кроме платформы 1С и PiPa, ставит `kit.ps1 deps` (версии — latest с upstream, откуда брать —
 `companions/pins.json`, фактическое состояние — `%LOCALAPPDATA%\1c-ninja-kit\deps-state.json`).
 `wsap24.dll` для Apache берётся из bin установленной платформы — поэтому 1.2 обязателен.
+
+### 1.8. Где PiPa на этой машине
+
+Каталог сервиса у каждой установки свой, поэтому в профиле его нет. Задай
+переменные один раз (после `setx` перезапусти OpenCode — переменные читаются
+при старте процесса):
+
+| Переменная | Что | Пример |
+|------------|-----|--------|
+| `PIPA_HOME` | каталог сервиса (там exe, база и ключ) | `setx PIPA_HOME "<каталог сервиса>"` |
+| `PIPA_URL` | адрес MCP | `setx PIPA_URL "http://127.0.0.1:8787/mcp"` |
+| `PIPA_KEY_FILE` | файл ключа | `setx PIPA_KEY_FILE "%PIPA_HOME%\pithos-pandoras.key"` |
+| `PIPA_KEY` | сам ключ (альтернатива файлу) | `setx PIPA_KEY "<ключ>"` |
+
+Это рантайм-контракт агента: значения переменных читает скилл `skill-pipa` при
+работе. Подстановка в `stage`/`apply` берёт адрес и файл ключа из
+`install/path-defaults.windows.yaml` (`pipa.url`, `pipa.keyFile`), поэтому
+`PIPA_URL`/`PIPA_KEY_FILE` в процессе копию не меняют.
+
+Не заданы — агент ищет так: env → адрес из раздела «Сервис задач» в `AGENTS.md`
+проекта → `GET /health` на `127.0.0.1:8787` → вопрос человеку. Угадывать
+`PIPA_HOME` по букве диска нельзя.
 
 ## 2. Kit components
 
@@ -30,9 +53,16 @@
 
 | # | Действие | Примечание |
 |---|----------|------------|
-| 3.1 | Apply профиля `1c-ninja-kit` | OpenCode: `docs/opencode.md` |
+| 3.1 | Apply профиля `1c-ninja-kit` | OpenCode: `docs/opencode.md`. Ставит `NINJA_KIT_ROOT` (user env) |
 | 3.2 | User mcp **без** 1С-серверов | иначе дубли |
 | 3.3 | cc-1c-skills установлен | `install/cc-skills.ps1` (`db-list` в skills root) |
+| 3.4 | Корень внешних скиллов | дефолт `%USERPROFILE%\.config\opencode\skills`; другой каталог — `setx CC_SKILLS_ROOT "<каталог>"` (агент в рантайме) и та же строка в `ccSkills.skillsRoot` машинного профиля (для подстановки), затем `install/cc-skills.ps1 -SkillsRoot "<каталог>"` |
+| 3.5 | `NINJA_KIT_ROOT` | корень кита; профиль подставляет его вместо `{{KIT_ROOT}}`. Ставит `kit.ps1 apply` сам (user env); вручную — `setx NINJA_KIT_ROOT "<корень кита>"`. Нет переменной — `stage` печатает `[FAIL]` и ничего не копирует; `apply` не падает, а ставит её из своего расположения (неверное значение исправляет с `[WARN]`). Новую переменную видят только процессы, запущенные после apply — перезапусти OpenCode и терминал |
+
+Значения плейсхолдеров подстановка берёт из `install/path-defaults.windows.yaml`
+(`ccSkills.skillsRoot`, `pipa.url`, `pipa.keyFile`, `mcpPolicy.userMcp`), а не из
+переменных процесса: `CC_SKILLS_ROOT`, `PIPA_URL`, `PIPA_HOME`, `PIPA_KEY_FILE`
+(шаги 1.8 и 3.4) читает агент в рантайме, на `stage`/`apply` они не влияют.
 
 ## 4. Проект
 
@@ -50,7 +80,11 @@
 2. `db-load-xml -ConfigDir "src\cfe\NinjaLive" -Mode Full -Extension "NinjaLive" -UpdateDB`
 3. Опубликовать `/hs/ninja-live`
 4. Проверить `live_version` / `live_extensions_list`
-5. Правила и скиллы: `kit.ps1 stage -ProjectRoot <проект>` копирует их в `.opencode` проекта; агенты, команды и `run.ps1` копируются в `~/.config/opencode/` командой `apply`
+5. Правила и скиллы: `kit.ps1 stage -ProjectRoot <проект>` копирует их в `.opencode` проекта
+   **с подстановкой плейсхолдеров** (`{{KIT_ROOT}}` → `$env:NINJA_KIT_ROOT` и т. п., см.
+   `docs/MCP-PLACEHOLDERS.md`); агенты, команды и `run.ps1` копируются в `~/.config/opencode/`
+   командой `apply`. Копия не байт-в-байт — `kit.ps1 verify -ProjectRoot <проект>` сверяет
+   отрендеренный текст.
 
 ## 5. Не копировать из ecoladev
 

@@ -10,7 +10,7 @@
 #
 # Примеры:
 #   .\bsl-analyzer-lease-clean.ps1                     # все проекты + общий кеш профиля
-#   .\bsl-analyzer-lease-clean.ps1 -Projects C:\1C\projects\devtools
+#   .\bsl-analyzer-lease-clean.ps1 -Projects <проект>
 #   .\bsl-analyzer-lease-clean.ps1 -WhatIf
 
 [CmdletBinding(SupportsShouldProcess)]
@@ -18,7 +18,8 @@ param(
     # Проекты для проверки. По умолчанию — все каталоги ProjectsRoot с кешем .build\workspaces.
     [string[]]$Projects,
 
-    [string]$ProjectsRoot = 'C:\1C\projects',
+    # Корень проектов: каталог, где лежит кит (кит и проекты — соседи).
+    [string]$ProjectsRoot = $(if ($env:NINJA_KIT_ROOT) { Split-Path -Parent $env:NINJA_KIT_ROOT } else { (Get-Location).Path }),
 
     # Общий кеш профиля (проекты без --cache-dir, например neofamily-dev).
     [string]$GlobalCacheRoot = (Join-Path $env:LOCALAPPDATA 'bsl-analyzer\workspaces\v1'),

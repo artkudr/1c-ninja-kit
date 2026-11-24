@@ -55,7 +55,7 @@ function Get-V8VersionFromPath([string]$v8path) {
 function Get-DetectedV8VersionMask {
     $found = Get-ChildItem @(
         "C:\Program Files\1cv8\*\bin\1cv8.exe",
-        "C:\Program Files (x86)\1cv8\*\bin\1cv8.exe"
+        "${env:ProgramFiles(x86)}\1cv8\*\bin\1cv8.exe"
     ) -ErrorAction SilentlyContinue |
         Sort-Object { try { [version]$_.Directory.Parent.Name } catch { [version]"0.0.0.0" } } -Descending |
         Select-Object -First 1

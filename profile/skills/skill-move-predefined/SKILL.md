@@ -30,7 +30,7 @@ description: >-
 ## Команда
 
 ```powershell
-powershell.exe -NoProfile -File "C:\1C\projects\1c-ninja-kit\profile\skills/skill-move-predefined/scripts/move-predefined.ps1" `
+powershell.exe -NoProfile -File "{{KIT_ROOT}}\profile\skills/skill-move-predefined/scripts/move-predefined.ps1" `
   -ObjectPath "<объект>" -Move "Элемент >> Папка"
 ```
 
@@ -90,7 +90,7 @@ JSON — те же поля, можно смешивать с будущими �
 
 ```powershell
 # После переноса
-powershell.exe -NoProfile -File "C:\1C\projects\1c-ninja-kit\profile\skills/skill-move-predefined/scripts/move-predefined.ps1" `
+powershell.exe -NoProfile -File "{{KIT_ROOT}}\profile\skills/skill-move-predefined/scripts/move-predefined.ps1" `
   -ObjectPath "src/cfe/Расширение/Catalogs/Справочник" -Move "Элемент >> Папка"
 ```
 

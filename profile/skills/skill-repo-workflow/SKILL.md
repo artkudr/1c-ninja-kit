@@ -18,10 +18,13 @@ description: >-
 
 | Шаг | Скилл |
 |-----|-------|
-| Операции хранилища (lock / unlock / commit / update / connect / add-user) | `db-repo` — `%USERPROFILE%\.config\opencode\skills\db-repo\scripts\db-repo.ps1` |
-| Загрузка правок в ИБ (частичная) | `db-load-xml` — `%USERPROFILE%\.config\opencode\skills\db-load-xml\scripts\db-load-xml.ps1` |
-| Обновление конфигурации БД | `db-update` — `%USERPROFILE%\.config\opencode\skills\db-update\scripts\db-update.ps1` |
+| Операции хранилища (lock / unlock / commit / update / connect / add-user) | `db-repo` — `{{CC_SKILLS_ROOT}}\db-repo\scripts\db-repo.ps1` |
+| Загрузка правок в ИБ (частичная) | `db-load-xml` — `{{CC_SKILLS_ROOT}}\db-load-xml\scripts\db-load-xml.ps1` |
+| Обновление конфигурации БД | `db-update` — `{{CC_SKILLS_ROOT}}\db-update\scripts\db-update.ps1` |
 | Гейты | bsl-analyzer `diagnostics file`, `cfe-validate`, `db-cfe-admin check`, `skill-web-test`, ninja live |
+
+Корень внешнего набора — `{{CC_SKILLS_ROOT}}`. Если на машине задана переменная
+`CC_SKILLS_ROOT`, скрипты лежат в ней, а не в дефолтном каталоге.
 
 Реквизиты хранилища берутся из `.v8-project.json` → `extensions[].repository` (`path`, `user`, `password`; `adminUser` — для `add-user`). Нет записи `repository` у расширения — операция не выполняется: сообщить и остановиться, путь не угадывать.
 
@@ -87,7 +90,7 @@ flowchart TD
 Общий префикс команды:
 
 ```powershell
-powershell.exe -NoProfile -File "%USERPROFILE%\.config\opencode\skills\db-repo\scripts\db-repo.ps1" -Command <подкоманда> <параметры>
+powershell.exe -NoProfile -File "{{CC_SKILLS_ROOT}}\db-repo\scripts\db-repo.ps1" -Command <подкоманда> <параметры>
 ```
 
 ### Рабочий цикл

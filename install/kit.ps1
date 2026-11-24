@@ -71,13 +71,220 @@ function Get-OpenCodeRoot() {
   return (Join-Path $env:USERPROFILE '.config\opencode')
 }
 
-# ---------- paths for rule/skill placeholders ----------
-# Rules and SKILL.md stay layout-neutral: they carry {{SKILLS_ROOT}},
-# {{AGENTS_ROOT}}, {{COMMANDS_ROOT}}, {{PROJECT_MCP}}, {{USER_MCP}}.
-# apply resolves them for OpenCode, so no document ships stale absolute paths.
+# ---------- машинные пути и плейсхолдеры профиля ----------
+# Правило: в profile/** нет путей с буквой диска. Машинные каталоги приходят из
+# install/path-defaults.windows.yaml через плейсхолдеры, которые stage и apply
+# подставляют в копии. Значение плейсхолдера — всегда env-форма ($env:VAR) или
+# относительный путь: копия не должна зависеть от буквы диска этой машины.
+# Шаблонное семейство ({{PROJECT_NAME}}, {{WEB_PORT}}, …) renderer не трогает:
+# его разворачивает env-setup.ps1 при инициализации проекта.
 
-function Get-OpenCodeRoot() {
-  return (Join-Path $env:USERPROFILE '.config\opencode')
+$script:KitPlaceholderNames = @(
+  'KIT_ROOT', 'CC_SKILLS_ROOT', 'SKILLS_ROOT', 'AGENTS_ROOT', 'COMMANDS_ROOT',
+  'USER_MCP', 'PROJECT_MCP', 'PIPA_URL', 'PIPA_HOME', 'PIPA_KEY_FILE')
+
+# Текстовые расширения, где плейсхолдеры вообще имеют смысл.
+$script:RenderTextExtensions = @('.md', '.ps1', '.psm1', '.py', '.mjs', '.js', '.json',
+  '.jsonc', '.yaml', '.yml', '.tpl', '.vbs', '.cmd', '.sh', '.txt', '.snippet')
+
+function Get-PathDefaultsPath {
+  return (Join-Path $KitRoot 'install\path-defaults.windows.yaml')
+}
+
+function Read-PathDefaults {
+  # Плоский ридер машинного профиля: ключ через точку (mcpPolicy.userMcp),
+  # скаляры в кавычках и без, комментарии. Вложенные последовательности
+  # пропускаются — коду они не нужны. Полный YAML-парсер здесь лишний риск.
+  $map = @{}
+  $path = Get-PathDefaultsPath
+  if (-not (Test-Path -LiteralPath $path)) { return $map }
+  $stack = @()
+  foreach ($raw in [System.IO.File]::ReadAllLines($path, [System.Text.Encoding]::UTF8)) {
+    $line = $raw.TrimEnd()
+    if (-not $line.Trim() -or $line.TrimStart().StartsWith('#')) { continue }
+    if ($line.TrimStart().StartsWith('- ')) { continue }
+    $m = [regex]::Match($line, '^(\s*)([\w.\-"]+):\s*(.*)$')
+    if (-not $m.Success) { continue }
+    $indent = $m.Groups[1].Value.Length
+    $key = $m.Groups[2].Value.Trim('"')
+    $value = $m.Groups[3].Value.Trim()
+
+    while ($stack.Count -gt 0 -and $stack[$stack.Count - 1].Indent -ge $indent) {
+      $stack = @($stack | Select-Object -First ($stack.Count - 1))
+    }
+    $full = (@($stack | ForEach-Object { $_.Key }) + $key) -join '.'
+    $stack += [pscustomobject]@{ Indent = $indent; Key = $key }
+
+    if (-not $value) { continue }
+    if ($value.StartsWith('[')) { continue }
+    if ($value.StartsWith('"')) {
+      $end = $value.LastIndexOf('"')
+      if ($end -gt 0) { $value = $value.Substring(1, $end - 1) }
+      $value = $value.Replace('\\', '\').Replace('\"', '"')
+    } else {
+      $hash = $value.IndexOf(' #')
+      if ($hash -ge 0) { $value = $value.Substring(0, $hash).Trim() }
+    }
+    $map[$full] = $value
+  }
+  return $map
+}
+
+function Get-PathDefault([hashtable]$Defaults, [string]$Key) {
+  if ($Defaults.ContainsKey($Key)) { return [string]$Defaults[$Key] }
+  return ''
+}
+
+function Get-MachineEnvValue([string]$Name) {
+  # env главнее файла. Порядок: процесс (то, что видит сессия), затем
+  # пользователь и машина — чтобы новая переменная работала до перезапуска.
+  foreach ($scope in @('Process', 'User', 'Machine')) {
+    $value = [Environment]::GetEnvironmentVariable($Name, $scope)
+    if ($value) { return [string]$value }
+  }
+  return ''
+}
+
+function ConvertTo-EnvForm([string]$Value) {
+  # %USERPROFILE%\x -> $env:USERPROFILE\x: в pwsh %VAR% не раскрывается.
+  if (-not $Value) { return '' }
+  return [regex]::Replace($Value, '%([A-Za-z_][A-Za-z0-9_]*)%', '$$env:$1')
+}
+
+function Get-KitRootForm {
+  if (-not (Get-MachineEnvValue 'NINJA_KIT_ROOT')) {
+    throw ('NINJA_KIT_ROOT не задана. Профиль подставляет {{KIT_ROOT}} только через неё, ' +
+      'чтобы не вписать в копию чужой путь. Задай переменную (kit.ps1 apply делает это сам) ' +
+      'и запусти команду в новом процессе.')
+  }
+  return '$env:NINJA_KIT_ROOT'
+}
+
+function Get-PlaceholderMap([ValidateSet('stage', 'apply')][string]$Layer) {
+  # Значения — только из машинного профиля (и env-токен для корня кита):
+  # stage и verify считают карту одним и тем же кодом, поэтому подстановка не
+  # зависит от того, какие переменные были в процессе в момент прогона.
+  # Env-переопределения (CC_SKILLS_ROOT, PIPA_URL, PIPA_KEY_FILE) описаны
+  # прозой в скиллах, а не подставлены: иначе копия «разъезжается» сама.
+  $defaults = Read-PathDefaults
+  $ccSkills = ConvertTo-EnvForm (Get-PathDefault $defaults 'ccSkills.skillsRoot')
+  if (-not $ccSkills) { $ccSkills = '$env:USERPROFILE\.config\opencode\skills' }
+
+  $pipaUrl = Get-PathDefault $defaults 'pipa.url'
+  if (-not $pipaUrl) { $pipaUrl = 'http://127.0.0.1:8787/mcp' }
+  $pipaKeyFile = Get-PathDefault $defaults 'pipa.keyFile'
+  if (-not $pipaKeyFile) { $pipaKeyFile = '%PIPA_HOME%\pithos-pandoras.key' }
+
+  $userMcp = ConvertTo-EnvForm (Get-PathDefault $defaults 'mcpPolicy.userMcp')
+  if (-not $userMcp) { $userMcp = '$env:USERPROFILE\.config\opencode\opencode.json(c)' }
+
+  $ocRel = '.config\opencode'
+  $skillsRoot = if ($Layer -eq 'stage') { '.opencode/skills' } else { '$env:USERPROFILE\' + $ocRel + '\skills' }
+
+  return @{
+    KIT_ROOT        = (Get-KitRootForm)
+    CC_SKILLS_ROOT  = $ccSkills
+    SKILLS_ROOT     = $skillsRoot
+    AGENTS_ROOT     = '$env:USERPROFILE\' + $ocRel + '\agents'
+    COMMANDS_ROOT   = '$env:USERPROFILE\' + $ocRel + '\commands'
+    USER_MCP        = $userMcp
+    PROJECT_MCP     = 'opencode.jsonc'
+    PIPA_URL        = $pipaUrl
+    PIPA_HOME       = '$env:PIPA_HOME'
+    PIPA_KEY_FILE   = (ConvertTo-EnvForm $pipaKeyFile)
+  }
+}
+
+function Test-RenderTextFile([string]$Path) {
+  return ($script:RenderTextExtensions -contains ([System.IO.Path]::GetExtension($Path).ToLowerInvariant()))
+}
+
+function Get-RenderedFile([string]$Path, [hashtable]$Map) {
+  # $null — файл копируется байт-в-байт (бинарь или нет ни одного нашего
+  # плейсхолдера). Иначе текст и признак BOM: PowerShell 5.1 читает .ps1 с
+  # кириллицей только с BOM, поэтому BOM сохраняется как был.
+  if (-not $Map -or $Map.Count -eq 0) { return $null }
+  if (-not (Test-RenderTextFile $Path)) { return $null }
+  $bytes = [System.IO.File]::ReadAllBytes($Path)
+  $hasBom = ($bytes.Length -ge 3 -and $bytes[0] -eq 0xEF -and $bytes[1] -eq 0xBB -and $bytes[2] -eq 0xBF)
+  $text = [System.IO.File]::ReadAllText($Path, [System.Text.Encoding]::UTF8)
+  $changed = $false
+  foreach ($name in $script:KitPlaceholderNames) {
+    $token = '{{' + $name + '}}'
+    if ($text.IndexOf($token, [System.StringComparison]::Ordinal) -lt 0) { continue }
+    $text = $text.Replace($token, [string]$Map[$name])
+    $changed = $true
+  }
+  if (-not $changed) { return $null }
+  return [pscustomobject]@{ Text = $text; Bom = $hasBom }
+}
+
+function Copy-RenderedFile([string]$Source, [string]$Destination, [hashtable]$Map) {
+  $rendered = Get-RenderedFile $Source $Map
+  $dir = Split-Path -Parent $Destination
+  if ($dir -and -not (Test-Path -LiteralPath $dir)) {
+    New-Item -ItemType Directory -Force -Path $dir | Out-Null
+  }
+  if ($null -eq $rendered) {
+    Copy-Item -LiteralPath $Source -Destination $Destination -Force
+    return
+  }
+  $encoding = [System.Text.UTF8Encoding]::new([bool]$rendered.Bom)
+  [System.IO.File]::WriteAllText($Destination, $rendered.Text, $encoding)
+}
+
+function Get-ExpectedFileHash([string]$Path, [hashtable]$Map) {
+  # Хеш того, что должно лежать в копии: байты исходника или отрендеренный текст.
+  # BOM входит в байты файла, поэтому в хеш он тоже входит.
+  $rendered = Get-RenderedFile $Path $Map
+  if ($null -eq $rendered) { return (Get-TextSha256 $Path) }
+  $encoding = [System.Text.UTF8Encoding]::new([bool]$rendered.Bom)
+  $body = $encoding.GetBytes($rendered.Text)
+  $bytes = $body
+  if ($rendered.Bom) {
+    $bytes = New-Object byte[] ($body.Length + 3)
+    $bytes[0] = 0xEF; $bytes[1] = 0xBB; $bytes[2] = 0xBF
+    [Array]::Copy($body, 0, $bytes, 3, $body.Length)
+  }
+  return (Get-TextSha256Bytes $bytes)
+}
+
+function Get-TextSha256Bytes([byte[]]$Bytes) {
+  $sha = [System.Security.Cryptography.SHA256]::Create()
+  try { $hash = $sha.ComputeHash($Bytes) } finally { $sha.Dispose() }
+  return (@($hash | ForEach-Object { $_.ToString('x2') }) -join '')
+}
+
+function Test-ProfileAbsolutePaths {
+  # Линт профиля: путь с буквой диска на другой машине неверен. Исключения —
+  # только системный корень платформы (allowlist) и node_modules/.git.
+  $allowlist = @('C:\Program Files\1cv8')
+  $pattern = '(?<![A-Za-z0-9_])[A-Za-z]:[\\/]'
+  $issues = @()
+  $root = Join-Path $KitRoot 'profile'
+  if (-not (Test-Path -LiteralPath $root)) { return $issues }
+  foreach ($file in Get-ChildItem -LiteralPath $root -Recurse -File) {
+    $rel = $file.FullName.Substring($root.Length).TrimStart('\', '/')
+    if (Test-StageExcluded $rel) { continue }
+    if (-not (Test-RenderTextFile $file.FullName)) { continue }
+    $text = [System.IO.File]::ReadAllText($file.FullName, [System.Text.Encoding]::UTF8)
+    foreach ($match in [regex]::Matches($text, $pattern)) {
+      $tail = $text.Substring($match.Index, [Math]::Min(64, $text.Length - $match.Index))
+      $allowed = $false
+      foreach ($prefix in $allowlist) {
+        if ($tail.StartsWith($prefix, [System.StringComparison]::OrdinalIgnoreCase)) { $allowed = $true; break }
+      }
+      if ($allowed) { continue }
+      $lineNo = 1
+      for ($i = 0; $i -lt $match.Index; $i++) { if ($text[$i] -eq "`n") { $lineNo++ } }
+      $issues += [pscustomobject]@{
+        File = 'profile\' + $rel
+        Line = $lineNo
+        Text = ($tail -split "[`r`n]")[0].Trim()
+      }
+    }
+  }
+  return $issues
 }
 
 function Get-OpenCodeConfigPath() {
@@ -430,29 +637,29 @@ function Test-StageExcluded([string]$RelPath) {
   return $false
 }
 
-function Copy-TreeFiltered([string]$Source, [string]$Destination) {
+function Copy-TreeFiltered([string]$Source, [string]$Destination, [hashtable]$RenderMap) {
   New-Item -ItemType Directory -Force -Path $Destination | Out-Null
   $base = (Resolve-Path -LiteralPath $Source).Path
   foreach ($file in Get-ChildItem -LiteralPath $base -Recurse -File) {
     $rel = $file.FullName.Substring($base.Length).TrimStart('\', '/')
     if (Test-StageExcluded $rel) { continue }
     $target = Join-Path $Destination $rel
-    $dir = Split-Path -Parent $target
-    if (-not (Test-Path -LiteralPath $dir)) { New-Item -ItemType Directory -Force -Path $dir | Out-Null }
-    Copy-Item -LiteralPath $file.FullName -Destination $target -Force
+    Copy-RenderedFile $file.FullName $target $RenderMap
   }
 }
 
-function Get-KitProjectFiles([string]$Dir) {
+function Get-KitProjectFiles([string]$Dir, [hashtable]$RenderMap) {
   # Относительный путь + хеш для каждого файла: так проверяется копия целиком,
-  # а не только SKILL.md.
+  # а не только SKILL.md. С RenderMap хеш считается от того, что должно быть в
+  # копии после подстановки плейсхолдеров.
   $result = @()
   if (-not (Test-Path -LiteralPath $Dir)) { return $result }
   $base = (Resolve-Path -LiteralPath $Dir).Path
   foreach ($file in Get-ChildItem -LiteralPath $base -Recurse -File) {
     $rel = $file.FullName.Substring($base.Length).TrimStart('\', '/')
     if (Test-StageExcluded $rel) { continue }
-    $result += [pscustomobject]@{ Rel = $rel; Hash = (Get-TextSha256 $file.FullName) }
+    $hash = if ($RenderMap) { Get-ExpectedFileHash $file.FullName $RenderMap } else { Get-TextSha256 $file.FullName }
+    $result += [pscustomobject]@{ Rel = $rel; Hash = $hash }
   }
   return $result
 }
@@ -576,14 +783,14 @@ function Get-TextSha256([string]$Path) {
   return (@($hash | ForEach-Object { $_.ToString('x2') }) -join '')
 }
 
-function Copy-ProfileFiles([string]$Source, [string]$Destination, [string]$Filter) {
-  # Копия байт-в-байт: run.ps1 сохранён в UTF-8, кириллица в комментариях
-  # не должна зависеть от кодировки консоли.
+function Copy-ProfileFiles([string]$Source, [string]$Destination, [string]$Filter, [hashtable]$RenderMap) {
+  # Копия с подстановкой плейсхолдеров; файлы без них и бинарные — байт-в-байт.
+  # run.ps1 сохранён в UTF-8 с BOM: кириллица не должна зависеть от кодировки консоли.
   if (-not (Test-Path -LiteralPath $Source)) { throw "Source missing: $Source" }
   New-Item -ItemType Directory -Force -Path $Destination | Out-Null
   $files = @(Get-ChildItem -LiteralPath $Source -File -Filter $Filter)
   foreach ($file in $files) {
-    Copy-Item -LiteralPath $file.FullName -Destination (Join-Path $Destination $file.Name) -Force
+    Copy-RenderedFile $file.FullName (Join-Path $Destination $file.Name) $RenderMap
   }
   return $files.Count
 }
@@ -668,8 +875,15 @@ function Invoke-Stage {
   $sources = @(Get-KitSkillSources)
   $always = @(Get-KitAlwaysRules)
   $ids = @($sources | ForEach-Object { $_.Name })
+  try {
+    $renderMap = Get-PlaceholderMap 'stage'
+  } catch {
+    Write-Status 'FAIL' ("stage: " + $_.Exception.Message)
+    return 1
+  }
   Write-Status 'INFO' "project: $root"
   Write-Status 'INFO' ("skills -> .opencode\skills: {0}; always rules -> .opencode\rules\always: {1}" -f $sources.Count, $always.Count)
+  Write-Status 'INFO' ("placeholders: " + (($renderMap.Keys | Sort-Object) -join ', '))
 
   if ($DryRun) {
     Write-Status 'INFO' "would stage $($sources.Count) skills and $($always.Count) always rules"
@@ -708,8 +922,8 @@ function Invoke-Stage {
     # и на время удаления скилл не должен исчезать из набора.
     $dst = Join-Path $skillsDst $src.Name
     New-Item -ItemType Directory -Force -Path $dst | Out-Null
-    Copy-TreeFiltered $src.FullName $dst
-    $srcFiles = @(Get-KitProjectFiles $src.FullName | ForEach-Object { $_.Rel })
+    Copy-TreeFiltered $src.FullName $dst $renderMap
+    $srcFiles = @(Get-KitProjectFiles $src.FullName $renderMap | ForEach-Object { $_.Rel })
     foreach ($f in @(Get-ChildItem -LiteralPath $dst -Recurse -File)) {
       $rel = $f.FullName.Substring($dst.Length).TrimStart('\', '/')
       if (Test-StageExcluded $rel) { Remove-Item -LiteralPath $f.FullName -Force; continue }
@@ -726,7 +940,7 @@ function Invoke-Stage {
     $removedRules++
   }
   foreach ($file in $always) {
-    Copy-Item -LiteralPath $file.FullName -Destination (Join-Path $rulesDst $file.Name) -Force
+    Copy-RenderedFile $file.FullName (Join-Path $rulesDst $file.Name) $renderMap
   }
   Write-Status 'OK' ("always rules staged: {0}{1}" -f $always.Count, $(if ($removedRules) { ", removed $removedRules stale" } else { '' }))
 
@@ -757,18 +971,25 @@ function Invoke-Stage {
 }
 
 function Test-StageInProject([string]$Root) {
-  # Проверка проектной копии: каждый файл скилла совпадает с профилем.
+  # Проверка проектной копии: каждый файл скилла совпадает с профилем после
+  # подстановки плейсхолдеров.
   $problems = @()
   $ocDir = Join-Path $Root '.opencode'
   $skillsDst = Join-Path $ocDir 'skills'
   $rulesDst = Join-Path $ocDir 'rules\always'
   $sources = @(Get-KitSkillSources)
   $always = @(Get-KitAlwaysRules)
+  try {
+    $renderMap = Get-PlaceholderMap 'stage'
+  } catch {
+    Write-Status 'FAIL' ("{0}: {1}" -f $Root, $_.Exception.Message)
+    return 1
+  }
 
   foreach ($src in $sources) {
     $dst = Join-Path $skillsDst $src.Name
     if (-not (Test-Path -LiteralPath $dst)) { $problems += "нет $($src.Name)"; continue }
-    $a = @(Get-KitProjectFiles $src.FullName)
+    $a = @(Get-KitProjectFiles $src.FullName $renderMap)
     $b = @(Get-KitProjectFiles $dst)
     if ($a.Count -ne $b.Count) { $problems += "$($src.Name): файлов $($b.Count) из $($a.Count)"; continue }
     $bad = 0
@@ -781,7 +1002,7 @@ function Test-StageInProject([string]$Root) {
   foreach ($file in $always) {
     $dst = Join-Path $rulesDst $file.Name
     if (-not (Test-Path -LiteralPath $dst)) { $problems += "нет правила $($file.Name)"; continue }
-    if ((Get-TextSha256 $file.FullName) -ne (Get-TextSha256 $dst)) { $problems += "правило $($file.Name) разошлось" }
+    if ((Get-ExpectedFileHash $file.FullName $renderMap) -ne (Get-TextSha256 $dst)) { $problems += "правило $($file.Name) разошлось" }
   }
 
   $cfgPath = Join-Path $Root 'opencode.jsonc'
@@ -828,14 +1049,36 @@ function Invoke-ApplyOpenCode {
     Write-Status 'INFO' 'would remove kit skill/instruction paths from the global config (if present)'
     Write-Status 'INFO' "would remove legacy $(Join-Path $ocRoot 'skills\kit') if present"
     Write-Status 'INFO' "would strip managed block from $(Join-Path $ocRoot 'AGENTS.md')"
+    Write-Status 'INFO' "would set NINJA_KIT_ROOT (user env) -> $KitRoot"
     Write-Status 'WARN' 'DryRun - no files written'
     return 0
   }
 
+  # 0. Корень кита для профиля: {{KIT_ROOT}} разворачивается в $env:NINJA_KIT_ROOT,
+  # поэтому переменную ставит apply, а не догадка в каждом скилле. Новая
+  # переменная видна только процессам, запущенным после этого — как PIPA_KEY.
+  $currentKitRoot = Get-MachineEnvValue 'NINJA_KIT_ROOT'
+  if ($currentKitRoot -ne $KitRoot) {
+    [Environment]::SetEnvironmentVariable('NINJA_KIT_ROOT', $KitRoot, 'User')
+    $env:NINJA_KIT_ROOT = $KitRoot
+    if ($currentKitRoot) { Write-Status 'WARN' "NINJA_KIT_ROOT: $currentKitRoot -> $KitRoot (user env)" }
+    else { Write-Status 'OK' "NINJA_KIT_ROOT -> $KitRoot (user env)" }
+    Write-Status 'INFO' 'NINJA_KIT_ROOT увидят только новые процессы: перезапусти OpenCode и терминал'
+  } else {
+    Write-Status 'OK' "NINJA_KIT_ROOT = $KitRoot"
+  }
+
+  try {
+    $renderMap = Get-PlaceholderMap 'apply'
+  } catch {
+    Write-Status 'FAIL' ("apply: " + $_.Exception.Message)
+    return 1
+  }
+
   # 1. Агентов, команды и скрипт каркаса OpenCode берёт только копией.
-  [void](Copy-ProfileFiles $agentsSrc $agentsDst '*.md')
-  [void](Copy-ProfileFiles $commandsSrc $commandsDst '*.md')
-  [void](Copy-ProfileFiles $scriptsSrc $scriptsDst '*')
+  [void](Copy-ProfileFiles $agentsSrc $agentsDst '*.md' $renderMap)
+  [void](Copy-ProfileFiles $commandsSrc $commandsDst '*.md' $renderMap)
+  [void](Copy-ProfileFiles $scriptsSrc $scriptsDst '*' $renderMap)
   Write-Status 'OK' "agents -> $agentsDst ($agentCount), commands -> $commandsDst ($commandCount), scripts -> $scriptsDst ($scriptCount)"
 
   # 2. Старая модель копировала профиль в skills\kit — сносим только этот каталог.
@@ -1149,6 +1392,7 @@ function Invoke-Lock {
 
 function Invoke-Verify {
   Write-Host '=== kit verify ===' -ForegroundColor Cyan
+  $fail = 0
   $skills = @(Get-ChildItem (Join-Path $KitRoot 'profile\skills') -Directory -EA SilentlyContinue |
     Where-Object { Test-Path (Join-Path $_.FullName 'SKILL.md') }).Count
   $always = @(Get-ChildItem (Join-Path $KitRoot 'profile\rules\always') -File -Filter '*.md' -EA SilentlyContinue).Count
@@ -1157,6 +1401,20 @@ function Invoke-Verify {
   $rules = $always + $ondemand
   $agents = @(Get-ChildItem (Join-Path $KitRoot 'profile\agents') -File -Filter '*.md' -EA SilentlyContinue).Count
   Write-Status 'OK' "profile skills=$skills rules=$rules (always=$always, on-demand=$ondemand) agents=$agents"
+
+  # Профиль обязан оставаться переносимым: путь с буквой диска на другой машине
+  # неверен. Исключение одно — системный корень платформы 1С (allowlist ниже).
+  $pathIssues = @(Test-ProfileAbsolutePaths)
+  if ($pathIssues.Count -gt 0) {
+    $files = @($pathIssues | ForEach-Object { $_.File } | Sort-Object -Unique).Count
+    Write-Status 'FAIL' ("profile: {0} absolute path(s) in {1} file(s) - use {{{{PLACEHOLDER}}}} or %ENV% / `$env:ENV" -f $pathIssues.Count, $files)
+    foreach ($issue in $pathIssues) {
+      Write-Status 'INFO' ("  {0}:{1}  {2}" -f $issue.File, $issue.Line, $issue.Text)
+    }
+    $fail++
+  } else {
+    Write-Status 'OK' 'profile: no absolute paths (allowlist: C:\Program Files\1cv8)'
+  }
 
   # Маршруты и роли — единственный источник rule-routes.md. Копия в другом правиле
   # или в промпте разъедется при следующей правке, поэтому ловим её здесь.
@@ -1228,9 +1486,8 @@ function Invoke-Verify {
   Write-Status 'OK' 'aggregate profile 1c-ninja-kit.yaml'
 
   # Доставка в глобальный профиль. Проверяем ровно то, что увидит OpenCode:
-  # пути скиллов/правил в конфиге, отсутствие старой копии и байт-в-байт копии
-  # агентов, команд и скрипта каркаса.
-  $fail = 0
+  # пути скиллов/правил в конфиге, отсутствие старой копии и копии агентов,
+  # команд и скрипта каркаса — с подстановкой плейсхолдеров, как их пишет apply.
   $ocRoot = Get-OpenCodeRoot
   $skillsSrc = Join-Path $KitRoot 'profile\skills'
   $rulesSrc = Join-Path $KitRoot 'profile\rules'
@@ -1283,6 +1540,9 @@ function Invoke-Verify {
     @('commands', 'profile\commands', '*.md'),
     @('scripts', 'profile\scripts', '*')
   )
+  $applyMap = $null
+  try { $applyMap = Get-PlaceholderMap 'apply' }
+  catch { Write-Status 'WARN' ("placeholders not resolved: " + $_.Exception.Message) }
   foreach ($pair in $copies) {
     $layer = $pair[0]
     $src = Join-Path $KitRoot $pair[1]
@@ -1292,7 +1552,8 @@ function Invoke-Verify {
     foreach ($file in $srcFiles) {
       $target = Join-Path $dst $file.Name
       if (-not (Test-Path -LiteralPath $target)) { $problems += "нет $($file.Name)"; continue }
-      if ((Get-TextSha256 $file.FullName) -ne (Get-TextSha256 $target)) { $problems += "разошёлся $($file.Name)" }
+      $expected = if ($applyMap) { Get-ExpectedFileHash $file.FullName $applyMap } else { Get-TextSha256 $file.FullName }
+      if ($expected -ne (Get-TextSha256 $target)) { $problems += "разошёлся $($file.Name)" }
     }
     if ($srcFiles.Count -eq 0) { $problems += 'в профиле нет файлов' }
     if ($problems.Count -gt 0) {

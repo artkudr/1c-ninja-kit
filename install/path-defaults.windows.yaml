@@ -73,8 +73,7 @@ webTest:
   nodeToolsDir: "%USERPROFILE%\\tools\\node"
   minNodeVersion: "18.0.0"
   browsers: ["chromium"]
-  skillScriptsRelative: ".config\\opencode\\skills\\kit\\skills\\skill-web-test\\scripts"
-  note: "Веб-прогон обязателен. deps: Node LTS portable -> npm ci в каталоге скилла -> playwright install chromium."
+  note: "Веб-прогон обязателен. deps: Node LTS portable -> npm ci в каталоге скилла кита -> playwright install chromium."
 
 toolkit:
   upstream: "https://github.com/ROCTUP/1c-mcp-toolkit"
@@ -83,8 +82,7 @@ toolkit:
   windowsEpfAsset: "MCP_Toolkit.epf"
   mcpUrl: "http://127.0.0.1:6003/mcp"
   epfRecommended: "%USERPROFILE%\\tools\\1c-mcp-toolkit\\MCP_Toolkit.epf"
-  # Legacy path on some author machines — NOT required; prefer epfRecommended / GitHub download
-  epfLegacyExample: "C:\\1C\\soft\\MCP_Toolkit.epf"
+  note: "epfRecommended — рекомендуемый путь. Постоянный каталог EPF выбирает человек: в профиле он не прописан и в git не попадает."
 
 ninja:
   mcpMainRelative: "components/1c-ninja-mcp/main.os"
@@ -98,9 +96,26 @@ ninja:
 ibases:
   v8i: "%APPDATA%\\1C\\1CEStart\\ibases.v8i"
 
+# Корень внешнего набора cc-1c-skills. Переопределяется env CC_SKILLS_ROOT;
+# ставит набор install/cc-skills.ps1 (у него тот же дефолт).
+ccSkills:
+  skillsRoot: "%USERPROFILE%\\.config\\opencode\\skills"
+  env: [CC_SKILLS_ROOT]
+
+# Сервис задач PiPa (PithosPandoras). Значения — дефолты машины; env главнее.
+# Каталог сервиса на конкретной машине задаётся PIPA_HOME: в профиле он не
+# прописан, потому что у каждой установки свой. Версия — pithos-pandoras.exe --version,
+# у GET /health версии нет (только ok).
+pipa:
+  url: "http://127.0.0.1:8787/mcp"
+  boardUrl: "http://127.0.0.1:8787/"
+  port: 8787
+  home: "%PIPA_HOME%"
+  keyFile: "%PIPA_HOME%\\pithos-pandoras.key"
+  env: [PIPA_URL, PIPA_HOME, PIPA_KEY_FILE, PIPA_KEY, PITHOS_PORT]
+
 projectsLayout:
   suggestedRoot: "C:\\1C\\projects"
-  kitRoot: "C:\\1C\\projects\\1c-ninja-kit"
 
 mcpPolicy:
   userMcp: "%USERPROFILE%\\.config\\opencode\\opencode.json(c)"

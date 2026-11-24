@@ -13,5 +13,5 @@ allowed-tools:
 Останавливает httpd профиля (`apache-83` / `apache-85` по платформе из `.v8-project.json`).
 
 ```powershell
-powershell.exe -NoProfile -File "C:\1C\projects\1c-ninja-kit\profile\skills/skill-web-stop/scripts/web-stop.ps1"
+powershell.exe -NoProfile -File "{{KIT_ROOT}}\profile\skills/skill-web-stop/scripts/web-stop.ps1"
 ```

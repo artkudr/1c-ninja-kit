@@ -70,13 +70,13 @@ argument-hint: "[-SourceProject path] [-Mode Init|Refresh|Check] [-Force]"
 
 ### 2. SourceProject
 
-- Если пользователь не указал: ищи sibling в `C:\1C\projects\` (есть `.v8-project.json`) и предложи выбрать.
+- Если пользователь не указал: ищи соседние проекты рядом с китом (`Split-Path $env:NINJA_KIT_ROOT -Parent`; у проекта есть `.v8-project.json`) и предложи выбрать.
 - Иначе спроси путь или продолжай с шаблонов.
 
 ### 3. Выбор базы (интерактив)
 
 ```powershell
-powershell.exe -NoProfile -File "C:\1C\projects\1c-ninja-kit\profile\skills\skill-env-setup\scripts\read-ibases.ps1"
+powershell.exe -NoProfile -File "{{KIT_ROOT}}\profile\skills\skill-env-setup\scripts\read-ibases.ps1"
 # или -Json
 ```
 
@@ -99,12 +99,12 @@ powershell.exe -NoProfile -File "C:\1C\projects\1c-ninja-kit\profile\skills\skil
 ### 5. Запись файлов
 
 ```powershell
-powershell.exe -NoProfile -File "C:\1C\projects\1c-ninja-kit\profile\skills\skill-env-setup\scripts\env-setup.ps1" `
+powershell.exe -NoProfile -File "{{KIT_ROOT}}\profile\skills\skill-env-setup\scripts\env-setup.ps1" `
   -Mode Init `
   -ProjectRoot "<корень>" `
   -SourceProject "<соседний>" `
   -WebPort 8083 `
-  -IbConnection '/F"C:\1C\bases\base"' `
+  -IbConnection '/F"<путь к базе>"' `
   -DbUser "<имя>" `
   -DbPwd "" `
   -V8Version "8.5.1.1343" `
@@ -131,7 +131,7 @@ powershell.exe -NoProfile -File "C:\1C\projects\1c-ninja-kit\profile\skills\skil
 
 После записи файлов агент **обязан** (это не «ручной шаг пользователя»):
 
-1. Убедиться, что `src/cfe/NinjaLive/Configuration.xml` есть (скрипт Init копирует с эталона). Эталон: SourceProject `src/cfe/NinjaLive`, иначе kit `project-scaffold/cfe/NinjaLive` (поиск через `NINJA_KIT_ROOT` / `C:\1C\projects\1c-ninja-kit`), иначе соседний проект.
+1. Убедиться, что `src/cfe/NinjaLive/Configuration.xml` есть (скрипт Init копирует с эталона). Эталон: SourceProject `src/cfe/NinjaLive`, иначе kit `project-scaffold/cfe/NinjaLive` (поиск через `NINJA_KIT_ROOT`), иначе соседний проект.
 2. `db-load-xml -ConfigDir "src\cfe\NinjaLive" -Mode Full -Extension "NinjaLive" -UpdateDB`; затем `db-cfe-admin set-properties -Name "NinjaLive" -Active on -SafeMode off`. NinjaLive — вне хранилища.
 3. `skill-web-publish` этой ИБ, если нет HTTP `/hs/ninja-live` (`publishExtensionsByDefault`).
 4. Reload MCP. В project mcp: `NINJA_URL=http://localhost:{8083|8085}/{appName}/hs/ninja-live`.
@@ -159,13 +159,13 @@ powershell.exe -NoProfile -File "C:\1C\projects\1c-ninja-kit\profile\skills\skil
 
 ```powershell
 # Только список баз
-powershell.exe -NoProfile -File "C:\1C\projects\1c-ninja-kit\profile\skills\skill-env-setup\scripts\read-ibases.ps1" -Json
+powershell.exe -NoProfile -File "{{KIT_ROOT}}\profile\skills\skill-env-setup\scripts\read-ibases.ps1" -Json
 
 # Только sync CFE (имена с live_extensions_list; без Предприятия)
-powershell.exe -NoProfile -File "C:\1C\projects\1c-ninja-kit\profile\skills\skill-env-setup\scripts\sync-cfe.ps1" -ProjectRoot "." -ExtensionNames @("Имя1","Имя2")
+powershell.exe -NoProfile -File "{{KIT_ROOT}}\profile\skills\skill-env-setup\scripts\sync-cfe.ps1" -ProjectRoot "." -ExtensionNames @("Имя1","Имя2")
 
 # Check на текущем проекте
-powershell.exe -NoProfile -File "C:\1C\projects\1c-ninja-kit\profile\skills\skill-env-setup\scripts\env-setup.ps1" -Mode Check -ProjectRoot "."
+powershell.exe -NoProfile -File "{{KIT_ROOT}}\profile\skills\skill-env-setup\scripts\env-setup.ps1" -Mode Check -ProjectRoot "."
 ```
 
 ### Свойства расширения под базу (шаг 6.0)

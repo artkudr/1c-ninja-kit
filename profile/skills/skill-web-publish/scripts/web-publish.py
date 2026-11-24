@@ -53,10 +53,18 @@ def _v8_version_from_path(v8path):
     return m.group(1) if m else None
 
 
+def _platform_exe_candidates():
+    # Платформа ставится в Program Files или Program Files (x86): берём оба
+    # корня из окружения, без литерального пути.
+    result = []
+    for root in (os.environ.get("ProgramFiles"), os.environ.get("ProgramFiles(x86)")):
+        if root:
+            result.extend(glob.glob(os.path.join(root, "1cv8", "*", "bin", "1cv8.exe")))
+    return result
+
+
 def _detected_v8_version_mask():
-    candidates = glob.glob(r"C:\Program Files\1cv8\*\bin\1cv8.exe") + glob.glob(
-        r"C:\Program Files (x86)\1cv8\*\bin\1cv8.exe"
-    )
+    candidates = _platform_exe_candidates()
     if not candidates:
         return None
     best = max(candidates, key=lambda p: _version_key(os.path.basename(os.path.dirname(os.path.dirname(p)))))
@@ -73,9 +81,7 @@ def _version_key(ver_name):
 def _find_platform_bin_by_version(version_spec):
     if not version_spec:
         return None
-    candidates = glob.glob(r"C:\Program Files\1cv8\*\bin\1cv8.exe") + glob.glob(
-        r"C:\Program Files (x86)\1cv8\*\bin\1cv8.exe"
-    )
+    candidates = _platform_exe_candidates()
     matched = []
     for exe in candidates:
         bin_dir = os.path.dirname(exe)

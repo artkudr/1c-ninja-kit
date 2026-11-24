@@ -8,7 +8,7 @@
 .EXAMPLE
     .\read-ibases.ps1 -Json
 .EXAMPLE
-    .\read-ibases.ps1 -Path "D:\custom\ibases.v8i"
+    .\read-ibases.ps1 -Path "<путь>\ibases.v8i"
 #>
 
 [CmdletBinding()]

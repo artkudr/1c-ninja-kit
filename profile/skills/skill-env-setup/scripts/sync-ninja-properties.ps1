@@ -24,9 +24,9 @@
     Idempotent. Never touches the configuration dump itself.
 
 .EXAMPLE
-    .\sync-ninja-properties.ps1 -ProjectRoot C:\1C\projects\unf-dev
+    .\sync-ninja-properties.ps1 -ProjectRoot <проект>
 .EXAMPLE
-    .\sync-ninja-properties.ps1 -ProjectRoot C:\1C\projects\unf-dev -Check
+    .\sync-ninja-properties.ps1 -ProjectRoot <проект> -Check
 #>
 [CmdletBinding()]
 param(

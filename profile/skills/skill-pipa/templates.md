@@ -14,7 +14,7 @@
     "servers": {
       "pipa": {
         "type": "remote",
-        "url": "http://127.0.0.1:8787/mcp",
+        "url": "{{PIPA_URL}}",
         "oauth": false,
         "headers": {
           "Authorization": "Bearer {env:PIPA_KEY}"
@@ -25,7 +25,8 @@
 }
 ```
 
-Ключ возьми из `pithos-pandoras.key`. Переменную окружения поставь один раз:
+Ключ возьми из файла `PIPA_KEY_FILE` (дефолт — рядом с базой сервиса) или из
+переменной `PIPA_KEY`. Переменную окружения поставь один раз:
 
 ```powershell
 setx PIPA_KEY "<ключ>"
@@ -38,7 +39,7 @@ setx PIPA_KEY "<ключ>"
 То же через CLI:
 
 ```text
-opencode mcp add pipa --global --url http://127.0.0.1:8787/mcp --header "Authorization=Bearer {env:PIPA_KEY}"
+opencode mcp add pipa --global --url {{PIPA_URL}} --header "Authorization=Bearer {env:PIPA_KEY}"
 opencode mcp list
 ```
 

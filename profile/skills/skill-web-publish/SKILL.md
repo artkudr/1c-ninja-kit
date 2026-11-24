@@ -31,7 +31,7 @@ Apache **не в проекте**. Два профиля на машине:
 3. Реестр PT не используем.
 
 ```powershell
-powershell.exe -NoProfile -File "C:\1C\projects\1c-ninja-kit\profile\skills/skill-web-publish/scripts/web-publish.ps1" `
+powershell.exe -NoProfile -File "{{KIT_ROOT}}\profile\skills/skill-web-publish/scripts/web-publish.ps1" `
   -InfoBaseServer "k-server" -InfoBaseRef "my-ib-ref" `
   -UserName "..." -Password "..."
 ```
@@ -41,14 +41,14 @@ powershell.exe -NoProfile -File "C:\1C\projects\1c-ninja-kit\profile\skills/skil
 ### Фрагмент `.v8-project.json`
 
 ```jsonc
-"v8path": "C:\\Program Files\\1cv8\\8.3.27.2130\\bin",
+"v8path": "%ProgramFiles%\\1cv8\\<версия>\\bin",
 "web": {
   "appName": "<appName>",
   "port": 8083
 }
 ```
 
-Для 8.5: `"v8path": "C:\\Program Files\\1cv8\\8.5.1.1343\\bin"`, `"port": 8085`, smoke `http://localhost:8085/<appName>/ru_RU/`.
+Для 8.5: `"v8path": "%ProgramFiles%\\1cv8\\8.5.1.1343\\bin"`, `"port": 8085`, smoke `http://localhost:8085/<appName>/ru_RU/`.
 
 ## Локаль веб-клиента
 

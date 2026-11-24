@@ -10,10 +10,10 @@ Markdown-гайд → PDF без pandoc и Word: печать Chromium чере�
 ## Запуск
 
 ```powershell
-node "C:\1C\projects\1c-ninja-kit\profile\skills\skill-guide-pdf\scripts\build-guide-pdf.mjs" "Задачи/003 - 2026-11-17/гайд.md"
+node "{{KIT_ROOT}}\profile\skills\skill-guide-pdf\scripts\build-guide-pdf.mjs" "Задачи/003 - 2026-11-17/гайд.md"
 ```
 
-Путь — каталог скилла в репозитории кита (`active skills` ссылаются на него из `opencode.jsonc`); `NINJA_KIT_ROOT` переопределяет корень, если кит лежит не в `C:\1C\projects\1c-ninja-kit`. Команда должна остаться одной строкой и начинаться с `node`.
+Путь — каталог скилла в репозитории кита (`active skills` ссылаются на него из `opencode.jsonc`); корень кита берётся из `$env:NINJA_KIT_ROOT` (переменную ставит `kit.ps1 apply`). Команда должна остаться одной строкой и начинаться с `node`.
 
 PDF ложится рядом с исходником, имя то же с расширением `.pdf`.
 

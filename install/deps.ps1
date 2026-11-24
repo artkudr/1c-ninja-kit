@@ -249,11 +249,9 @@ function Get-DepsNodePath {
 }
 
 # Каталог скилла skill-web-test, где лежит package.json.
-# Сначала глобальная копия (после kit.ps1 apply), иначе — исходники кита.
+# Скиллы живут только в ките (в проект их ставит stage, глобальной копии нет),
+# поэтому node_modules ставятся в каталог скилла кита.
 function Get-DepsWebTestScriptsDir([string]$KitRoot) {
-  $pins = Get-DepsPins $KitRoot
-  $global = Join-Path $env:USERPROFILE ([string]$pins.webTest.skillScriptsRelative)
-  if (Test-Path -LiteralPath (Join-Path $global 'package.json')) { return $global }
   return (Join-Path $KitRoot 'profile\skills\skill-web-test\scripts')
 }
 
@@ -574,8 +572,6 @@ function Install-DepsNodePortable([string]$KitRoot, [switch]$Offline, [switch]$D
 function Install-DepWebTest([string]$KitRoot, [switch]$Update, [switch]$Offline, [switch]$DryRun) {
   $pins = Get-DepsPins $KitRoot
   $scripts = Get-DepsWebTestScriptsDir $KitRoot
-  $global = Join-Path $env:USERPROFILE ([string]$pins.webTest.skillScriptsRelative)
-  $isGlobal = ($scripts -eq $global)
 
   if ($DryRun) {
     if (-not (Get-ExeVersion (Get-DepsNodePath) '--version' 'v(\d+(?:\.\d+){1,3})')) {
@@ -624,10 +620,6 @@ function Install-DepWebTest([string]$KitRoot, [switch]$Update, [switch]$Offline,
     }
   } finally {
     Pop-Location
-  }
-
-  if (-not $isGlobal) {
-    Write-Status 'WARN' 'скилл ещё не в OpenCode: после kit.ps1 apply повторите kit.ps1 deps -What web-test'
   }
 
   $nodeVer = Get-ExeVersion $nodeExe '--version' 'v(\d+(?:\.\d+){1,3})'
