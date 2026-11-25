@@ -135,6 +135,25 @@ function Get-PathDefault([hashtable]$Defaults, [string]$Key) {
   return ''
 }
 
+function Resolve-ProjectMcpName([hashtable]$Defaults, [string]$ProjectRoot) {
+  # {{PROJECT_MCP}} — имя файла MCP-конфига в корне проекта, не путь: в тексте
+  # правила он стоит внутри фразы «в корне проекта». Явный ключ машинного
+  # профиля главнее: если проект держит нестандартное имя, его и берём. Иначе
+  # stage смотрит фактический файл проекта, а без корня (apply) — канон.
+  $configured = Get-PathDefault $Defaults 'mcpPolicy.projectMcp'
+  if ($configured) {
+    $leaf = Split-Path -Leaf ($configured.Replace('/', '\'))
+    if ($leaf) { return $leaf }
+  }
+  if ($ProjectRoot) {
+    $json = Join-Path $ProjectRoot 'opencode.json'
+    $jsonc = Join-Path $ProjectRoot 'opencode.jsonc'
+    if (Test-Path -LiteralPath $jsonc) { return 'opencode.jsonc' }
+    if (Test-Path -LiteralPath $json) { return 'opencode.json' }
+  }
+  return 'opencode.jsonc'
+}
+
 function Get-MachineEnvValue([string]$Name) {
   # env главнее файла. Порядок: процесс (то, что видит сессия), затем
   # пользователь и машина — чтобы новая переменная работала до перезапуска.
@@ -160,12 +179,14 @@ function Get-KitRootForm {
   return '$env:NINJA_KIT_ROOT'
 }
 
-function Get-PlaceholderMap([ValidateSet('stage', 'apply')][string]$Layer) {
+function Get-PlaceholderMap([ValidateSet('stage', 'apply')][string]$Layer, [string]$ProjectRoot) {
   # Значения — только из машинного профиля (и env-токен для корня кита):
   # stage и verify считают карту одним и тем же кодом, поэтому подстановка не
   # зависит от того, какие переменные были в процессе в момент прогона.
   # Env-переопределения (CC_SKILLS_ROOT, PIPA_URL, PIPA_KEY_FILE) описаны
   # прозой в скиллах, а не подставлены: иначе копия «разъезжается» сама.
+  # ProjectRoot нужен только stage/verify: по нему выбирается фактический файл
+  # проектного MCP-конфига. apply передаёт пусто и живёт на ключе/дефолте.
   $defaults = Read-PathDefaults
   $ccSkills = ConvertTo-EnvForm (Get-PathDefault $defaults 'ccSkills.skillsRoot')
   if (-not $ccSkills) { $ccSkills = '$env:USERPROFILE\.config\opencode\skills' }
@@ -188,7 +209,7 @@ function Get-PlaceholderMap([ValidateSet('stage', 'apply')][string]$Layer) {
     AGENTS_ROOT     = '$env:USERPROFILE\' + $ocRel + '\agents'
     COMMANDS_ROOT   = '$env:USERPROFILE\' + $ocRel + '\commands'
     USER_MCP        = $userMcp
-    PROJECT_MCP     = 'opencode.jsonc'
+    PROJECT_MCP     = (Resolve-ProjectMcpName $defaults $ProjectRoot)
     PIPA_URL        = $pipaUrl
     PIPA_HOME       = '$env:PIPA_HOME'
     PIPA_KEY_FILE   = (ConvertTo-EnvForm $pipaKeyFile)
@@ -704,9 +725,12 @@ function Clear-OpenCodeGlobalKitPaths {
   return [pscustomobject]@{ Path = $path; Removed = $removed; Exists = $true }
 }
 
-function Set-KitProjectInstructions([string]$Root, [switch]$DryRunInner) {
+function Set-KitProjectInstructions([string]$Root, [string]$ConfigName = 'opencode.jsonc', [switch]$DryRunInner) {
   # В проектном конфиге достаточно instructions: .opencode/skills OpenCode находит сам.
-  $path = Join-Path $Root 'opencode.jsonc'
+  # Имя файла приходит из {{PROJECT_MCP}}: у проекта с одним opencode.json писать
+  # рядом второй конфиг нельзя — это неопределённость, а не миграция.
+  if (-not $ConfigName) { $ConfigName = 'opencode.jsonc' }
+  $path = Join-Path $Root $ConfigName
   $glob = '.opencode/rules/always/*.md'
   $schemaJson = '"https://opencode.ai/config.json"'
 
@@ -876,7 +900,7 @@ function Invoke-Stage {
   $always = @(Get-KitAlwaysRules)
   $ids = @($sources | ForEach-Object { $_.Name })
   try {
-    $renderMap = Get-PlaceholderMap 'stage'
+    $renderMap = Get-PlaceholderMap 'stage' $root
   } catch {
     Write-Status 'FAIL' ("stage: " + $_.Exception.Message)
     return 1
@@ -884,10 +908,11 @@ function Invoke-Stage {
   Write-Status 'INFO' "project: $root"
   Write-Status 'INFO' ("skills -> .opencode\skills: {0}; always rules -> .opencode\rules\always: {1}" -f $sources.Count, $always.Count)
   Write-Status 'INFO' ("placeholders: " + (($renderMap.Keys | Sort-Object) -join ', '))
+  Write-Status 'INFO' "project mcp: $($renderMap['PROJECT_MCP'])"
 
   if ($DryRun) {
     Write-Status 'INFO' "would stage $($sources.Count) skills and $($always.Count) always rules"
-    Write-Status 'INFO' "would merge instructions '$('.opencode/rules/always/*.md')' into $(Join-Path $root 'opencode.jsonc')"
+    Write-Status 'INFO' "would merge instructions '$('.opencode/rules/always/*.md')' into $(Join-Path $root $renderMap['PROJECT_MCP'])"
     Write-Status 'WARN' 'DryRun - no files written'
     return 0
   }
@@ -964,7 +989,7 @@ function Invoke-Stage {
   if ($manifestChanged) { Set-FileContentUtf8 $manifestPath $manifestText }
   Write-Status 'OK' "manifest -> $manifestPath$(if (-not $manifestChanged) { ' (unchanged)' } else { '' })"
 
-  $cfg = Set-KitProjectInstructions $root
+  $cfg = Set-KitProjectInstructions $root $renderMap['PROJECT_MCP']
   Write-Status 'OK' ("config {0}: {1}, instructions=.opencode/rules/always/*.md" -f $cfg.Action, $cfg.Path)
   Write-Status 'INFO' 'config changes apply without restart; new session sees project skills'
   return 0
@@ -980,7 +1005,7 @@ function Test-StageInProject([string]$Root) {
   $sources = @(Get-KitSkillSources)
   $always = @(Get-KitAlwaysRules)
   try {
-    $renderMap = Get-PlaceholderMap 'stage'
+    $renderMap = Get-PlaceholderMap 'stage' $Root
   } catch {
     Write-Status 'FAIL' ("{0}: {1}" -f $Root, $_.Exception.Message)
     return 1
@@ -1005,16 +1030,17 @@ function Test-StageInProject([string]$Root) {
     if ((Get-ExpectedFileHash $file.FullName $renderMap) -ne (Get-TextSha256 $dst)) { $problems += "правило $($file.Name) разошлось" }
   }
 
-  $cfgPath = Join-Path $Root 'opencode.jsonc'
+  $cfgName = $renderMap['PROJECT_MCP']
+  $cfgPath = Join-Path $Root $cfgName
   if (-not (Test-Path -LiteralPath $cfgPath)) {
-    $problems += 'нет opencode.jsonc с instructions'
+    $problems += "нет $cfgName с instructions"
   } else {
     try {
       $cfg = Read-JsoncObject $cfgPath
       $glob = '.opencode/rules/always/*.md'
       $has = @($cfg.instructions | Where-Object { $null -ne $_ } | ForEach-Object { [string]$_ }) -contains $glob
-      if (-not $has) { $problems += "в opencode.jsonc нет instructions '$glob'" }
-    } catch { $problems += "opencode.jsonc не разбирается: $($_.Exception.Message)" }
+      if (-not $has) { $problems += "в $cfgName нет instructions '$glob'" }
+    } catch { $problems += "$cfgName не разбирается: $($_.Exception.Message)" }
   }
 
   if ($problems.Count -gt 0) {
@@ -1050,6 +1076,9 @@ function Invoke-ApplyOpenCode {
     Write-Status 'INFO' "would remove legacy $(Join-Path $ocRoot 'skills\kit') if present"
     Write-Status 'INFO' "would strip managed block from $(Join-Path $ocRoot 'AGENTS.md')"
     Write-Status 'INFO' "would set NINJA_KIT_ROOT (user env) -> $KitRoot"
+    $dryPipaHome = Expand-EnvPath (Get-PathDefault (Read-PathDefaults) 'pipa.home')
+    if ($dryPipaHome) { Write-Status 'INFO' "would ensure PIPA_HOME (user env) -> $dryPipaHome" }
+    else { Write-Status 'INFO' 'pipa.home пуст: PIPA_HOME не трогается' }
     Write-Status 'WARN' 'DryRun - no files written'
     return 0
   }
@@ -1066,6 +1095,30 @@ function Invoke-ApplyOpenCode {
     Write-Status 'INFO' 'NINJA_KIT_ROOT увидят только новые процессы: перезапусти OpenCode и терминал'
   } else {
     Write-Status 'OK' "NINJA_KIT_ROOT = $KitRoot"
+  }
+
+  # 0b. Каталог PiPa: pipa.home — значение по умолчанию для рантайм-переменной.
+  # В текст профиля по-прежнему подставляется $env:PIPA_HOME, поэтому буква
+  # диска в staged-копию не попадает; apply только заводит саму переменную.
+  $pipaHome = Expand-EnvPath (Get-PathDefault (Read-PathDefaults) 'pipa.home')
+  if ($pipaHome -and $pipaHome.IndexOf('%') -lt 0) {
+    $currentPipaHome = Get-MachineEnvValue 'PIPA_HOME'
+    $samePipaHome = ($currentPipaHome.TrimEnd('\', '/') -eq $pipaHome.TrimEnd('\', '/'))
+    if (-not $currentPipaHome) {
+      [Environment]::SetEnvironmentVariable('PIPA_HOME', $pipaHome, 'User')
+      $env:PIPA_HOME = $pipaHome
+      Write-Status 'OK' "PIPA_HOME -> $pipaHome (user env)"
+      Write-Status 'INFO' 'PIPA_HOME увидят только новые процессы: перезапусти OpenCode и терминал'
+    } elseif (-not $samePipaHome) {
+      [Environment]::SetEnvironmentVariable('PIPA_HOME', $pipaHome, 'User')
+      $env:PIPA_HOME = $pipaHome
+      Write-Status 'WARN' "PIPA_HOME: $currentPipaHome -> $pipaHome (user env)"
+      Write-Status 'INFO' 'PIPA_HOME увидят только новые процессы: перезапусти OpenCode и терминал'
+    } else {
+      Write-Status 'OK' "PIPA_HOME = $pipaHome"
+    }
+  } elseif ($pipaHome) {
+    Write-Status 'WARN' "pipa.home не раскрылся: $pipaHome - PIPA_HOME не меняется"
   }
 
   try {

@@ -11,12 +11,16 @@
 - Копии — не байт-в-байт: `stage` и `apply` подставляют плейсхолдеры
   (`{{KIT_ROOT}}`, `{{CC_SKILLS_ROOT}}`, `{{PIPA_*}}`, `{{SKILLS_ROOT}}`, …).
   Источник значений — машинный профиль `install/path-defaults.windows.yaml`
-  ровно по четырём ключам (`ccSkills.skillsRoot`, `pipa.url`, `pipa.keyFile`,
-  `mcpPolicy.userMcp`); остальные значения — константы renderer'а или вычисление
-  по слою (`pipa.home` и `mcpPolicy.projectMcp` подстановка не читает).
-  Переменные процесса на подстановку не влияют. `CC_SKILLS_ROOT`,
-  `PIPA_URL`, `PIPA_HOME`, `PIPA_KEY_FILE` — рантайм-контракт агента, не вход
-  подстановки. В текст попадает env-форма (`$env:VAR`) или относительный путь.
+  по ключам `ccSkills.skillsRoot`, `pipa.url`, `pipa.keyFile`, `pipa.home`,
+  `mcpPolicy.userMcp`, `mcpPolicy.projectMcp`; остальные значения — константы
+  renderer'а или вычисление по слою. `pipa.home` — не подстановка, а дефолт для
+  переменной `PIPA_HOME`: её ставит `apply`. `{{PROJECT_MCP}}` — имя файла
+  проектного конфига: ключ `mcpPolicy.projectMcp`, иначе фактический
+  `opencode.jsonc`/`opencode.json` проекта, иначе `opencode.jsonc`.
+  Переменные процесса на подстановку не влияют (кроме токена `NINJA_KIT_ROOT`).
+  `CC_SKILLS_ROOT`, `PIPA_URL`, `PIPA_HOME`, `PIPA_KEY_FILE` — рантайм-контракт
+  агента, не вход подстановки. В текст попадает env-форма (`$env:VAR`) или
+  относительный путь.
   Поэтому в `profile/**` нет путей с буквой диска, и `kit.ps1 verify` это проверяет.
 - Агрегат: `profiles/1c-ninja-kit.yaml`
 - Docs: `docs/`

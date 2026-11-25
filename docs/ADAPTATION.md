@@ -21,9 +21,14 @@
 
 ### 1.8. Где PiPa на этой машине
 
-Каталог сервиса у каждой установки свой, поэтому в профиле его нет. Задай
-переменные один раз (после `setx` перезапусти OpenCode — переменные читаются
-при старте процесса):
+Каталог сервиса у каждой установки свой. Его можно записать один раз в машинный
+профиль — `pipa.home` в `install/path-defaults.windows.yaml` — тогда `kit.ps1
+apply` сам поставит переменную `PIPA_HOME` (user env), как `NINJA_KIT_ROOT`:
+переменной нет — создаст, расходится с профилем — напишет `[WARN]` и исправит.
+В staged-копию путь не попадает: в тексте остаётся `$env:PIPA_HOME`.
+
+Либо задай переменные руками (после `setx` перезапусти OpenCode — переменные
+читаются при старте процесса):
 
 | Переменная | Что | Пример |
 |------------|-----|--------|
@@ -53,16 +58,20 @@
 
 | # | Действие | Примечание |
 |---|----------|------------|
-| 3.1 | Apply профиля `1c-ninja-kit` | OpenCode: `docs/opencode.md`. Ставит `NINJA_KIT_ROOT` (user env) |
+| 3.1 | Apply профиля `1c-ninja-kit` | OpenCode: `docs/opencode.md`. Ставит `NINJA_KIT_ROOT` и `PIPA_HOME` (user env) |
 | 3.2 | User mcp **без** 1С-серверов | иначе дубли |
 | 3.3 | cc-1c-skills установлен | `install/cc-skills.ps1` (`db-list` в skills root) |
 | 3.4 | Корень внешних скиллов | дефолт `%USERPROFILE%\.config\opencode\skills`; другой каталог — `setx CC_SKILLS_ROOT "<каталог>"` (агент в рантайме) и та же строка в `ccSkills.skillsRoot` машинного профиля (для подстановки), затем `install/cc-skills.ps1 -SkillsRoot "<каталог>"` |
 | 3.5 | `NINJA_KIT_ROOT` | корень кита; профиль подставляет его вместо `{{KIT_ROOT}}`. Ставит `kit.ps1 apply` сам (user env); вручную — `setx NINJA_KIT_ROOT "<корень кита>"`. Нет переменной — `stage` печатает `[FAIL]` и ничего не копирует; `apply` не падает, а ставит её из своего расположения (неверное значение исправляет с `[WARN]`). Новую переменную видят только процессы, запущенные после apply — перезапусти OpenCode и терминал |
+| 3.6 | `pipa.home` | каталог PiPa в машинном профиле — значение по умолчанию для `PIPA_HOME` (шаг 1.8). `apply` ставит переменную, если её нет, и исправляет расхождение с `[WARN]` |
+| 3.7 | `mcpPolicy.projectMcp` | имя файла проектного MCP-конфига для `{{PROJECT_MCP}}`: задано — берётся оно, пусто — `stage` смотрит фактический файл проекта (`opencode.jsonc`, иначе `opencode.json`), без корня — `opencode.jsonc`. В него `stage` пишет `instructions` |
 
 Значения плейсхолдеров подстановка берёт из `install/path-defaults.windows.yaml`
-(`ccSkills.skillsRoot`, `pipa.url`, `pipa.keyFile`, `mcpPolicy.userMcp`), а не из
-переменных процесса: `CC_SKILLS_ROOT`, `PIPA_URL`, `PIPA_HOME`, `PIPA_KEY_FILE`
-(шаги 1.8 и 3.4) читает агент в рантайме, на `stage`/`apply` они не влияют.
+(`ccSkills.skillsRoot`, `pipa.url`, `pipa.keyFile`, `pipa.home`,
+`mcpPolicy.userMcp`, `mcpPolicy.projectMcp`). Из переменных процесса на копию
+влияет только `NINJA_KIT_ROOT` (токен `{{KIT_ROOT}}`); `CC_SKILLS_ROOT`,
+`PIPA_URL`, `PIPA_HOME`, `PIPA_KEY_FILE` (шаги 1.8 и 3.4) читает агент в
+рантайме — `pipa.home` лишь наполняет `PIPA_HOME` через `apply`.
 
 ## 4. Проект
 

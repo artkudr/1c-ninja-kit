@@ -103,14 +103,17 @@ ccSkills:
   env: [CC_SKILLS_ROOT]
 
 # Сервис задач PiPa (PithosPandoras). Значения — дефолты машины; env главнее.
-# Каталог сервиса на конкретной машине задаётся PIPA_HOME: в профиле он не
-# прописан, потому что у каждой установки свой. Версия — pithos-pandoras.exe --version,
+# pipa.home — каталог сервиса на этой машине. Это машинный профиль, на другой
+# машине путь правится здесь. apply ставит из него PIPA_HOME (user env), если
+# переменной нет, и исправляет расхождение с [WARN]; в staged-копию путь не
+# попадает — в тексте остаётся $env:PIPA_HOME.
+# Версия — pithos-pandoras.exe --version,
 # у GET /health версии нет (только ok).
 pipa:
   url: "http://127.0.0.1:8787/mcp"
   boardUrl: "http://127.0.0.1:8787/"
   port: 8787
-  home: "%PIPA_HOME%"
+  home: "C:\\PithosPandoras"
   keyFile: "%PIPA_HOME%\\pithos-pandoras.key"
   env: [PIPA_URL, PIPA_HOME, PIPA_KEY_FILE, PIPA_KEY, PITHOS_PORT]
 
@@ -124,4 +127,8 @@ mcpPolicy:
     - 1c-mcp-toolkit
     - bsl-analyzer-reference
     - bsl-analyzer-workspace
-  projectMcp: "<project>\\opencode.jsonc"
+  # Имя файла MCP-конфига в корне проекта: stage пишет в него instructions и
+  # подставляет его как {{PROJECT_MCP}}. Пусто — stage берёт фактический файл
+  # проекта (opencode.jsonc, иначе opencode.json), а без корня — opencode.jsonc.
+  # Заданное имя главнее: проект с нестандартным конфигом прописывается здесь.
+  projectMcp: ""

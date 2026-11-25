@@ -8,17 +8,17 @@
 `profile/**` не содержит путей с буквой диска: такие пути верны только на
 машине автора. Машинные каталоги подставляются в копию при `stage` и `apply`.
 
-**Из машинного профиля берутся ровно четыре ключа.** Подстановка
+**Из машинного профиля берутся шесть ключей.** Подстановка
 (`Get-PlaceholderMap` в `install/kit.ps1`) читает
-`install/path-defaults.windows.yaml` только по ключам `ccSkills.skillsRoot`,
-`pipa.url`, `pipa.keyFile`, `mcpPolicy.userMcp`. Остальные значения карты —
-константы renderer'а или вычисление по слою. Других ключей YAML подстановка не
-читает: ни `pipa.home`, ни `mcpPolicy.projectMcp` она не смотрит. От переменных
-процесса подстановка не зависит: `CC_SKILLS_ROOT`, `PIPA_URL`, `PIPA_HOME`,
-`PIPA_KEY_FILE` — это рантайм-контракт для агента (скилл читает их при работе),
-а не вход `stage`/`apply`. Значит, в YAML настраиваются только каталоги из этих
-четырёх ключей; каталог PiPa задаётся переменной `PIPA_HOME` на машине, а не в
-профиле. Переменные нужны агенту во время работы, а не копированию.
+`install/path-defaults.windows.yaml` по ключам `ccSkills.skillsRoot`,
+`pipa.url`, `pipa.keyFile`, `pipa.home`, `mcpPolicy.userMcp`,
+`mcpPolicy.projectMcp`. Остальные значения карты — константы renderer'а или
+вычисление по слою. От переменных процесса подстановка не зависит:
+`CC_SKILLS_ROOT`, `PIPA_URL`, `PIPA_HOME`, `PIPA_KEY_FILE` — это
+рантайм-контракт для агента (скилл читает их при работе), а не вход
+`stage`/`apply`. Единственное исключение — `pipa.home`: это значение по
+умолчанию для переменной `PIPA_HOME`, и его ставит `apply`, а не подстановка.
+Переменные нужны агенту во время работы, а не копированию.
 
 | Плейсхолдер | Значение | Источник |
 |-------------|----------|----------|
@@ -28,9 +28,9 @@
 | `{{AGENTS_ROOT}}` | `$env:USERPROFILE\.config\opencode\agents` | вычисляется |
 | `{{COMMANDS_ROOT}}` | `$env:USERPROFILE\.config\opencode\commands` | вычисляется |
 | `{{USER_MCP}}` | `$env:USERPROFILE\.config\opencode\opencode.json(c)` | `mcpPolicy.userMcp` |
-| `{{PROJECT_MCP}}` | `opencode.jsonc` | константа: `opencode.jsonc` в корне проекта; ключ `mcpPolicy.projectMcp` renderer не читает |
+| `{{PROJECT_MCP}}` | `opencode.jsonc` | приоритет: заданный `mcpPolicy.projectMcp` → фактический файл в корне проекта (`opencode.jsonc`, иначе `opencode.json`) → `opencode.jsonc`. `stage` знает корень и смотрит файл, `apply` — только ключ или дефолт. В значение попадает имя файла: каталог всегда корень проекта |
 | `{{PIPA_URL}}` | `http://127.0.0.1:8787/mcp` | `pipa.url`; env `PIPA_URL` — рантайм-контракт, на подстановку не влияет |
-| `{{PIPA_HOME}}` | `$env:PIPA_HOME` | рантайм: env `PIPA_HOME` (в текст подставляется `$env:PIPA_HOME`); ключ `pipa.home` renderer не читает |
+| `{{PIPA_HOME}}` | `$env:PIPA_HOME` | всегда env-форма: в текст подставляется `$env:PIPA_HOME`. Сам каталог задаёт `pipa.home` — `apply` ставит из него переменную `PIPA_HOME` (user env), если она пуста, и исправляет расхождение с `[WARN]`, как `NINJA_KIT_ROOT` |
 | `{{PIPA_KEY_FILE}}` | `$env:PIPA_HOME\pithos-pandoras.key` | `pipa.keyFile`; env `PIPA_KEY_FILE` — рантайм-контракт, на подстановку не влияет |
 
 Правило значения: **env-форма (`$env:VAR`) или относительный путь**. Литеральный
