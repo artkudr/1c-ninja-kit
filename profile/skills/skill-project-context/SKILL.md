@@ -19,6 +19,26 @@ description: >-
 
 Реестр PT не используем.
 
+## `.v8-project.json` — поля
+
+| Поле | Что |
+|------|-----|
+| `v8path` | bin платформы; из него же берётся `v8version` (`docs/stack-defaults.md`) |
+| `databases[]` | записи баз: `id`, `name`, `type` (`file` / `server`), `path` или `server` + `ref`, `user`, `password`, `configSrc`, `extensions[]` (+ `src`, `repository`) |
+| `default` | `id` базы по умолчанию |
+| `web` | публикация: `appName`, `port` (**8083** для 8.3, **8085** для 8.5), `apachePath`, `poolServices` |
+
+Ключи `web`:
+
+| Ключ | Что |
+|------|-----|
+| `web.appName` | имя публикации в Apache |
+| `web.apachePath` | корень Apache, если он не профильный (`%USERPROFILE%\tools\apache-83` или `apache-85`). Указывать на копию дерева можно: скрипт привязывает `Define SRVROOT` / `ServerRoot` и пути pid/log к этой копии, рабочая установка не затрагивается |
+| `web.poolServices` | пул сеансов HTTP-сервисов: `[{ "name": "NinjaLive_Сервис", "rootUrl": "ninja-live" }]`. `rootUrl` обязателен — без него платформа пул не применяет |
+| `web.poolSessionMaxAge` / `web.poolSize` / `web.poolTimeout` | необязательные числа пула (по умолчанию 20 / 4 / 5) |
+
+`web.poolServices` снимает старт сеанса на каждый вызов HTTP-сервиса (ИБ, расширения, авторизация): серия `live_*` держит один сеанс вместо N. Публикует это `skill-web-publish` — там же семантика атрибутов и замеры.
+
 ## Куда смотреть
 
 Карта MCP, роли и скиллы — в контексте кита (шапка `AGENTS.md`). Здесь только то, что зависит от конкретного проекта.

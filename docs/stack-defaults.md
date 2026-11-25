@@ -14,6 +14,9 @@
   `wsap24.dll` из bin установленной платформы, поэтому платформа нужна.
 - Smoke / webUrl — с суффиксом **`/ru_RU/`**.
 - Выбор порта в проекте: по платформе (`v8path`) / `web.port` в `.v8-project.json`.
+- `web.poolServices` в `.v8-project.json` — пул сеансов HTTP-сервисов
+  (`[{ "name": "...", "rootUrl": "..." }]`); без `rootUrl` платформа пул не применяет.
+  Поля реестра — `skill-project-context`, публикация и семантика — `skill-web-publish`.
 
 ## MCP
 

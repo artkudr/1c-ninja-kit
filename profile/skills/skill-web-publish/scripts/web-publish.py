@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-# web-publish v1.5 — Publish 1C infobase via Apache
+# web-publish v1.8 — Publish 1C infobase via Apache
 # Source: https://github.com/Nikolay-Shirokov/cc-1c-skills
 
 """
@@ -21,6 +21,7 @@ import time
 import urllib.request
 import zipfile
 from urllib.parse import urlparse
+from xml.sax.saxutils import escape as xml_escape
 
 import psutil
 
@@ -165,11 +166,135 @@ def get_all_httpd():
 
 
 def check_port_in_use(port):
-    """Check if a port is in use and return the owning PID, or None."""
+    """PID слушающего сокета на порту или None.
+
+    Порт занимает только LISTEN с живым владельцем: TIME_WAIT после закрытых
+    сеансов держит запись с pid 0 и занятостью не считается (так же в
+    web-publish.ps1).
+    """
     for conn in psutil.net_connections(kind='tcp'):
         if conn.laddr and conn.laddr.port == port and conn.status == 'LISTEN':
-            return conn.pid
+            if conn.pid and conn.pid > 0:
+                return conn.pid
     return None
+
+
+class PoolInputError(ValueError):
+    """Ошибка формата -PoolServices; тексты совпадают с web-publish.ps1."""
+
+
+def pool_input_items(cli_values, cfg_pool):
+    """Элементы пула из -PoolServices или web.poolServices.
+
+    Формат элемента общий с web-publish.ps1: 'Имя=rootUrl', строка делится по
+    ',' и ';'. Массив и повтор параметра понимает эта версия; в PowerShell
+    повтор запрещён языком, там два сервиса задаются массивом или строкой.
+    """
+    if cli_values is not None:
+        raw = list(cli_values)
+    elif isinstance(cfg_pool, str):
+        raw = [cfg_pool]
+    else:
+        raw = [item for item in (cfg_pool or [])]
+    items = []
+    for item in raw:
+        if isinstance(item, str):
+            items.extend(re.split(r'[,;]', item))
+        else:
+            items.append(item)
+    return items
+
+
+def pool_spec(item):
+    """(name, rootUrl) элемента пула; PoolInputError на битом входе."""
+    if isinstance(item, dict):
+        name = str(item.get('name') or '').strip()
+        root_url = str(item.get('rootUrl') or '').strip()
+        if not name:
+            raise PoolInputError("пустой элемент — нужен формат 'Имя=rootUrl'")
+        raw = name
+    else:
+        raw = str(item).strip()
+        if not raw:
+            raise PoolInputError("пустой элемент — нужен формат 'Имя=rootUrl'")
+        if '=' not in raw:
+            raise PoolInputError(f"'{raw}': нет '=' — нужен формат 'Имя=rootUrl'")
+        name, root_url = (part.strip() for part in raw.split('=', 1))
+        if not name:
+            raise PoolInputError(f"'{raw}': пустое имя — нужен формат 'Имя=rootUrl'")
+    if not root_url:
+        raise PoolInputError(f"'{raw}': пустой rootUrl — нужен формат 'Имя=rootUrl'")
+    return name, root_url
+
+
+def pin_apache_root(conf, apache_root):
+    """Корень Apache и пути pid/log — внутри своего дерева.
+
+    Копия дерева (web.apachePath на копию) приносит Define SRVROOT исходной
+    установки: httpd тогда пишет logs/httpd.pid и logs/error_log в рабочее
+    дерево (копия перезаписывала pid живого Apache). Абсолютный PidFile /
+    ErrorLog / CustomLog вне дерева переводим в logs/<имя>.
+    """
+    root_full = os.path.abspath(apache_root)
+    root_norm = os.path.normcase(root_full.replace('/', '\\').rstrip('\\'))
+    root_fwd = root_full.replace('\\', '/').rstrip('/')
+    notes = []
+
+    def _inside(path):
+        try:
+            p = os.path.normcase(os.path.abspath(path).replace('/', '\\').rstrip('\\'))
+        except (OSError, ValueError):
+            return False
+        return p == root_norm or p.startswith(root_norm + '\\')
+
+    lines = conf.split('\n')
+
+    define_idx = [i for i, l in enumerate(lines) if re.match(r'^[ \t]*Define[ \t]+SRVROOT[ \t]+', l)]
+    for i in define_idx:
+        indent = re.match(r'^[ \t]*', lines[i]).group(0)
+        new_line = f'{indent}Define SRVROOT "{root_fwd}"'
+        if lines[i] != new_line:
+            lines[i] = new_line
+            notes.append(f'Define SRVROOT -> {root_fwd}')
+
+    if not define_idx:
+        for i, line in enumerate(lines):
+            m = re.match(r'^([ \t]*)ServerRoot[ \t]+(.+)$', line)
+            if not m:
+                continue
+            if '${SRVROOT}' in m.group(2):
+                break
+            new_line = f'{m.group(1)}ServerRoot "{root_fwd}"'
+            if line != new_line:
+                lines[i] = new_line
+                notes.append(f'ServerRoot -> {root_fwd}')
+            break
+
+    directive_re = re.compile(
+        r'^([ \t]*)(PidFile|ErrorLog|CustomLog|ScriptLog|RewriteLog)[ \t]+'
+        r'(?:"([^"]*)"|(\S+))(.*)$'
+    )
+    for i, line in enumerate(lines):
+        m = directive_re.match(line)
+        if not m:
+            continue
+        indent, directive = m.group(1), m.group(2)
+        path = m.group(3) if m.group(3) is not None else m.group(4)
+        tail = m.group(5)
+        if path.startswith(('syslog:', 'pipe:', '|')):
+            continue
+        is_abs = bool(re.match(r'^[A-Za-z]:[\\/]', path)) or path.startswith('\\\\') or path.startswith('/')
+        candidate = path if is_abs else os.path.join(root_full, path)
+        if _inside(candidate):
+            continue
+        leaf = [s for s in re.split(r'[\\/]', path.rstrip('\\/')) if s]
+        leaf = leaf[-1] if leaf else 'httpd.pid'
+        lines[i] = f'{indent}{directive} "logs/{leaf}"{tail}'
+        notes.append(f'{directive} {path} -> logs/{leaf} (путь вёл вне {root_full})')
+
+    for note in notes:
+        print(f'httpd.conf: {note}')
+    return '\n'.join(lines)
 
 
 def main():
@@ -186,6 +311,12 @@ def main():
     parser.add_argument('-AppName', type=str, default='', help='Publication name (web.appName / smoke webUrl)')
     parser.add_argument('-ApachePath', type=str, default='', help='Apache root (default: %%USERPROFILE%%\\tools\\apache-83|85)')
     parser.add_argument('-Port', type=int, default=None, help='Port (default 8083|8085 by v8version)')
+    parser.add_argument('-PoolServices', action='append', default=None,
+                        help="HTTP services for session pool: element 'Name=rootUrl', "
+                             "items separated by ',' or ';'; repeatable (default web.poolServices)")
+    parser.add_argument('-SessionMaxAge', type=int, default=0, help='Pool session idle seconds before replacement (default 20)')
+    parser.add_argument('-PoolSize', type=int, default=0, help='Sessions kept in pool (default 4)')
+    parser.add_argument('-PoolTimeout', type=int, default=0, help='Seconds to wait for a free pool session (default 5)')
     parser.add_argument('-Manual', action='store_true', help='Do not download Apache — only check and give instructions')
     args = parser.parse_args()
 
@@ -197,10 +328,12 @@ def main():
     cfg_app_name = None
     cfg_port = None
     cfg_apache = None
+    web_cfg = {}
     if registry:
         cfg_v8version = _v8_version_from_path(registry.get("v8path"))
         web = registry.get("web")
         if isinstance(web, dict):
+            web_cfg = web
             cfg_app_name = web.get("appName")
             cfg_port = web.get("port")
             cfg_apache = web.get("apachePath")
@@ -258,6 +391,20 @@ def main():
     port = args.Port
     if port is None:
         port = int(cfg_port) if cfg_port else int(defaults["port"])
+
+    # --- HTTP-service session pool: единый вход -PoolServices (как в web-publish.ps1) ---
+    cfg_pool = web_cfg.get("poolServices") or []
+    pool_items = pool_input_items(args.PoolServices, cfg_pool)
+    pool_services = []
+    for item in pool_items:
+        try:
+            pool_services.append(pool_spec(item))
+        except PoolInputError as exc:
+            print(f'Error: PoolServices: {exc}', file=sys.stderr)
+            sys.exit(1)
+    session_max_age = args.SessionMaxAge or int(web_cfg.get("poolSessionMaxAge") or 20)
+    pool_size = args.PoolSize or int(web_cfg.get("poolSize") or 4)
+    pool_timeout = args.PoolTimeout or int(web_cfg.get("poolTimeout") or 5)
 
     # --- Check / Install Apache ---
     httpd_exe = os.path.join(apache_path, 'bin', 'httpd.exe')
@@ -353,20 +500,8 @@ def main():
         except OSError:
             pass
 
-        # Patch ServerRoot in httpd.conf
-        conf_file = os.path.join(apache_path, 'conf', 'httpd.conf')
-        if os.path.exists(conf_file):
-            apache_path_fwd = apache_path.replace('\\', '/')
-            with open(conf_file, 'r', encoding='utf-8-sig') as f:
-                conf_content = f.read()
-            conf_content = re.sub(
-                r'(?m)^Define SRVROOT .*$',
-                f'Define SRVROOT "{apache_path_fwd}"',
-                conf_content,
-            )
-            with open(conf_file, 'w', encoding='utf-8') as f:
-                f.write(conf_content)
-            print(f'ServerRoot обновлён: {apache_path_fwd}')
+        # ServerRoot привязывается ниже, в общем шаге pin_apache_root:
+        # одно поведение и для свежей установки, и для копии дерева.
 
         print(f'Apache установлен: {apache_path}')
 
@@ -414,6 +549,30 @@ def main():
         ib_parts.append(f'Pwd=&quot;{args.Password}&quot;')
     ib_string = ';'.join(ib_parts) + ';'
 
+    # Пул сеансов задаётся на элементе <service>: на <httpServices> платформа 8.5
+    # эти атрибуты не принимает. publishByDefault остаётся true — новые сервисы
+    # (в том числе из расширений) публикуются как раньше.
+    xml_attr = {'"': '&quot;', "'": '&apos;'}
+
+    def _pool_line(name, root_url):
+        attrs = f'name="{xml_escape(name, xml_attr)}"'
+        if root_url:
+            attrs += f' rootUrl="{xml_escape(root_url, xml_attr)}"'
+        return (
+            f'        <service {attrs} enable="true" reuseSessions="autouse" '
+            f'sessionMaxAge="{session_max_age}" poolSize="{pool_size}" poolTimeout="{pool_timeout}"/>'
+        )
+
+    pool_service_lines = [_pool_line(name, root_url) for name, root_url in pool_services]
+    if pool_service_lines:
+        http_services_xml = (
+            '    <httpServices publishByDefault="true" publishExtensionsByDefault="true">\n'
+            + '\n'.join(pool_service_lines)
+            + '\n    </httpServices>'
+        )
+    else:
+        http_services_xml = '    <httpServices publishByDefault="true" publishExtensionsByDefault="true"/>'
+
     vrd_content = f'''<?xml version="1.0" encoding="UTF-8"?>
 <point xmlns="http://v8.1c.ru/8.2/virtual-resource-system"
        xmlns:xs="http://www.w3.org/2001/XMLSchema"
@@ -422,13 +581,21 @@ def main():
        ib="{ib_string}">
     <standardOdata enable="true"/>
     <ws pointEnableCommon="true"/>
-    <httpServices publishByDefault="true" publishExtensionsByDefault="true"/>
+{http_services_xml}
 </point>'''
 
     with open(vrd_path, 'wb') as f:
         f.write(b'\xef\xbb\xbf')
         f.write(vrd_content.encode('utf-8'))
     print(f'default.vrd: {vrd_path}')
+    if pool_services:
+        names = ', '.join(f"{name}={root_url}" if root_url else name for name, root_url in pool_services)
+        print(
+            f"Пул сеансов HTTP-сервисов: {names} "
+            f"(sessionMaxAge={session_max_age}, poolSize={pool_size}, poolTimeout={pool_timeout})"
+        )
+    else:
+        print('Пул сеансов HTTP-сервисов: выключен (web.poolServices / -PoolServices пуст)')
 
     # --- Update httpd.conf ---
     conf_file = os.path.join(apache_path, 'conf', 'httpd.conf')
@@ -438,6 +605,8 @@ def main():
 
     with open(conf_file, 'r', encoding='utf-8-sig') as f:
         conf_content = f.read()
+
+    conf_content = pin_apache_root(conf_content, apache_path)
 
     apache_path_fwd = apache_path.replace('\\', '/')
     wsap_dll_fwd = wsap_dll.replace('\\', '/')
@@ -491,6 +660,9 @@ def main():
         f.write(conf_content)
     print('httpd.conf обновлён')
 
+    # --- Ensure logs dir: pid и error_log пишутся в своё дерево ---
+    os.makedirs(os.path.join(apache_path, 'logs'), exist_ok=True)
+
     # --- Normalize httpd_exe for process matching ---
     if os.path.exists(httpd_exe):
         httpd_exe_norm = os.path.normcase(os.path.normpath(os.path.realpath(httpd_exe)))
@@ -505,7 +677,8 @@ def main():
             # Port is held by someone else
             try:
                 holder_proc = psutil.Process(holder_pid)
-                holder_name = f'{holder_proc.name()} (PID: {holder_pid})'
+                # Имя без .exe — как ProcessName в web-publish.ps1.
+                holder_name = f'{os.path.splitext(holder_proc.name())[0]} (PID: {holder_pid})'
             except (psutil.NoSuchProcess, psutil.AccessDenied):
                 holder_name = f'PID {holder_pid}'
             print(f'Error: порт {port} занят процессом {holder_name}', file=sys.stderr)

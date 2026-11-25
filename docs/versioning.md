@@ -2,7 +2,7 @@
 
 | Что | Схема |
 |-----|--------|
-| Kit product | semver (`VERSION`, `manifest.yaml`); текущая — `0.12.1` |
+| Kit product | semver (`VERSION`, `manifest.yaml`); текущая — `0.13.2` |
 | CFE / EPF в клиентских проектах | `X.Y.Z.W` по скиллу `skill-versioning` |
 | Profile lock | `lock/profile.lock.json` (names hash) |
 
