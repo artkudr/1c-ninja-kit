@@ -2,7 +2,7 @@
 
 Агентная обвязка разработки 1С: skills (kit + cc-1c-skills), rules, MCP (**1c-ninja-mcp** + CFE **NinjaLive**), bsl-analyzer, харнесс **OpenCode**.
 
-**VERSION:** 0.12.0
+**VERSION:** 0.13.4 (источник — файл `VERSION`)
 
 ## Quick start
 
@@ -21,11 +21,17 @@ powershell -NoProfile -File .\install\kit.ps1 stage -ProjectRoot C:\1C\projects\
 
 ## Harness
 
-Харнесс один — **OpenCode V2**. Скиллы и правила ставятся **в проект** командой
+Харнесс один — **OpenCode**. Скиллы и правила ставятся **в проект** командой
 `kit.ps1 stage -ProjectRoot <проект>` (копия в `.opencode`, `instructions` в
 проектном `opencode.jsonc`); глобально копируются только агенты, команды и
 `run.ps1`. Почему так и что проверяет `verify` — `docs/opencode.md`. Проверка
 доставки: `docs/TEST-GUIDE-opencode.md`.
+
+Пути не зашиты в тексты: `stage` и `apply` подставляют их из машинного профиля
+`install/path-defaults.windows.yaml` (плейсхолдеры `{{KIT_ROOT}}`,
+`{{CC_SKILLS_ROOT}}`, `{{PIPA_*}}` и др.), а `apply` выставляет в пользовательскую
+среду `NINJA_KIT_ROOT` и `PIPA_HOME`. Правило линта в `verify` не даёт вернуть в
+профиль путь с буквой диска. Подробности — `docs/MCP-PLACEHOLDERS.md`.
 
 ## Каркас задачи
 
@@ -33,6 +39,12 @@ powershell -NoProfile -File .\install\kit.ps1 stage -ProjectRoot C:\1C\projects\
 `~/.config/opencode/commands`. Состояние задачи живёт в сервисе **PiPa**
 (PithosPandoras, MCP `pipa`), в проекте — только папка `Задачи/` с файлами.
 Имя проекта агент берёт из `AGENTS.md`.
+
+Сам сервис в кит не входит: ставится из Releases
+[`artkudr/pithos-pandoras`](https://github.com/artkudr/pithos-pandoras/releases)
+(zip, Rust для установки не нужен), MCP — `http://127.0.0.1:8787/mcp`, ключ
+печатает `pithos-pandoras.exe key`. Как агент находит сервис на машине
+(`PIPA_URL`, `PIPA_HOME`, проверка `/health`) — скилл `skill-pipa`.
 
 ## What is inside
 
@@ -48,6 +60,7 @@ powershell -NoProfile -File .\install\kit.ps1 stage -ProjectRoot C:\1C\projects\
 | `docs/opencode.md` | единственный харнесс: пути в конфиге, копии, MCP, ограничения |
 | `docs/NAMING.md` | контракт имён `skill-` / `rule-` и ролей-агентов |
 | `docs/MACHINE-BOOTSTRAP.md` | bare PC: что ставит `kit.ps1 deps`, что остаётся руками |
+| `docs/MCP-PLACEHOLDERS.md` | плейсхолдеры путей, источник значений, линт профиля |
 | `companions/pins.json` | upstream GitHub URLs для companion-бинарников |
 
 ## Hard rules
